@@ -1,8 +1,8 @@
-package com.indievibe.Configuration;
+package com.swp493.indievibe.Configuration;
 
 import java.security.interfaces.RSAPublicKey;
 
-import com.indievibe.Features.Authentication.Controller.IndieAuthenticationSucessHandler;
+import com.swp493.indievibe.Features.Authentication.Controller.IndieAuthenticationSucessHandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

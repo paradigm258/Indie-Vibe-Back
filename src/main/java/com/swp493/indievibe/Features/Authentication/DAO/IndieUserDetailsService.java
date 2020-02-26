@@ -1,7 +1,7 @@
-package com.indievibe.Features.Authentication.DAO;
+package com.swp493.indievibe.Features.Authentication.DAO;
 
-import com.indievibe.Features.Authentication.Model.IndieUser;
-import com.indievibe.Features.Authentication.Model.IndieUserPrinciple;
+import com.swp493.indievibe.Features.Authentication.Model.IndieUser;
+import com.swp493.indievibe.Features.Authentication.Model.IndieUserPrinciple;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;

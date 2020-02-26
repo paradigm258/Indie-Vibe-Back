@@ -1,4 +1,4 @@
-package com.indievibe.Configuration;
+package com.swp493.indievibe.Configuration;
 
 import java.math.BigInteger;
 import java.security.KeyFactory;

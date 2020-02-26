@@ -1,7 +1,7 @@
-package com.indievibe.Features.Authentication.Controller;
+package com.swp493.indievibe.Features.Authentication.Controller;
 
-import com.indievibe.Features.Authentication.Model.IndieUser;
-import com.indievibe.Features.Authentication.Model.IndieUserPrinciple;
+import com.swp493.indievibe.Features.Authentication.Model.IndieUser;
+import com.swp493.indievibe.Features.Authentication.Model.IndieUserPrinciple;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;

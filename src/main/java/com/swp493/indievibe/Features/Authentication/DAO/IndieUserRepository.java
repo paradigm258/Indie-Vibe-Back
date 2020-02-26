@@ -1,6 +1,6 @@
-package com.indievibe.Features.Authentication.DAO;
+package com.swp493.indievibe.Features.Authentication.DAO;
 
-import com.indievibe.Features.Authentication.Model.IndieUser;
+import com.swp493.indievibe.Features.Authentication.Model.IndieUser;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,4 +1,4 @@
-package com.indievibe.Features.Authentication.Model;
+package com.swp493.indievibe.Features.Authentication.Model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
