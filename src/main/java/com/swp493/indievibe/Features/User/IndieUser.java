@@ -1,15 +1,12 @@
 package com.swp493.indievibe.Features.User;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 @Table(name = "User")
@@ -18,28 +15,24 @@ public class IndieUser{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotNull
-    @NotEmpty
+    
+    @NotBlank
     @Email
     private String email;
-    @Column(name = "fbId")
-    private String fbId;
-    @NotNull
-    @NotEmpty
-    private String role;
-    @NotNull
-    @NotEmpty
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")
+
+    @NotBlank
     private String password;
+
+    @NotBlank
+    private String displayName;
+
+    @NotBlank
+    private String role;
+
+    private String fbId;
 
     public IndieUser() {}
 
-    public IndieUser(String email,String fbId, String role,String password) {
-        this.email = email;
-        this.fbId = fbId;
-        this.role = role;
-        this.password = password;
-    }
     /**
      * @return the id
      */
@@ -99,5 +92,19 @@ public class IndieUser{
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /**
+     * @return the displayName
+     */
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    /**
+     * @param displayName the displayName to set
+     */
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

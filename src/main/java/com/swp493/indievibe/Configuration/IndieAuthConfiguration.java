@@ -48,7 +48,8 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.sessionManagement().disable()
+        http.csrf().disable()
+            .sessionManagement().disable()
             .authorizeRequests()
             .antMatchers("/home","/perform_register").permitAll()
             .antMatchers("/admin/**").hasAnyAuthority("admin")

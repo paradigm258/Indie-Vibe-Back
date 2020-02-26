@@ -22,9 +22,13 @@ public class IndieUserService {
     public boolean existsByFbId(String fbId){
         return userRepository.existsByFbId(fbId);
     }
-    public void save(IndieUser user){
+    public void register(IndieUser user){
+
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+
+        user.setRole("user");
+        
         userRepository.save(user);
     }
 }
