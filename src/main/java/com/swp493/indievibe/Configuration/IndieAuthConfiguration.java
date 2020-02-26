@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 
@@ -36,18 +37,23 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
     public AuthenticationProvider authProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(new BCryptPasswordEncoder());
+        provider.setPasswordEncoder(PasswordEncoder());
         return provider;
     }
 
+    @Bean
+	public PasswordEncoder PasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests()
-            .antMatchers("/home").permitAll()
+        http.sessionManagement().disable()
+            .authorizeRequests()
+            .antMatchers("/home","/perform_register").permitAll()
             .antMatchers("/admin/**").hasAnyAuthority("admin")
             .anyRequest().fullyAuthenticated()
             .and().oauth2Login().successHandler(successHandler)
-            .and().formLogin().defaultSuccessUrl("/getUser")
             .and().httpBasic()
             .and().oauth2ResourceServer().jwt()
             .decoder(NimbusJwtDecoder.withPublicKey((RSAPublicKey)keyConfig.keyPair().getPublic()).build());
