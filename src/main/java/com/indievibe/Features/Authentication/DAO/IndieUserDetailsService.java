@@ -1,6 +1,7 @@
-package com.indievibe.Authentication.DAO;
+package com.indievibe.Features.Authentication.DAO;
 
-import com.indievibe.Authentication.Model.IndieUser;
+import com.indievibe.Features.Authentication.Model.IndieUser;
+import com.indievibe.Features.Authentication.Model.IndieUserPrinciple;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +23,13 @@ public class IndieUserDetailsService implements UserDetailsService {
         IndieUser user = repo.findByEmail(username);
         if(user == null){
             throw new UsernameNotFoundException(username);
+        }
+        return new IndieUserPrinciple(user);
+    }
+    public UserDetails loadUserByFbId(String fbId) throws UsernameNotFoundException{
+        IndieUser user = repo.findByFbId(fbId);
+        if(user == null){
+            throw new UsernameNotFoundException(fbId);
         }
         return new IndieUserPrinciple(user);
     }

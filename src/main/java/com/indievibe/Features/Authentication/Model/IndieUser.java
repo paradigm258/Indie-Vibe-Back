@@ -1,27 +1,39 @@
-package com.indievibe.Authentication.Model;
+package com.indievibe.Features.Authentication.Model;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
+@Table(name = "User")
 public class IndieUser{
-    private String email;
+    
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private String email;
+    @Column(name = "fbId")
+    private String fbId;
     private String role;
     private String password;
 
-    public IndieUser() {
+    public IndieUser() {}
 
-    }
-
-    public IndieUser(String email,long id, String role,String password) {
+    public IndieUser(String email,String fbId, String role,String password) {
         this.email = email;
-        this.id = id;
+        this.fbId = fbId;
         this.role = role;
         this.password = password;
     }
-
+    /**
+     * @return the id
+     */
+    public long getId() {
+        return id;
+    }
     /**
      * @return the email
      */
@@ -29,10 +41,10 @@ public class IndieUser{
         return email;
     }
     /**
-     * @return the id
+     * @return the fbId
      */
-    public long getId() {
-        return id;
+    public String getFbId() {
+        return fbId;
     }
     /**
      * @return the role
@@ -47,16 +59,22 @@ public class IndieUser{
         return password;
     }
     /**
+     * @param id the id to set
+     */
+    public void setId(long id) {
+        this.id = id;
+    }
+    /**
      * @param email the email to set
      */
     public void setEmail(String email) {
         this.email = email;
     }
     /**
-     * @param id the id to set
+     * @param fbId the fbId to set
      */
-    public void setId(long id) {
-        this.id = id;
+    public void setFbId(String fbId) {
+        this.fbId = fbId;
     }
     /**
      * @param role the role to set
