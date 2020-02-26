@@ -45,7 +45,7 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
         http.authorizeRequests()
             .antMatchers("/home").permitAll()
             .antMatchers("/admin/**").hasAnyAuthority("admin")
-            .anyRequest().fullyAuthenticated()
+            .anyRequest().permitAll()
             .and().oauth2Login().successHandler(successHandler)
             .and().formLogin().defaultSuccessUrl("/getUser")
             .and().httpBasic()
