@@ -3,6 +3,8 @@ package com.swp493.indievibe.Features.Authentication.Model;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.swp493.indievibe.Features.User.IndieUser;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

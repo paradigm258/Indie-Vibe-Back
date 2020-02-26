@@ -1,4 +1,4 @@
-package com.swp493.indievibe.Features.Authentication.Model;
+package com.swp493.indievibe.Features.User;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
