@@ -5,11 +5,6 @@ spring:
         username: root
         password: 1234
         driverClassName: com.mysql.cj.jdbc.Driver
-    jpa:
-        hibernate: 
-            naming:
-                physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-                implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
     security:
         oauth2:
             client:

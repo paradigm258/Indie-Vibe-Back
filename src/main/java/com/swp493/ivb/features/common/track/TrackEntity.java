@@ -1,28 +1,23 @@
 package com.swp493.ivb.features.common.track;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.SecondaryTable;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
-import com.swp493.ivb.features.common.user.UserEntity;
-
 @Entity
 @Table(name = "track")
-@SecondaryTable(name = "object_genre",
-    pkJoinColumns = @PrimaryKeyJoinColumn(referencedColumnName = "track_id"))
-@SecondaryTable(name = "user_object",
-    pkJoinColumns = @PrimaryKeyJoinColumn(referencedColumnName = "track_id"))
+//@SecondaryTable(name = "object_genre",
+//    pkJoinColumns = @PrimaryKeyJoinColumn(referencedColumnName = "track_id"))
+//@SecondaryTable(name = "user_object",
+//    pkJoinColumns = @PrimaryKeyJoinColumn(referencedColumnName = "track_id"))
 public class TrackEntity {
 
     @Id
     private String id;
 
     private String releaseId;
-
-    private UserEntity owner;
 
     @NotBlank
     private String title;
@@ -39,14 +34,16 @@ public class TrackEntity {
     @NotBlank
     private String state;
 
-    private String genre;
-    
+//    private String genre;
+
     private String producer;
 
     @NotBlank
+    @Column(name = "mp3_128")
     private String mp3128;
     
     @NotBlank
+    @Column(name = "mp3_320")
     private String mp3320;
 
     /**
@@ -75,20 +72,6 @@ public class TrackEntity {
      */
     public void setReleaseId(String releaseId) {
         this.releaseId = releaseId;
-    }
-
-    /**
-     * @return the owner
-     */
-    public UserEntity getOwner() {
-        return owner;
-    }
-
-    /**
-     * @param owner the owner to set
-     */
-    public void setOwner(UserEntity owner) {
-        this.owner = owner;
     }
 
     /**
@@ -161,19 +144,19 @@ public class TrackEntity {
         this.state = state;
     }
 
-    /**
-     * @return the genre
-     */
-    public String getGenre() {
-        return genre;
-    }
-
-    /**
-     * @param genre the genre to set
-     */
-    public void setGenre(String genre) {
-        this.genre = genre;
-    }
+//    /**
+//     * @return the genre
+//     */
+//    public String getGenre() {
+//        return genre;
+//    }
+//
+//    /**
+//     * @param genre the genre to set
+//     */
+//    public void setGenre(String genre) {
+//        this.genre = genre;
+//    }
 
     /**
      * @return the producer
