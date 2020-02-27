@@ -17,13 +17,14 @@ public class TrackController {
 
     @Autowired
     TrackRepository repo;
-    @GetMapping(value = "/tracks")
-    Payload<TrackEntity> tracks(String id){
+
+    @GetMapping(value = "/tracks/{id}")
+    Payload<TrackEntity> tracks(@PathVariable String id) {
         return new Payload<TrackEntity>().success(repo.findTrackById(id));
     }
 
     @GetMapping(value = "/tracks/stream/{id}")
-    ResourceRegion stream(@PathVariable String id,@RequestHeader(HttpHeaders.RANGE) Optional<String> range){
+    ResourceRegion stream(@PathVariable String id, @RequestHeader(HttpHeaders.RANGE) Optional<String> range) {
         return null;
     }
 }

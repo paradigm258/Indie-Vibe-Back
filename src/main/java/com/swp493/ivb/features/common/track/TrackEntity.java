@@ -6,6 +6,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "track")
 //@SecondaryTable(name = "object_genre",
@@ -23,15 +25,27 @@ public class TrackEntity {
     private String title;
 
     @NotBlank
-    private int duration;
+    @Column(name = "duration_128")
+    private int duration128;
 
     @NotBlank
-    private int fileSize;
+    @Column(name = "duration_320")
+    private int duration320;
 
     @NotBlank
+    @Column(name = "file_size_128")
+    private int fileSize128;
+
+    @NotBlank
+    @Column(name = "file_size_320")
+    private int fileSize320;
+
+    @NotBlank
+    @Column(name = "mp3_offset")
     private int mp3offset;
 
     @NotBlank
+    @Column(name = "track_state")
     private String state;
 
 //    private String genre;
@@ -40,10 +54,12 @@ public class TrackEntity {
 
     @NotBlank
     @Column(name = "mp3_128")
+    @JsonIgnore
     private String mp3128;
-    
+
     @NotBlank
     @Column(name = "mp3_320")
+    @JsonIgnore
     private String mp3320;
 
     /**
@@ -89,31 +105,59 @@ public class TrackEntity {
     }
 
     /**
-     * @return the duration
+     * @return the duration128
      */
-    public int getDuration() {
-        return duration;
+    public int getDuration128() {
+        return duration128;
     }
 
     /**
-     * @param duration the duration to set
+     * @param duration128 the duration128 to set
      */
-    public void setDuration(int duration) {
-        this.duration = duration;
+    public void setDuration128(int duration128) {
+        this.duration128 = duration128;
     }
 
     /**
-     * @return the fileSize
+     * @return the duration320
      */
-    public int getFileSize() {
-        return fileSize;
+    public int getDuration320() {
+        return duration320;
     }
 
     /**
-     * @param fileSize the fileSize to set
+     * @param duration320 the duration320 to set
      */
-    public void setFileSize(int fileSize) {
-        this.fileSize = fileSize;
+    public void setDuration320(int duration320) {
+        this.duration320 = duration320;
+    }
+
+    /**
+     * @return the fileSize128
+     */
+    public int getFileSize128() {
+        return fileSize128;
+    }
+
+    /**
+     * @param fileSize128 the fileSize128 to set
+     */
+    public void setFileSize128(int fileSize128) {
+        this.fileSize128 = fileSize128;
+    }
+
+    /**
+     * @return the fileSize320
+     */
+    public int getFileSize320() {
+        return fileSize320;
+    }
+
+    /**
+     * @param fileSize320 the fileSize320 to set
+     */
+    public void setFileSize320(int fileSize320) {
+        this.fileSize320 = fileSize320;
     }
 
     /**
