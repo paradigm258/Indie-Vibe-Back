@@ -4,8 +4,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.swp493.ivb.features.common.user.UserEntity;
-
 @Entity
 @Table(name = "playlist")
 public class PlaylistEntity {
@@ -17,8 +15,6 @@ public class PlaylistEntity {
     private String description;
 
     private String thumbnail;
-
-    private UserEntity owner;
 
     /**
      * @return the id
@@ -74,19 +70,4 @@ public class PlaylistEntity {
     public void setThumbnail(String thumbnail) {
         this.thumbnail = thumbnail;
     }
-
-    /**
-     * @return the owner
-     */
-    public UserEntity getOwner() {
-        return owner;
-    }
-
-    /**
-     * @param owner the owner to set
-     */
-    public void setOwner(UserEntity owner) {
-        this.owner = owner;
-    }
-
 }
