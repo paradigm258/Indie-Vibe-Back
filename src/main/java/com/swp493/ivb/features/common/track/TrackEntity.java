@@ -11,8 +11,6 @@ import com.swp493.ivb.features.common.user.UserEntity;
 
 @Entity
 @Table(name = "track")
-@SecondaryTable(name = "object_genre",
-    pkJoinColumns = @PrimaryKeyJoinColumn(referencedColumnName = "track_id"))
 @SecondaryTable(name = "user_object",
     pkJoinColumns = @PrimaryKeyJoinColumn(referencedColumnName = "track_id"))
 public class TrackEntity {

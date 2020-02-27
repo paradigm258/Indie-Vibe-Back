@@ -1,5 +1,13 @@
 package com.swp493.ivb.features.common.artist;
 
-public class ArtistEntity {
+import javax.persistence.Entity;
+
+import com.swp493.ivb.features.common.user.UserEntity;
+
+@Entity
+
+public class ArtistEntity extends UserEntity{
+
+
 
 }
