@@ -14,12 +14,14 @@ import java.util.stream.Collectors;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -44,6 +46,9 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 	AuthenticationManager authenticationManager;
 	KeyPair keyPair;
 
+	@Autowired
+	PasswordEncoder encoder;
+
 	public AuthorizationConfiguration(
 		AuthenticationConfiguration authenticationConfiguration,
 			KeyPair keyPair
@@ -57,22 +62,10 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 			throws Exception {
 		// @formatter:off
 		clients.inMemory()
-			.withClient("reader")
+			.withClient("web")
 				.authorizedGrantTypes("password")
-				.secret("{noop}secret")
-				.scopes("message:read")
-				.accessTokenValiditySeconds(600_000_000)
-				.and()
-			.withClient("writer")
-				.authorizedGrantTypes("password")
-				.secret("{noop}secret")
-				.scopes("message:write")
-				.accessTokenValiditySeconds(600_000_000)
-				.and()
-			.withClient("noscopes")
-				.authorizedGrantTypes("password")
-				.secret("{noop}secret")
-				.scopes("none")
+				.secret(encoder.encode("secret"))
+				.scopes("user")
 				.accessTokenValiditySeconds(600_000_000);
 		// @formatter:on
 	}
@@ -152,7 +145,7 @@ class JwkSetEndpoint {
 		this.keyPair = keyPair;
 	}
 
-	@GetMapping("/.well-known/jwks.json")
+	@GetMapping("/oauth/jwks.json")
 	@ResponseBody
 	public Map<String, Object> getKey() {
 		RSAPublicKey publicKey = (RSAPublicKey) this.keyPair.getPublic();

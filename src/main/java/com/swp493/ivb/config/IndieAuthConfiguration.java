@@ -51,7 +51,7 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/admin/**").hasAnyAuthority("admin")
             .anyRequest().permitAll()
             .and().oauth2Login().successHandler(successHandler)
-            .and().formLogin().defaultSuccessUrl("/getUser")
+            .and().formLogin().defaultSuccessUrl("/introspect")
             .and().httpBasic()
             .and().oauth2ResourceServer().jwt()
             .decoder(NimbusJwtDecoder.withPublicKey((RSAPublicKey)keyConfig.keyPair().getPublic()).build());
