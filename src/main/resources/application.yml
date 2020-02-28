@@ -1,22 +1,16 @@
 spring:
     datasource:
         platform: mysql
-        url: jdbc:mysql://localhost:3306/vibase
+        url: jdbc:mysql://localhost:3306/ivbase
         username: root
         password: 1234
         driverClassName: com.mysql.cj.jdbc.Driver
-    jpa:
-        hibernate: 
-            naming:
-                physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-                implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
     security:
         oauth2:
             client:
                 registration: 
                     facebook:
                         clientId: 591447728362435
-                        clientSecret: a8fc749d01bb516304c33afbdf48551b  
-                    
+                        clientSecret: a8fc749d01bb516304c33afbdf48551b
 server:
   forward-headers-strategy: framework
