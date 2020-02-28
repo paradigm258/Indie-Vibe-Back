@@ -1,5 +1,6 @@
 package com.swp493.ivb.features.common.user;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,12 +10,12 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 @Entity
-@Table(name = "User")
+@Table(name = "user")
 public class UserEntity{
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private String id;
     
     @NotBlank
     @Email
@@ -27,6 +28,7 @@ public class UserEntity{
     private String displayName;
 
     @NotBlank
+    @Column(name = "role_id")
     private String role;
 
     private String fbId;
@@ -36,7 +38,7 @@ public class UserEntity{
     /**
      * @return the id
      */
-    public long getId() {
+    public String getId() {
         return id;
     }
     /**
@@ -66,7 +68,7 @@ public class UserEntity{
     /**
      * @param id the id to set
      */
-    public void setId(long id) {
+    public void setId(String id) {
         this.id = id;
     }
     /**
