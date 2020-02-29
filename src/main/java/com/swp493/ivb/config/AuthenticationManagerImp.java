@@ -39,6 +39,6 @@ public class AuthenticationManagerImp implements AuthenticationManager{
         if (!user.isEnabled()) {
             throw new DisabledException("1001");
         }
-        return new UsernamePasswordAuthenticationToken(user.getUsername(), null,user.getAuthorities() );
+        return new UsernamePasswordAuthenticationToken(user,null,user.getAuthorities() );
     }
 }

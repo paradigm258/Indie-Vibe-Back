@@ -3,10 +3,13 @@ package com.swp493.ivb.config;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
@@ -46,15 +49,19 @@ public class AuthenticationController {
         UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(username, password);
         try{
             Authentication authentication = manager.authenticate(principal);
-            IndieUserPrinciple user = (IndieUserPrinciple)authentication.getPrincipal();
+            IndieUserPrincipal user = (IndieUserPrincipal)authentication.getPrincipal();
             DefaultTokenServices service = new DefaultTokenServices();
             service.setTokenStore(tokenStore);
             OAuth2Request request = new OAuth2Request(null, user.getUser().getId(), null, true, null, null, null, null, null);
             OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
             accessToken = service.createAccessToken(oAuth2Authentication);
             accessToken = accessTokenConverter.enhance(accessToken, oAuth2Authentication);
-        }catch(Exception e){
+        }catch(AuthenticationException e){
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Bad credentials");
+        }catch(Exception e){
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         
         return ResponseEntity.ok().body(accessToken);

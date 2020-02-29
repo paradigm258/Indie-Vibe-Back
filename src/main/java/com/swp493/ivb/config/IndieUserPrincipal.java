@@ -12,7 +12,7 @@ import com.swp493.ivb.features.common.user.UserEntity;
 /**
  * IndieUserPrinciple
  */
-public class IndieUserPrinciple implements UserDetails {
+public class IndieUserPrincipal implements UserDetails {
 
     /**
      *
@@ -20,7 +20,7 @@ public class IndieUserPrinciple implements UserDetails {
     private static final long serialVersionUID = 1L;
     private UserEntity user;
 
-    public IndieUserPrinciple(UserEntity user) {
+    public IndieUserPrincipal(UserEntity user) {
         super();
         this.user = user;
     }
