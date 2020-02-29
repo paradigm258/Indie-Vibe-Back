@@ -36,9 +36,6 @@ public class AuthenticationController {
     JwtAccessTokenConverter accessTokenConverter;
 
     @Autowired
-    SubjectAttributeUserTokenConverter subjectAttributeUserTokenConverter;
-
-    @Autowired
     AuthenticationManager manager;
 
     @GetMapping(value = "/me")
@@ -67,13 +64,12 @@ public class AuthenticationController {
 
     @RequestMapping(value = "/loginFb")
     public ResponseEntity<?> loginFb(HttpServletRequest request) {
-        OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) request.getAttribute("authentication");
+        OAuth2Authentication authentication = (OAuth2Authentication) request.getAttribute("authentication");
         if (authentication != null) {
-            Map <String,?>res = subjectAttributeUserTokenConverter.convertUserAuthentication(authentication);
             DefaultTokenServices service = new DefaultTokenServices();
             service.setTokenStore(tokenStore);
-            OAuth2Authentication auth2Authentication = 
             OAuth2AccessToken accessToken = service.createAccessToken(authentication);
+            accessToken = accessTokenConverter.enhance(accessToken, authentication);
         }
         return ResponseEntity.ok().body(null);
     }
