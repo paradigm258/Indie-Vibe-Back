@@ -1,10 +1,5 @@
 package com.swp493.ivb.config;
 
-import java.util.List;
-
-import com.swp493.ivb.features.common.user.UserEntity;
-import com.swp493.ivb.features.common.user.UserRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;

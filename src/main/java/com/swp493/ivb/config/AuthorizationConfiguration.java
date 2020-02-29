@@ -63,7 +63,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 				.authorizedGrantTypes("password")
 				.secret(encoder.encode("secret"))
 				.scopes("user")
-				.accessTokenValiditySeconds(600_000_000);
+				.accessTokenValiditySeconds(600);
 		// @formatter:on
 	}
 
@@ -184,7 +184,6 @@ class KeyConfig {
  * <a target="_blank" href="https://tools.ietf.org/html/rfc7519">JWT
  * Specification</a>.
  */
-@Component
 class SubjectAttributeUserTokenConverter extends DefaultUserAuthenticationConverter {
 	@Override
 	public Map<String, ?> convertUserAuthentication(Authentication authentication) {

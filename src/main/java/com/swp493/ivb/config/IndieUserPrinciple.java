@@ -34,7 +34,6 @@ public class IndieUserPrinciple implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        
         return Collections.singleton(new SimpleGrantedAuthority(user.getRole()));
     }
 
@@ -68,5 +67,4 @@ public class IndieUserPrinciple implements UserDetails {
         return true;
     }
 
-    
 }
