@@ -7,11 +7,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class DTOArtistFull {
-
-    private String id;
-
-    private String displayName;
+public class DTOArtistFull extends DTOArtistSimple {
 
     private String biography;
 

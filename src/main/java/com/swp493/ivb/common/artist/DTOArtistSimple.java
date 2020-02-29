@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class DTOArtistSimple {
 
-    private String id;
+    protected String id;
 
-    private String displayName;
+    protected String displayName;
 }
