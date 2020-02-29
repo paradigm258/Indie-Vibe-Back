@@ -7,6 +7,12 @@ spring:
         driverClassName: com.mysql.cj.jdbc.Driver
     security:
         oauth2:
+            client:
+                registration:
+                    facebook:
+                        client-id: 591447728362435
+                        client-secret: a8fc749d01bb516304c33afbdf48551b
+                        client-authentication-method: basic
             resourceserver:
                 indie:
                     introspection-uri: http://localhost:8080/introspect
