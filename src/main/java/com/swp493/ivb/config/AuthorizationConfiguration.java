@@ -27,7 +27,6 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.endpoint.FrameworkEndpoint;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
@@ -49,24 +48,21 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 	@Autowired
 	PasswordEncoder encoder;
 
-	public AuthorizationConfiguration(
-		AuthenticationConfiguration authenticationConfiguration,
-			KeyPair keyPair
-	) throws Exception{
+	public AuthorizationConfiguration(AuthenticationConfiguration authenticationConfiguration,KeyPair keyPair)
+			throws Exception {
 		this.authenticationManager = authenticationConfiguration.getAuthenticationManager();
 		this.keyPair = keyPair;
 	}
 
 	@Override
-	public void configure(ClientDetailsServiceConfigurer clients)
-			throws Exception {
+	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		// @formatter:off
 		clients.inMemory()
 			.withClient("web")
 				.authorizedGrantTypes("password")
 				.secret(encoder.encode("secret"))
 				.scopes("user")
-				.accessTokenValiditySeconds(600_000_000);
+				.accessTokenValiditySeconds(600);
 		// @formatter:on
 	}
 
@@ -81,7 +77,12 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 	}
 
 	@Bean
-	public TokenStore TokenStore(){
+	AuthenticationManager AuthenticationManager(){
+		return authenticationManager;
+	}
+
+	@Bean
+	public TokenStore TokenStore() {
 		return new JwtTokenStore(accessTokenConverter());
 	}
 
@@ -120,22 +121,21 @@ class IntrospectEndpoint {
 			return attributes;
 		}
 
-		OAuth2Authentication authentication = this.tokenStore.readAuthentication(token);
-
 		attributes.put("active", true);
 		attributes.put("exp", accessToken.getExpiration().getTime());
 		attributes.put("scope", accessToken.getScope().stream().collect(Collectors.joining(" ")));
-		attributes.put("sub", authentication.getName());
-
+		attributes.putAll(accessToken.getAdditionalInformation());
 		return attributes;
 	}
 }
 
 /**
- * Legacy Authorization Server (spring-security-oauth2) does not support any
- * <a href target="_blank" href="https://tools.ietf.org/html/rfc7517#section-5">JWK Set</a> endpoint.
+ * Legacy Authorization Server (spring-security-oauth2) does not support any <a
+ * href target="_blank" href="https://tools.ietf.org/html/rfc7517#section-5">JWK
+ * Set</a> endpoint.
  *
- * This class adds ad-hoc support in order to better support the other samples in the repo.
+ * This class adds ad-hoc support in order to better support the other samples
+ * in the repo.
  */
 @FrameworkEndpoint
 class JwkSetEndpoint {
@@ -155,8 +155,8 @@ class JwkSetEndpoint {
 }
 
 /**
- * An Authorization Server will more typically have a key rotation strategy, and the keys will not
- * be hard-coded into the application code.
+ * An Authorization Server will more typically have a key rotation strategy, and
+ * the keys will not be hard-coded into the application code.
  *
  * For simplicity, though, this sample doesn't demonstrate key rotation.
  */
@@ -170,20 +170,23 @@ class KeyConfig {
 			String exponent = "65537";
 
 			RSAPublicKeySpec publicSpec = new RSAPublicKeySpec(new BigInteger(modulus), new BigInteger(exponent));
-			RSAPrivateKeySpec privateSpec = new RSAPrivateKeySpec(new BigInteger(modulus), new BigInteger(privateExponent));
+			RSAPrivateKeySpec privateSpec = new RSAPrivateKeySpec(new BigInteger(modulus),
+					new BigInteger(privateExponent));
 			KeyFactory factory = KeyFactory.getInstance("RSA");
 			return new KeyPair(factory.generatePublic(publicSpec), factory.generatePrivate(privateSpec));
-		} catch ( Exception e ) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
 	}
 }
 
 /**
- * Legacy Authorization Server does not support a custom name for the user parameter, so we'll need
- * to extend the default. By default, it uses the attribute {@code user_name}, though it would be
- * better to adhere to the {@code sub} property defined in the
- * <a target="_blank" href="https://tools.ietf.org/html/rfc7519">JWT Specification</a>.
+ * Legacy Authorization Server does not support a custom name for the user
+ * parameter, so we'll need to extend the default. By default, it uses the
+ * attribute {@code user_name}, though it would be better to adhere to the
+ * {@code sub} property defined in the
+ * <a target="_blank" href="https://tools.ietf.org/html/rfc7519">JWT
+ * Specification</a>.
  */
 class SubjectAttributeUserTokenConverter extends DefaultUserAuthenticationConverter {
 	@Override
@@ -194,5 +197,5 @@ class SubjectAttributeUserTokenConverter extends DefaultUserAuthenticationConver
 			response.put(AUTHORITIES, AuthorityUtils.authorityListToSet(authentication.getAuthorities()));
 		}
 		return response;
-    }
+	}
 }
