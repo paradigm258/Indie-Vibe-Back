@@ -2,7 +2,7 @@ package com.swp493.ivb.common.release;
 
 import java.sql.Date;
 
-import com.swp493.ivb.common.artist.DTOArtistFull;
+import com.swp493.ivb.common.artist.DTOArtistSimple;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,5 +23,5 @@ public class DTOReleaseSimple {
 
     private String status;
 
-    private DTOArtistFull artist;
+    private DTOArtistSimple artist;
 }
