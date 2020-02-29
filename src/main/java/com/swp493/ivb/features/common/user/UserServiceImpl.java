@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
  * IndieUserService
  */
 @Service
-public class UserServiceImpl {
+public class UserServiceImpl implements UserService {
 
     @Autowired
     UserRepository userRepository;
@@ -30,5 +30,10 @@ public class UserServiceImpl {
         user.setRole("user");
         
         userRepository.save(user);
+    }
+
+    @Override
+    public int countFollowers(String userId) {
+        return userRepository.countFollowers(userId);
     }
 }
