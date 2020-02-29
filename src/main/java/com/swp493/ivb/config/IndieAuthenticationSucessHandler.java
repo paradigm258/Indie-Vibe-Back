@@ -34,12 +34,9 @@ public class IndieAuthenticationSucessHandler implements AuthenticationSuccessHa
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         try {
             UserDetails user = userDetailsService.loadUserByFbId(oAuth2User.getName());
-            OAuth2Request req = new OAuth2Request(null, "user", user.getAuthorities(), true, null, null, null, null,
-                    null);
             Authentication principal = new UsernamePasswordAuthenticationToken(user, null);
-            OAuth2Authentication auth2 = new OAuth2Authentication(req, principal);
             ServletRequest res = (ServletRequest) request;
-            res.setAttribute("authentication", auth2);
+            res.setAttribute("authentication", principal);
             request.getRequestDispatcher("/loginFb").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();

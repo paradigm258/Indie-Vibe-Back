@@ -37,6 +37,8 @@ public class AuthenticationController {
     @Autowired
     AuthenticationManager manager;
 
+    DefaultTokenServices services;
+
     @GetMapping(value = "/me")
     public ResponseEntity<?> me(@RequestParam String tokeString) {
         return ResponseEntity.ok().build();
@@ -44,38 +46,39 @@ public class AuthenticationController {
 
     @PostMapping(value = "/login")
     public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
-        OAuth2AccessToken accessToken = null;
         UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(username, password);
-        try{
+        try {
             Authentication authentication = manager.authenticate(principal);
-            IndieUserPrincipal user = (IndieUserPrincipal)authentication.getPrincipal();
-            DefaultTokenServices service = new DefaultTokenServices();
-            service.setTokenStore(tokenStore);
-            OAuth2Request request = new OAuth2Request(null, user.getUser().getId(), null, true, null, null, null, null, null);
-            OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
-            accessToken = service.createAccessToken(oAuth2Authentication);
-            accessToken = accessTokenConverter.enhance(accessToken, oAuth2Authentication);
-        }catch(AuthenticationException e){
+            return ResponseEntity.ok().body(generateToken(authentication));
+        } catch (AuthenticationException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Bad credentials");
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        
-        return ResponseEntity.ok().body(accessToken);
+
     }
 
     @RequestMapping(value = "/loginFb")
     public ResponseEntity<?> loginFb(HttpServletRequest request) {
-        OAuth2Authentication authentication = (OAuth2Authentication) request.getAttribute("authentication");
+        Authentication authentication = (Authentication) request.getAttribute("authentication");
         if (authentication != null) {
-            DefaultTokenServices service = new DefaultTokenServices();
-            service.setTokenStore(tokenStore);
-            OAuth2AccessToken accessToken = service.createAccessToken(authentication);
-            accessToken = accessTokenConverter.enhance(accessToken, authentication);
+            return ResponseEntity.ok().body(generateToken(authentication));
         }
         return ResponseEntity.ok().body(null);
+    }
+
+    OAuth2AccessToken generateToken(Authentication authentication) {
+        services = new DefaultTokenServices();
+        services.setTokenStore(tokenStore);
+        IndieUserPrincipal user = (IndieUserPrincipal) authentication.getPrincipal();
+        OAuth2Request request = new OAuth2Request(null, user.getUser().getId(), null, true, null, null, null, null,
+                null);
+        OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
+        OAuth2AccessToken accessToken = services.createAccessToken(oAuth2Authentication);
+        accessToken = accessTokenConverter.enhance(accessToken, oAuth2Authentication);
+        return accessToken;
     }
 
 }

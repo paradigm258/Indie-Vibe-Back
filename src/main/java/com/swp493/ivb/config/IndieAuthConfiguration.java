@@ -1,5 +1,7 @@
 package com.swp493.ivb.config;
 
+import java.security.interfaces.RSAPublicKey;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,9 +12,8 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-
 
 @EnableWebSecurity
 @Configuration
@@ -33,30 +34,32 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
         return new JwtAuthenticationFilter();
     }
 
-    @Value("${spring.security.oauth2.resourceserver.indie.introspection-uri}") String introspectionUri;
-	@Value("${spring.security.oauth2.resourceserver.indie.introspection-client-id}") String clientId;
-	@Value("${spring.security.oauth2.resourceserver.indie.introspection-client-secret}") String clientSecret;
+    @Value("${spring.security.oauth2.resourceserver.indie.introspection-uri}")
+    String introspectionUri;
+    @Value("${spring.security.oauth2.resourceserver.indie.introspection-client-id}")
+    String clientId;
+    @Value("${spring.security.oauth2.resourceserver.indie.introspection-client-secret}")
+    String clientSecret;
 
     @Bean
-	public PasswordEncoder PasswordEncoder() {
-		return new BCryptPasswordEncoder();
+    public PasswordEncoder PasswordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+        http
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and().cors()
             .and().csrf().disable()
-            .exceptionHandling().authenticationEntryPoint(unauthorizedHandler)
+            .exceptionHandling()
+            .authenticationEntryPoint(unauthorizedHandler)
             .and().authorizeRequests()
-            .antMatchers("/home","/login").permitAll()
+            .antMatchers("/home", "/login").permitAll()
             .antMatchers("/admin/**").hasAnyAuthority("admin")
             .anyRequest().authenticated()
             .and().oauth2Login().successHandler(successHandler);
     }
-
-    
-
-    
 
 }
