@@ -71,4 +71,21 @@ public class ControllerTrack {
                 .status(HttpStatus.NOT_FOUND)
                 .body(null);
     }
+
+    @Autowired
+    private ServiceTrack trackService;
+
+    @GetMapping(value = "/v1/tracks/{id}")
+    public ResponseEntity<Payload<DTOTrackFull>> getTrack(
+            @PathVariable(required = true) String id) {
+        Optional<DTOTrackFull> trackOpt = trackService.getTrackById(id);
+
+        return trackOpt.map(track -> ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new Payload<DTOTrackFull>().success(track)))
+        .orElse(ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new Payload<DTOTrackFull>().error("Track not found")));
+    }
 }
