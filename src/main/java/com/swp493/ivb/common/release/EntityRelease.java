@@ -14,6 +14,7 @@ import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.WhereJoinTable;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.swp493.ivb.common.artist.EntityArtist;
 
 import lombok.Getter;
@@ -44,7 +45,7 @@ public class EntityRelease {
     @NotBlank
     private String status;
 
-
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @OneToOne(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_object", 

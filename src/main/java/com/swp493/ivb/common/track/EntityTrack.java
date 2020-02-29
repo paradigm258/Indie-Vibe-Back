@@ -15,6 +15,7 @@ import javax.validation.constraints.NotBlank;
 
 import org.hibernate.annotations.WhereJoinTable;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.release.EntityRelease;
 
@@ -74,6 +75,7 @@ public class EntityTrack {
     @Column(name = "mp3_320")
     private String mp3320;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
     @OneToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_object", 
@@ -82,6 +84,7 @@ public class EntityTrack {
     @WhereJoinTable(clause = "action='own'")
     private List<EntityArtist> artists;
 
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "release_id")
     private EntityRelease release;
