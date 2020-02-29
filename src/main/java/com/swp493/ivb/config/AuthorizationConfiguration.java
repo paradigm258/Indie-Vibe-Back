@@ -77,6 +77,11 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 	}
 
 	@Bean
+	AuthenticationManager AuthenticationManager(){
+		return authenticationManager;
+	}
+
+	@Bean
 	public TokenStore TokenStore() {
 		return new JwtTokenStore(accessTokenConverter());
 	}
