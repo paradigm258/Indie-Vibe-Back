@@ -2,6 +2,8 @@ package com.swp493.ivb.config;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.swp493.ivb.features.common.user.UserEntity;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,8 +44,10 @@ public class AuthenticationController {
     DefaultTokenServices services;
 
     @GetMapping(value = "/me")
-    public ResponseEntity<?> me(@RequestParam String tokeString) {
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> me(Authentication authentication) {
+        IndieUserPrincipal principal = (IndieUserPrincipal)authentication.getPrincipal();
+        UserEntity user = principal.getUser();
+        return ResponseEntity.ok().body(user);
     }
 
     @PostMapping(value = "/login")
@@ -51,7 +55,6 @@ public class AuthenticationController {
         UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(username, password);
         try {
             Authentication authentication = manager.authenticate(principal);
-            
             return TokenResponse(authentication);
         } catch (AuthenticationException e) {
             e.printStackTrace();
