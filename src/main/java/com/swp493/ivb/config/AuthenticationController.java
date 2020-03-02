@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
+@CrossOrigin
 public class AuthenticationController {
 
     @Autowired
@@ -49,7 +51,8 @@ public class AuthenticationController {
         UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(username, password);
         try {
             Authentication authentication = manager.authenticate(principal);
-            return ResponseEntity.ok().body(generateToken(authentication));
+            
+            return TokenResponse(authentication);
         } catch (AuthenticationException e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Bad credentials");
@@ -64,12 +67,12 @@ public class AuthenticationController {
     public ResponseEntity<?> loginFb(HttpServletRequest request) {
         Authentication authentication = (Authentication) request.getAttribute("authentication");
         if (authentication != null) {
-            return ResponseEntity.ok().body(generateToken(authentication));
+            return TokenResponse(authentication);
         }
         return ResponseEntity.ok().body(null);
     }
 
-    OAuth2AccessToken generateToken(Authentication authentication) {
+    private ResponseEntity<?> TokenResponse(Authentication authentication) {
         services = new DefaultTokenServices();
         services.setTokenStore(tokenStore);
         IndieUserPrincipal user = (IndieUserPrincipal) authentication.getPrincipal();
@@ -78,7 +81,7 @@ public class AuthenticationController {
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
         OAuth2AccessToken accessToken = services.createAccessToken(oAuth2Authentication);
         accessToken = accessTokenConverter.enhance(accessToken, oAuth2Authentication);
-        return accessToken;
+        return ResponseEntity.ok().body(accessToken);
     }
 
 }

@@ -14,8 +14,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.provider.OAuth2Authentication;
-import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +38,7 @@ public class IndieAuthenticationSucessHandler implements AuthenticationSuccessHa
             request.getRequestDispatcher("/loginFb").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendError(403);
         }
     }
 }
