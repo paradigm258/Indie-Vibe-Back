@@ -18,5 +18,6 @@ spring:
                     introspection-uri: http://localhost:8080/introspect
                     introspection-client-id: client
                     introspection-client-secret: secret
+    jpa:        show-sql: true
 server:
   forward-headers-strategy: framework

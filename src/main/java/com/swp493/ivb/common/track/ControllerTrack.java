@@ -28,12 +28,21 @@ public class ControllerTrack {
     private static final Logger log = LoggerFactory.getLogger(ControllerTrack.class);
 
     @Autowired
-    RepositoryTrack repo;
+    private ServiceTrack trackService;
 
     @GetMapping(value = "/tracks/{id}")
     @CrossOrigin(origins = "*")
-    Payload<EntityTrack> tracks(@PathVariable String id) {
-        return new Payload<EntityTrack>().success(repo.findTrackById(id));
+    public ResponseEntity<Payload<DTOTrackFull>> getTrack(
+            @PathVariable(required = true) String id) {
+        Optional<DTOTrackFull> trackOpt = trackService.getTrackById(id);
+
+        return trackOpt.map(track -> ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new Payload<DTOTrackFull>().success(track)))
+        .orElse(ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new Payload<DTOTrackFull>().error("Track not found")));
     }
 
     @GetMapping(value = "/tracks/stream/{id}")
@@ -41,11 +50,11 @@ public class ControllerTrack {
     ResponseEntity<ResourceRegion> stream(
             @PathVariable String id, 
             @RequestHeader(HttpHeaders.RANGE) Optional<String> range) {
-        EntityTrack entity = repo.findTrackById(id);
+        DTOTrackStream track = trackService.getTrackStreamById(id).get();
 
         // demo for streaming 128kbps mp3 file
-        String url = entity.getMp3128();
-        int fileSize = entity.getFileSize128();
+        String url = track.getMp3128();
+        int fileSize = track.getFileSize128();
 
         log.debug(range.get());
         HttpRange httpRange = range
@@ -70,22 +79,5 @@ public class ControllerTrack {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(null);
-    }
-
-    @Autowired
-    private ServiceTrack trackService;
-
-    @GetMapping(value = "/v1/tracks/{id}")
-    public ResponseEntity<Payload<DTOTrackFull>> getTrack(
-            @PathVariable(required = true) String id) {
-        Optional<DTOTrackFull> trackOpt = trackService.getTrackById(id);
-
-        return trackOpt.map(track -> ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new Payload<DTOTrackFull>().success(track)))
-        .orElse(ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new Payload<DTOTrackFull>().error("Track not found")));
     }
 }

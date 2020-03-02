@@ -15,13 +15,17 @@ public class ServiceTrackImpl implements ServiceTrack {
     @Override
     public Optional<DTOTrackFull> getTrackById(String id) {
         Optional<EntityTrack> trackEntity = trackRepo.findById(id);
-        DTOTrackFull dtoTrackFull = new DTOTrackFull();
 
-        trackEntity.ifPresent(track -> {
+        return trackEntity.map(track -> {
             ModelMapper mapper = new ModelMapper();
-            mapper.map(track, dtoTrackFull);
+            return mapper.map(track, DTOTrackFull.class);
         });
+    }
 
-        return Optional.of(dtoTrackFull);
+    @Override
+    public Optional<DTOTrackStream> getTrackStreamById(String id) {
+        Optional<EntityTrack> trackEntity = trackRepo.findById(id);
+
+        return trackEntity.map(track -> new ModelMapper().map(track, DTOTrackStream.class));
     }
 }
