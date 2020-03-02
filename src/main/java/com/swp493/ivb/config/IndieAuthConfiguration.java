@@ -48,8 +48,8 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .authenticationEntryPoint(unauthorizedHandler)
             .and().authorizeRequests()
             .antMatchers("/home", "/login").permitAll()
-            .antMatchers("/admin/**").hasAnyAuthority("admin")
-            .anyRequest().authenticated()
+            .antMatchers("/admin/**").hasAuthority("r-admin")
+            .anyRequest().fullyAuthenticated()
             .and().oauth2Login().successHandler(successHandler);
     }
 

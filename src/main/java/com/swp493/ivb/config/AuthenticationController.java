@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -44,15 +45,13 @@ public class AuthenticationController {
     DefaultTokenServices services;
 
     @GetMapping(value = "/me")
-    public ResponseEntity<?> me(Authentication authentication) {
-        IndieUserPrincipal principal = (IndieUserPrincipal)authentication.getPrincipal();
-        UserEntity user = principal.getUser();
+    public ResponseEntity<?> me(@RequestAttribute UserEntity user) {
         return ResponseEntity.ok().body(user);
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
-        UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(username, password);
+    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
+        UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(email, password);
         try {
             Authentication authentication = manager.authenticate(principal);
             return TokenResponse(authentication);
@@ -75,7 +74,9 @@ public class AuthenticationController {
         return ResponseEntity.ok().body(null);
     }
 
+    
     private ResponseEntity<?> TokenResponse(Authentication authentication) {
+        
         services = new DefaultTokenServices();
         services.setTokenStore(tokenStore);
         IndieUserPrincipal user = (IndieUserPrincipal) authentication.getPrincipal();
