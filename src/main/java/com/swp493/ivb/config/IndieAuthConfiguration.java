@@ -1,9 +1,8 @@
 package com.swp493.ivb.config;
 
-import java.security.interfaces.RSAPublicKey;
+import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,8 +11,10 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @EnableWebSecurity
 @Configuration
@@ -21,25 +22,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    KeyConfig keyConfig;
-
-    @Autowired
     private JwtAuthenticationEntryPoint unauthorizedHandler;
 
     @Autowired
-    IndieAuthenticationSucessHandler successHandler;
+    private IndieAuthenticationSucessHandler successHandler;
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
     }
-
-    @Value("${spring.security.oauth2.resourceserver.indie.introspection-uri}")
-    String introspectionUri;
-    @Value("${spring.security.oauth2.resourceserver.indie.introspection-client-id}")
-    String clientId;
-    @Value("${spring.security.oauth2.resourceserver.indie.introspection-client-secret}")
-    String clientSecret;
 
     @Bean
     public PasswordEncoder PasswordEncoder() {
@@ -60,6 +51,18 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/admin/**").hasAnyAuthority("admin")
             .anyRequest().authenticated()
             .and().oauth2Login().successHandler(successHandler);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "Upgrade-Insecure-Requests"));
+        configuration.setExposedHeaders(Arrays.asList("x-auth-token"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 }
