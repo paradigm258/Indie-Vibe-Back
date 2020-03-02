@@ -1,21 +1,26 @@
 package com.swp493.ivb.common.release;
 
 import java.sql.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.WhereJoinTable;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.swp493.ivb.common.artist.EntityArtist;
+import com.swp493.ivb.common.track.EntityTrack;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,6 +35,8 @@ public class EntityRelease {
 
     @Id
     @NotBlank
+    @GenericGenerator(name = "indie-id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
+    @GeneratedValue(generator = "indie-id")
     private String id;
 
     @NotBlank
@@ -45,7 +52,7 @@ public class EntityRelease {
     @NotBlank
     private String status;
 
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
     @OneToOne(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_object", 
@@ -53,4 +60,7 @@ public class EntityRelease {
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     @WhereJoinTable(clause = "action='own'")
     private EntityArtist artist;
+    
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "release")
+    private List<EntityTrack> tracks;
 }

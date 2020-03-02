@@ -1,5 +1,8 @@
 package com.swp493.ivb.common.release;
 
-public class ServiceReleaseImpl {
+import org.springframework.stereotype.Service;
+
+@Service
+public class ServiceReleaseImpl implements ServiceRelease {
 
 }

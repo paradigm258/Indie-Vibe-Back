@@ -5,19 +5,16 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
-import org.hibernate.annotations.Where;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Table(name = "master_data")
-@Where(clause = "type = 'genre'")
 @NoArgsConstructor
 @Getter
 @Setter
-public class EntityGenre {
+public class EntityMasterData {
 
     @Id
     @NotBlank
@@ -26,7 +23,12 @@ public class EntityGenre {
     @NotBlank
     private String name;
 
-    private String thumbnail;
+    @NotBlank
+    private String type;
 
+    @NotBlank
     private String description;
+
+    @NotBlank
+    private String thumbnail;
 }
