@@ -19,6 +19,6 @@ public class IndieIdentifierGenerator implements IdentifierGenerator {
         for (int i = 0; i < idLength; i++) {
             result.append(letters.charAt(random.nextInt(letters.length())));
         }
-        return result;
+        return result.toString();
     }
 }

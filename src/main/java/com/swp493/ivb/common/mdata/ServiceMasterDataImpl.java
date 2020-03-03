@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.mdata;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
@@ -35,5 +36,15 @@ public class ServiceMasterDataImpl implements ServiceMasterData {
                 .collect(Collectors.toList());
 
         return genreList;
+    }
+
+    @Override
+    public Optional<EntityMasterData> getReleaseTypeById(String releaseId) {
+        return masterDataRepo.findByIdAndType(releaseId, "release");
+    }
+
+    @Override
+    public Optional<EntityMasterData> getGenreById(String genreId) {
+        return masterDataRepo.findByIdAndType(genreId, "genre");
     }
 }

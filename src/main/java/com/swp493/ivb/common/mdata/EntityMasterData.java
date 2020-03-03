@@ -31,4 +31,11 @@ public class EntityMasterData {
 
     @NotBlank
     private String thumbnail;
+
+    @Override
+    public boolean equals(Object obj) {
+        EntityMasterData data = (EntityMasterData) obj;
+        return (id.equals(data.getId()) &&
+                type.equals(data.getType()));
+    }
 }
