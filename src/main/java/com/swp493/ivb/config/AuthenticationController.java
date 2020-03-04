@@ -87,6 +87,7 @@ public class AuthenticationController {
         OAuth2Request request = new OAuth2Request(null, user.getUser().getId(), user.getAuthorities(), true, null, null, null, null,
                 null);
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
+        oAuth2Authentication.setDetails(user);
         OAuth2AccessToken accessToken = services.createAccessToken(oAuth2Authentication);
         return ResponseEntity.ok().body(accessToken);
     }

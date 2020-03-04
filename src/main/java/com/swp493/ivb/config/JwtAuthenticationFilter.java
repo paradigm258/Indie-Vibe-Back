@@ -15,7 +15,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.util.StringUtils;
@@ -38,14 +40,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             if (!StringUtils.isEmpty(jwt)) {
                 OAuth2AccessToken accessToken = tokenStore.readAccessToken(jwt);
-
+                OAuth2Authentication authentication = tokenStore.readAuthentication(jwt);
                 if (accessToken != null && !accessToken.isExpired()) {
-                    String email = (String) accessToken.getAdditionalInformation().get("sub");
-
-                    IndieUserPrincipal userDetails = (IndieUserPrincipal)customUserDetailsService.loadUserByUsername(email);
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    IndieUserPrincipal userDetails = (IndieUserPrincipal)authentication.getDetails();
+                    UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    userAuth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     ((ServletRequest)request).setAttribute("user", userDetails.getUser());
                 }
