@@ -17,21 +17,21 @@ import lombok.Setter;
 public class DTORegisterForm {
 
     @NotBlank
-    @Email
+    @Email(message = "Email")
     private String email;
 
     @NotBlank
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$",message = "Password")
     private String password;
 
     @NotBlank
     private String cfPassword;
 
-    @Min(0)
-    @Max(2)
+    @Min(value = 0,message = "Gender")
+    @Max(value = 2,message = "Gender")
     private int gender;
     
-    @NotBlank
+    @NotBlank(message = "Display name")
     private String displayName;
 
 }

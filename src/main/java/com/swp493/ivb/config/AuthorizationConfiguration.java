@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
+import com.swp493.ivb.features.common.user.UserEntity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -27,8 +28,10 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.endpoint.FrameworkEndpoint;
 import org.springframework.security.oauth2.provider.token.DefaultAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticationConverter;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
@@ -82,6 +85,16 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 	}
 
 	@Bean
+	DefaultTokenServices DefaultTokenServices(){
+		DefaultTokenServices services= new DefaultTokenServices();
+		services.setAccessTokenValiditySeconds(600);
+		services.setAuthenticationManager(authenticationManager);
+		services.setTokenStore(TokenStore());
+		services.setTokenEnhancer(accessTokenConverter());
+		return services;
+	}
+
+	@Bean
 	public TokenStore TokenStore() {
 		return new InMemoryTokenStore();
 	}
@@ -115,16 +128,17 @@ class IntrospectEndpoint {
 	@ResponseBody
 	public Map<String, Object> introspect(@RequestParam("token") String token) {
 		OAuth2AccessToken accessToken = this.tokenStore.readAccessToken(token);
+		OAuth2Authentication authentication = tokenStore.readAuthentication(token);
 		Map<String, Object> attributes = new HashMap<>();
 		if (accessToken == null || accessToken.isExpired()) {
 			attributes.put("active", false);
 			return attributes;
 		}
-
 		attributes.put("active", true);
+
 		attributes.put("exp", accessToken.getExpiration().getTime());
 		attributes.put("scope", accessToken.getScope().stream().collect(Collectors.joining(" ")));
-		attributes.putAll(accessToken.getAdditionalInformation());
+		attributes.put("details",authentication.getName());
 		return attributes;
 	}
 }
@@ -193,6 +207,9 @@ class SubjectAttributeUserTokenConverter extends DefaultUserAuthenticationConver
 	public Map<String, ?> convertUserAuthentication(Authentication authentication) {
 		Map<String, Object> response = new LinkedHashMap<>();
 		response.put("sub", authentication.getName());
+		IndieUserPrincipal userPrincipal = (IndieUserPrincipal)authentication.getPrincipal();
+		UserEntity user = userPrincipal.getUser();
+		response.put("user",user.getId());
 		if (authentication.getAuthorities() != null && !authentication.getAuthorities().isEmpty()) {
 			response.put(AUTHORITIES, AuthorityUtils.authorityListToSet(authentication.getAuthorities()));
 		}

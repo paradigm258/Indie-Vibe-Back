@@ -21,14 +21,13 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,14 +44,12 @@ public class AuthenticationController {
     TokenStore tokenStore;
 
     @Autowired
-    JwtAccessTokenConverter accessTokenConverter;
-
-    @Autowired
     AuthenticationManager manager;
 
     @Autowired
     UserService userService;
 
+    @Autowired
     DefaultTokenServices services;
 
     @GetMapping(value = "/me")
@@ -86,21 +83,16 @@ public class AuthenticationController {
     }
 
     private ResponseEntity<?> TokenResponse(Authentication authentication) {
-
-        services = new DefaultTokenServices();
-        services.setTokenStore(tokenStore);
         IndieUserPrincipal user = (IndieUserPrincipal) authentication.getPrincipal();
-        OAuth2Request request = new OAuth2Request(null, user.getUser().getId(), null, true, null, null, null, null,
+        OAuth2Request request = new OAuth2Request(null, user.getUser().getId(), user.getAuthorities(), true, null, null, null, null,
                 null);
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
         OAuth2AccessToken accessToken = services.createAccessToken(oAuth2Authentication);
-        // accessToken = accessTokenConverter.enhance(accessToken,
-        // oAuth2Authentication);
         return ResponseEntity.ok().body(accessToken);
     }
 
     @PostMapping(value = "/register")
-    public ResponseEntity<?> register(@RequestBody @Valid DTORegisterForm registerForm, BindingResult result) {
+    public ResponseEntity<?> register(@Valid DTORegisterForm registerForm, BindingResult result) {
         if(result.hasErrors()){
             FieldError error = result.getFieldError();
             return messageResponse(HttpStatus.BAD_REQUEST, "failed", error.getDefaultMessage()+" is invalid");
@@ -121,9 +113,10 @@ public class AuthenticationController {
         
     }
 
-    @RequestMapping(value = "/logout")
-    public ResponseEntity<?> logout(@RequestParam("token") String tokenValue) {
+    @PostMapping(value = "/logout")
+    public ResponseEntity<?> logout(@RequestHeader(value = "Authorization")String bearerToken) {
         try {
+            String tokenValue = bearerToken.substring(7, bearerToken.length());
             OAuth2AccessToken token = tokenStore.readAccessToken(tokenValue);
             if (token != null){
                 tokenStore.removeAccessToken(token);
