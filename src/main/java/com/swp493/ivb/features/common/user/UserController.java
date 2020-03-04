@@ -1,22 +1,16 @@
 package com.swp493.ivb.features.common.user;
 
-import java.util.Map;
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.core.DefaultOAuth2AuthenticatedPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class UserController {
-    @GetMapping("oauth/me")
-    ResponseEntity<Map<String,Object>> me(Authentication authentication )
+    @GetMapping("/me/simple")
+    ResponseEntity<?> me(@RequestAttribute(name = "user") UserEntity userEntity)
     {
-        DefaultOAuth2AuthenticatedPrincipal principal = (DefaultOAuth2AuthenticatedPrincipal)authentication.getPrincipal();
-        Map<String,Object> res = principal.getAttributes();
-        
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok(userEntity.getId());
     }
 
 }

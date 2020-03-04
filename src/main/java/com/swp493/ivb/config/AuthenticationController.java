@@ -1,6 +1,7 @@
 package com.swp493.ivb.config;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import com.swp493.ivb.features.common.user.UserEntity;
 
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 /**
  * AuthenticationController
@@ -87,5 +90,13 @@ public class AuthenticationController {
         accessToken = accessTokenConverter.enhance(accessToken, oAuth2Authentication);
         return ResponseEntity.ok().body(accessToken);
     }
+
+    @PostMapping(value="/register")
+    public ResponseEntity<?> register(@RequestBody @Valid DTORegisterForm registerForm) {
+        
+        
+        return ResponseEntity.ok().build();
+    }
+    
 
 }
