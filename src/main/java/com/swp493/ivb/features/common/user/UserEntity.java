@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+
+import com.swp493.ivb.common.mdata.EntityMasterData;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -39,15 +43,11 @@ public class UserEntity {
     @NotBlank
     private String displayName;
 
-    @NotBlank
-    @Column(name = "role_id")
-    private String role;
-
-//    // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi
-//    // dùng cái này get nó ra là nó tự query.
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "role_id")
-//    private EntityMasterData userRole;
+   // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi
+   // dùng cái này get nó ra là nó tự query.
+   @OneToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "role_id")
+   private EntityMasterData userRole;
 
     private String fbId;
 

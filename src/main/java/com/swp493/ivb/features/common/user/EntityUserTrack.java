@@ -22,6 +22,11 @@ import lombok.Setter;
 @Setter
 public class EntityUserTrack implements Serializable {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 908389835504174960L;
+
     @Id
     @ManyToOne
     @JoinColumn(name = "track_id")

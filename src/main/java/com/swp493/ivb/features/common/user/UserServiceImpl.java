@@ -2,6 +2,8 @@ package com.swp493.ivb.features.common.user;
 
 import java.util.Optional;
 
+import com.swp493.ivb.common.mdata.RepositoryMasterData;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,9 @@ public class UserServiceImpl implements UserService {
     UserRepository userRepository;
 
     @Autowired
+    RepositoryMasterData masterDataRepo;
+
+    @Autowired
     PasswordEncoder encoder;
 
     public boolean existsByEmail(String email){
@@ -28,8 +33,7 @@ public class UserServiceImpl implements UserService {
 
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
-
-        user.setRole("user");
+        user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
         
         userRepository.save(user);
     }

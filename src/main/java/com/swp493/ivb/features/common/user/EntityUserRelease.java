@@ -3,14 +3,10 @@ package com.swp493.ivb.features.common.user;
 import java.io.Serializable;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapsId;
 import javax.persistence.Table;
 
 import com.swp493.ivb.common.release.EntityRelease;
@@ -25,6 +21,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EntityUserRelease implements Serializable {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = 8173172019637783469L;
 
     @Id
     @ManyToOne
