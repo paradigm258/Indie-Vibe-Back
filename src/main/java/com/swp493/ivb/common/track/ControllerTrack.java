@@ -56,7 +56,6 @@ public class ControllerTrack {
         String url = track.getMp3128();
         int fileSize = track.getFileSize128();
 
-        log.debug(range.get());
         HttpRange httpRange = range
                 .map(str -> HttpRange.parseRanges(str).get(0))
                 .orElse(HttpRange.createByteRange(0, 160000));

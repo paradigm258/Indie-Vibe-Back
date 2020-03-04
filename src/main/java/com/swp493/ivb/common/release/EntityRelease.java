@@ -20,9 +20,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.WhereJoinTable;
 
-import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.features.common.user.EntityUserRelease;
