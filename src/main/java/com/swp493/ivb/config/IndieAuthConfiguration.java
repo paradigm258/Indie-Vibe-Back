@@ -49,8 +49,7 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .and().authorizeRequests()
             .antMatchers("/home", "/login").permitAll()
             .antMatchers("/admin/**").hasAuthority("r-admin")
-            .anyRequest().fullyAuthenticated()
-            .and().oauth2Login().successHandler(successHandler);
+            .anyRequest().fullyAuthenticated();
     }
 
     @Bean
