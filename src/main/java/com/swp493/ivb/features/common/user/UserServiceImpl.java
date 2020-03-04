@@ -54,7 +54,9 @@ public class UserServiceImpl implements UserService {
 
         return userEntity.map(user -> {
             ModelMapper mapper = new ModelMapper();
-            return mapper.map(user, UserPublicDTO.class);
+            UserPublicDTO result = mapper.map(user, UserPublicDTO.class);
+            result.setFollowersCount(userRepository.countFollowers(id));
+            return result;
         });
     }
 }
