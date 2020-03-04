@@ -18,7 +18,7 @@ public class DTOReleaseInfoUpload {
     @NoArgsConstructor
     @Getter
     @Setter
-    private static class TrackReleaseUpload {
+    public static class TrackReleaseUpload {
         private String title;
         private String[] genres;
         private String producer;

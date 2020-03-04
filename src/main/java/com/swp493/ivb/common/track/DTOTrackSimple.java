@@ -1,8 +1,9 @@
 package com.swp493.ivb.common.track;
 
-import java.util.List;
+import java.util.Set;
 
 import com.swp493.ivb.common.artist.DTOArtistSimple;
+import com.swp493.ivb.common.mdata.EntityMasterData;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -31,5 +32,7 @@ public class DTOTrackSimple {
 
     protected String producer;
 
-    protected List<DTOArtistSimple> artists;
+    protected Set<DTOArtistSimple> artists;
+
+    private Set<EntityMasterData> genres;
 }
