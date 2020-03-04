@@ -7,7 +7,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -30,7 +29,7 @@ import lombok.Setter;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(generator = "indie-id")
     private String id;
 
     @NotBlank
@@ -50,6 +49,14 @@ public class UserEntity {
    @OneToOne(fetch = FetchType.LAZY)
    @JoinColumn(name = "role_id")
    private EntityMasterData userRole;
+
+   @OneToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "country_id")
+   private EntityMasterData userCountry;
+
+   @OneToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "plan_id")
+   private EntityMasterData userPlan;
 
     private String fbId;
 

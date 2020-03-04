@@ -1,5 +1,6 @@
 package com.swp493.ivb.config;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -16,15 +17,21 @@ import lombok.Setter;
 public class DTORegisterForm {
 
     @NotBlank
-    @Pattern(regexp = "")
-    String email;
+    @Email
+    private String email;
+
     @NotBlank
-    @Pattern(regexp = "")
-    String password;
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")
+    private String password;
+
     @NotBlank
-    String cfPassword;
+    private String cfPassword;
+
     @Min(0)
     @Max(2)
-    int gender;
+    private int gender;
     
+    @NotBlank
+    private String displayName;
+
 }

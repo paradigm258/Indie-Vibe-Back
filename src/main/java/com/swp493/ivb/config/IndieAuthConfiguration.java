@@ -24,9 +24,6 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private JwtAuthenticationEntryPoint unauthorizedHandler;
 
-    @Autowired
-    private IndieAuthenticationSucessHandler successHandler;
-
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter() {
         return new JwtAuthenticationFilter();
@@ -47,9 +44,10 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
             .authenticationEntryPoint(unauthorizedHandler)
             .and().authorizeRequests()
-            .antMatchers("/home", "/login").permitAll()
+            .antMatchers("/home", "/login","/introspect","/logout","/register").permitAll()
             .antMatchers("/admin/**").hasAuthority("r-admin")
-            .anyRequest().fullyAuthenticated();
+            .anyRequest().fullyAuthenticated()
+            .and().logout().disable();
     }
 
     @Bean
