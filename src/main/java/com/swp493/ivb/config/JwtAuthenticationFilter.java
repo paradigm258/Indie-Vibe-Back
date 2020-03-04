@@ -42,7 +42,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 OAuth2AccessToken accessToken = tokenStore.readAccessToken(jwt);
                 OAuth2Authentication authentication = tokenStore.readAuthentication(jwt);
                 if (accessToken != null && !accessToken.isExpired()) {
-                    IndieUserPrincipal userDetails = (IndieUserPrincipal)authentication.getDetails();
+                    IndieUserPrincipal userDetails = (IndieUserPrincipal)authentication.getPrincipal();
                     UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     userAuth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
