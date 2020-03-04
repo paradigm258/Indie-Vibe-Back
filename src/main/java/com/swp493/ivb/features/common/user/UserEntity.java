@@ -43,6 +43,8 @@ public class UserEntity {
     @NotBlank
     private String displayName;
 
+    private String thumbnail;
+
    // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi
    // dùng cái này get nó ra là nó tự query.
    @OneToOne(fetch = FetchType.LAZY)

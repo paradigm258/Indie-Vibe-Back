@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,5 +46,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserEntity> getUserForProcessing(String id) {
         return userRepository.findById(id);
+    }
+
+    @Override
+    public Optional<UserPublicDTO> getUserPublic(String id) {
+        Optional<UserEntity> userEntity = userRepository.findById(id);
+
+        return userEntity.map(user -> {
+            ModelMapper mapper = new ModelMapper();
+            return mapper.map(user, UserPublicDTO.class);
+        });
     }
 }
