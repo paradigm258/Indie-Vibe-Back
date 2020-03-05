@@ -6,9 +6,6 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.swp493.ivb.features.common.user.UserEntity;
-import com.swp493.ivb.features.common.user.UserService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +29,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.user.ServiceUser;
+
 /**
  * AuthenticationController
  */
@@ -47,13 +47,13 @@ public class AuthenticationController {
     AuthenticationManager manager;
 
     @Autowired
-    UserService userService;
+    ServiceUser userService;
 
     @Autowired
     DefaultTokenServices services;
 
     @GetMapping(value = "/me")
-    public ResponseEntity<?> me(@RequestAttribute UserEntity user) {
+    public ResponseEntity<?> me(@RequestAttribute EntityUser user) {
         return ResponseEntity.ok().body(user);
     }
 

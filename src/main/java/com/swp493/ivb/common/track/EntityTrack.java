@@ -21,7 +21,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.release.EntityRelease;
-import com.swp493.ivb.features.common.user.EntityUserTrack;
+import com.swp493.ivb.common.user.EntityUserTrack;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

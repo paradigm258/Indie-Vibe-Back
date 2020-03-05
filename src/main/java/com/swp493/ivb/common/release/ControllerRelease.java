@@ -16,8 +16,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
-import com.swp493.ivb.features.common.user.UserEntity;
 
 @RestController
 public class ControllerRelease {
@@ -27,7 +27,7 @@ public class ControllerRelease {
 
     @PostMapping(value = "/releases")
     public ResponseEntity<Payload<String>> uploadNewRelease(
-            @RequestAttribute UserEntity user,
+            @RequestAttribute EntityUser user,
             @RequestParam(name = "info", required = true) String info,
             @RequestParam(name = "thumbnail", required = false) MultipartFile thumbnail,
             @RequestParam(name = "aduioFiles", required = false) MultipartFile[] audioFiles)
@@ -50,7 +50,7 @@ public class ControllerRelease {
     
     @DeleteMapping(value = "/releases/{id}")
     public ResponseEntity<Payload<String>> uploadNewRelease(
-            @RequestAttribute UserEntity user,
+            @RequestAttribute EntityUser user,
             @PathVariable(required = true) String id) {
         
         Optional<String> releaseId = releaseService.deleteRelease(id);

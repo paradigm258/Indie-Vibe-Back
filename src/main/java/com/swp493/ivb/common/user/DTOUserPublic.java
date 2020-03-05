@@ -1,4 +1,4 @@
-package com.swp493.ivb.features.common.user;
+package com.swp493.ivb.common.user;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,7 +7,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserPublicDTO {
+public class DTOUserPublic {
 
     protected String id;
 

@@ -7,7 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.swp493.ivb.features.common.user.UserEntity;
+import com.swp493.ivb.common.user.EntityUser;
 
 /**
  * IndieUserPrinciple
@@ -18,9 +18,9 @@ public class IndieUserPrincipal implements UserDetails {
      *
      */
     private static final long serialVersionUID = 1L;
-    private UserEntity user;
+    private EntityUser user;
 
-    public IndieUserPrincipal(UserEntity user) {
+    public IndieUserPrincipal(EntityUser user) {
         super();
         this.user = user;
     }
@@ -28,7 +28,7 @@ public class IndieUserPrincipal implements UserDetails {
     /**
      * @return the user
      */
-    public UserEntity getUser() {
+    public EntityUser getUser() {
         return user;
     }
 

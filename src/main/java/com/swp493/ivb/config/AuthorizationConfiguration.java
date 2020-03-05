@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
-import com.swp493.ivb.features.common.user.UserEntity;
+import com.swp493.ivb.common.user.EntityUser;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -208,7 +208,7 @@ class SubjectAttributeUserTokenConverter extends DefaultUserAuthenticationConver
 		Map<String, Object> response = new LinkedHashMap<>();
 		response.put("sub", authentication.getName());
 		IndieUserPrincipal userPrincipal = (IndieUserPrincipal)authentication.getPrincipal();
-		UserEntity user = userPrincipal.getUser();
+		EntityUser user = userPrincipal.getUser();
 		response.put("user",user.getId());
 		if (authentication.getAuthorities() != null && !authentication.getAuthorities().isEmpty()) {
 			response.put(AUTHORITIES, AuthorityUtils.authorityListToSet(authentication.getAuthorities()));

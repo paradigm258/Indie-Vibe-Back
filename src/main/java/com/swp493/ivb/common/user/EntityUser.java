@@ -1,4 +1,4 @@
-package com.swp493.ivb.features.common.user;
+package com.swp493.ivb.common.user;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserEntity {
+public class EntityUser {
 
     @Id
     @GeneratedValue(generator = "indie-id")

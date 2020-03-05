@@ -17,10 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.ServiceMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
-import com.swp493.ivb.features.common.user.EntityUserRelease;
-import com.swp493.ivb.features.common.user.EntityUserTrack;
-import com.swp493.ivb.features.common.user.UserEntity;
-import com.swp493.ivb.features.common.user.UserService;
+import com.swp493.ivb.common.user.EntityUserRelease;
+import com.swp493.ivb.common.user.EntityUserTrack;
+import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.user.ServiceUser;
 
 @Service
 public class ServiceReleaseImpl implements ServiceRelease {
@@ -34,7 +34,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
     private ServiceMasterData masterDataService;
 
     @Autowired
-    private UserService userService;
+    private ServiceUser userService;
 
     @Override
     public Optional<String> uploadRelease(String artistId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
@@ -47,7 +47,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         release.setStatus("public");
         release.setReleaseType(masterDataService.getReleaseTypeById(info.getTypeId()).get());
 
-        UserEntity artist = userService.getUserForProcessing(artistId).get();
+        EntityUser artist = userService.getUserForProcessing(artistId).get();
 
         // insert into user_object for release and user
         EntityUserRelease artistRelease = new EntityUserRelease();

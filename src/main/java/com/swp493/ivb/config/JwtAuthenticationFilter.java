@@ -8,8 +8,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swp493.ivb.features.common.user.UserSecurityServiceImpl;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +21,12 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
+
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
-    private UserSecurityServiceImpl customUserDetailsService;
+    private ServiceUserSecurityImpl customUserDetailsService;
 
     @Autowired
     private TokenStore tokenStore;

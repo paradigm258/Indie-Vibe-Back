@@ -1,4 +1,4 @@
-package com.swp493.ivb.features.common.user;
+package com.swp493.ivb.common.user;
 
 import java.util.Optional;
 
@@ -14,10 +14,10 @@ import org.springframework.stereotype.Service;
  * IndieUserService
  */
 @Service
-public class UserServiceImpl implements UserService {
+public class ServiceUserImpl implements ServiceUser {
 
     @Autowired
-    UserRepository userRepository;
+    RepositoryUser userRepository;
 
     @Autowired
     RepositoryMasterData masterDataRepo;
@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.existsByFbId(fbId);
     }
 
-    public void register(UserEntity user) {
+    public void register(EntityUser user) {
 
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
@@ -49,17 +49,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<UserEntity> getUserForProcessing(String id) {
+    public Optional<EntityUser> getUserForProcessing(String id) {
         return userRepository.findById(id);
     }
 
     @Override
-    public Optional<UserPublicDTO> getUserPublic(String id) {
-        Optional<UserEntity> userEntity = userRepository.findById(id);
+    public Optional<DTOUserPublic> getUserPublic(String id) {
+        Optional<EntityUser> userEntity = userRepository.findById(id);
 
         return userEntity.map(user -> {
             ModelMapper mapper = new ModelMapper();
-            UserPublicDTO result = mapper.map(user, UserPublicDTO.class);
+            DTOUserPublic result = mapper.map(user, DTOUserPublic.class);
             result.setFollowersCount(userRepository.countFollowers(id));
             return result;
         });
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean register(DTORegisterForm userForm) {
-        UserEntity user = new UserEntity();
+        EntityUser user = new EntityUser();
         user.setDisplayName(userForm.getDisplayName());
         user.setEmail(userForm.getEmail());
         user.setPassword(encoder.encode(userForm.getPassword()));

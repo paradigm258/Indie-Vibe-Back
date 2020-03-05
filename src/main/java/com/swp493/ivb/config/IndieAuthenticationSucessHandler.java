@@ -7,8 +7,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swp493.ivb.features.common.user.UserSecurityServiceImpl;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -17,6 +15,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
+
 /**
  * IndieAuthenticationSucessHandler
  */
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 public class IndieAuthenticationSucessHandler implements AuthenticationSuccessHandler {
 
     @Autowired
-    UserSecurityServiceImpl userDetailsService;
+    ServiceUserSecurityImpl userDetailsService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,

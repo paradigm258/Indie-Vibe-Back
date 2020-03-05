@@ -1,16 +1,16 @@
-package com.swp493.ivb.features.common.user;
+package com.swp493.ivb.common.user;
 
 import java.util.Optional;
 
 import com.swp493.ivb.config.DTORegisterForm;
 
-public interface UserService {
+public interface ServiceUser {
 
     int countFollowers(String userId);
 
-    Optional<UserEntity> getUserForProcessing(String id);
+    Optional<EntityUser> getUserForProcessing(String id);
 
-    Optional<UserPublicDTO> getUserPublic(String id);
+    Optional<DTOUserPublic> getUserPublic(String id);
 
     boolean register(DTORegisterForm userForm);
 
