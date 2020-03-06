@@ -6,6 +6,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 import com.swp493.ivb.config.IndieUserPrincipal;
 
 /**
@@ -19,17 +21,17 @@ public class ServiceUserSecurityImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        EntityUser user = repo.findByEmail(username).get();
-        if(user == null){
+        Optional<EntityUser> user = repo.findByEmail(username);
+        if(!user.isPresent()){
             throw new UsernameNotFoundException(username);
         }
-        return new IndieUserPrincipal(user);
+        return new IndieUserPrincipal(user.get());
     }
     public UserDetails loadUserByFbId(String fbId) throws UsernameNotFoundException{
-        EntityUser user = repo.findByFbId(fbId).get();
-        if(user == null){
+        Optional<EntityUser> user = repo.findByFbId(fbId);
+        if(!user.isPresent()){
             throw new UsernameNotFoundException(fbId);
         }
-        return new IndieUserPrincipal(user);
+        return new IndieUserPrincipal(user.get());
     }
 }

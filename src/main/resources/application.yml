@@ -1,9 +1,9 @@
 spring:
     datasource:
         platform: mysql
-        url: jdbc:mysql://localhost:3306/ivbase
-        username: root
-        password: 1234
+        url: jdbc:mysql://db4free.net:3306/ivbase
+        username: adminivb
+        password: swp493_g4
         driverClassName: com.mysql.cj.jdbc.Driver
     security:
         oauth2:
@@ -13,11 +13,13 @@ spring:
                         client-id: 591447728362435
                         client-secret: a8fc749d01bb516304c33afbdf48551b
                         client-authentication-method: basic
+                        access-token: 591447728362435|ljIUVkQfWKXxtkzrRUfTPCcxxOU
             resourceserver:
                 indie:
                     introspection-uri: http://localhost:8080/introspect
                     introspection-client-id: client
                     introspection-client-secret: secret
-    jpa:        show-sql: true
+    jpa:
+        show-sql: true
 server:
   forward-headers-strategy: framework

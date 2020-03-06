@@ -15,6 +15,7 @@ import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,6 +53,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class AuthenticationController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
+
+    @Value("${spring.security.oauth2.client.registration.facebook.access-token}")
+    String access_token;
 
     @Autowired
     TokenStore tokenStore;
@@ -98,14 +102,18 @@ public class AuthenticationController {
             headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
             UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                    .fromUriString("https://graph.facebook.com/v6.0/debug_token").queryParam("input_token", userFbToken)
-                    .queryParam("access_token", "591447728362435|ljIUVkQfWKXxtkzrRUfTPCcxxOU");
+                    .fromUriString("https://graph.facebook.com/v6.0/debug_token")
+                    .queryParam("input_token", userFbToken)
+                    .queryParam("access_token", access_token);
             logger.debug("Facebook profile uri {}", uriBuilder.toUriString());
+            
             JsonNode resp = restTemplate.getForObject(uriBuilder.toUriString(), JsonNode.class);
             if (resp.findPath("data").findValue("is_valid").asBoolean()) {
                 UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
                         null, userDetails.getAuthorities());
                 return TokenResponse(userAuth);
+            } else{
+                return messageResponse(HttpStatus.BAD_REQUEST, "failed", "Token invalid");
             }
 
         } catch (UsernameNotFoundException ex) {
