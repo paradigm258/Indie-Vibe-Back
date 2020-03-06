@@ -3,13 +3,14 @@ package com.swp493.ivb.config;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.ServiceUser;
+import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
@@ -61,6 +63,9 @@ public class AuthenticationController {
     ServiceUser userService;
 
     @Autowired
+    ServiceUserSecurityImpl userSecurityService;
+
+    @Autowired
     DefaultTokenServices services;
 
     @GetMapping(value = "/me")
@@ -84,27 +89,25 @@ public class AuthenticationController {
     }
 
     @RequestMapping(value = "/login/facebook")
-    public ResponseEntity<?> loginFb(String userFbId, String userFbToken) {
+    public ResponseEntity<?> loginFb(String userFbId, String userFbToken, HttpServletRequest request) {
         try {
-            Optional<EntityUser> user = userService.findByFbId(userFbId);
-            if (user.isPresent()) {
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+            UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
 
-                UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString("https://graph.facebook.com/me")
-                        .queryParam("input_token", userFbToken)
-                        .queryParam("access_token", "591447728362435|ljIUVkQfWKXxtkzrRUfTPCcxxOU");
-                logger.debug("Facebook profile uri {}", uriBuilder.toUriString());
-                JsonNode resp = restTemplate.getForObject(uriBuilder.toUriString(), JsonNode.class);
-                if (resp.findPath("data").findValue("is_valid").asBoolean()) {
-                    EntityUser entityUser = user.get();
-                    UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(
-                            entityUser.getEmail(), entityUser.getPassword());
-                    Authentication authentication = manager.authenticate(principal);
-                    return TokenResponse(authentication);
-                }
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                    .fromUriString("https://graph.facebook.com/v6.0/debug_token").queryParam("input_token", userFbToken)
+                    .queryParam("access_token", "591447728362435|ljIUVkQfWKXxtkzrRUfTPCcxxOU");
+            logger.debug("Facebook profile uri {}", uriBuilder.toUriString());
+            JsonNode resp = restTemplate.getForObject(uriBuilder.toUriString(), JsonNode.class);
+            if (resp.findPath("data").findValue("is_valid").asBoolean()) {
+                UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
+                        null, userDetails.getAuthorities());
+                return TokenResponse(userAuth);
             }
+
         } catch (UsernameNotFoundException ex) {
             return messageResponse(HttpStatus.BAD_REQUEST, "failed", "Not connected");
         } catch (Exception e) {
