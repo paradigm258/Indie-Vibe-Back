@@ -77,4 +77,9 @@ public class ServiceUserImpl implements ServiceUser {
         userRepository.save(user);
         return true;
     }
+
+    @Override
+    public Optional<EntityUser> findByFbId(String fbId) {
+        return userRepository.findByFbId(fbId);
+    }
 }

@@ -19,14 +19,14 @@ public class ServiceUserSecurityImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        EntityUser user = repo.findByEmail(username);
+        EntityUser user = repo.findByEmail(username).get();
         if(user == null){
             throw new UsernameNotFoundException(username);
         }
         return new IndieUserPrincipal(user);
     }
     public UserDetails loadUserByFbId(String fbId) throws UsernameNotFoundException{
-        EntityUser user = repo.findByFbId(fbId);
+        EntityUser user = repo.findByFbId(fbId).get();
         if(user == null){
             throw new UsernameNotFoundException(fbId);
         }

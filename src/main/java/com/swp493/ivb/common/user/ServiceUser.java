@@ -17,4 +17,6 @@ public interface ServiceUser {
     boolean existsByEmail(String email);
 
     boolean existsByFbId(String fbId);
+
+    Optional<EntityUser> findByFbId(String fbId);
 }

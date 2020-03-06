@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.user;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,9 +10,9 @@ import org.springframework.data.repository.query.Param;
  * IndieUserRepository
  */
 public interface RepositoryUser extends JpaRepository<EntityUser, String> {
-    public EntityUser findByEmail(String email);
+    public Optional<EntityUser> findByEmail(String email);
 
-    public EntityUser findByFbId(String fbId);
+    public Optional<EntityUser> findByFbId(String fbId);
 
     public Boolean existsByEmail(String email);
 
