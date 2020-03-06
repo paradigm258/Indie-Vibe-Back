@@ -4,8 +4,11 @@ import java.util.Optional;
 
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.config.DTORegisterForm;
+import com.swp493.ivb.config.DTORegisterFormFb;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ServiceUserImpl implements ServiceUser {
 
+    private static final Logger logger = LoggerFactory.getLogger(ServiceUserImpl.class);
+
     @Autowired
     RepositoryUser userRepository;
 
@@ -24,7 +29,6 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Autowired
     PasswordEncoder encoder;
-    
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
@@ -71,15 +75,42 @@ public class ServiceUserImpl implements ServiceUser {
         user.setDisplayName(userForm.getDisplayName());
         user.setEmail(userForm.getEmail());
         user.setPassword(encoder.encode(userForm.getPassword()));
-        user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
-        user.setUserCountry(masterDataRepo.findById("c-vnm").get());
-        user.setUserPlan(masterDataRepo.findById("p-free").get());
-        userRepository.save(user);
-        return true;
+        user = userDefault(user);
+        try {
+            userRepository.save(user);
+            return true;
+        } catch (Exception e) {
+            logger.error("failed to save user", e);
+            return false;
+        }
+
     }
 
     @Override
     public Optional<EntityUser> findByFbId(String fbId) {
         return userRepository.findByFbId(fbId);
+    }
+
+    @Override
+    public boolean register(DTORegisterFormFb fbForm) {
+        EntityUser user = new EntityUser();
+        user.setDisplayName(fbForm.getDisplayName());
+        user.setEmail(fbForm.getEmail());
+        user.setFbId(fbForm.getFbId());
+        user = userDefault(user);
+        try {
+            userRepository.save(user);
+            return true;
+        } catch (Exception e) {
+            logger.error("failed to save user", e);
+            return false;
+        }
+    }
+
+    private EntityUser userDefault(EntityUser user){
+        user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").orElse(null));
+        user.setUserCountry(masterDataRepo.findById("c-vnm").orElse(null));
+        user.setUserPlan(masterDataRepo.findById("p-free").orElse(null));
+        return user;
     }
 }

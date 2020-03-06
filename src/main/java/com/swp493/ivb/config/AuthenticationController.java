@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -93,36 +92,23 @@ public class AuthenticationController {
     }
 
     @RequestMapping(value = "/login/facebook")
-    public ResponseEntity<?> loginFb(String userFbId, String userFbToken, HttpServletRequest request) {
+    public ResponseEntity<?> loginFb(String userFbId, String userFbToken) {
         try {
             UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
 
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-
-            UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                    .fromUriString("https://graph.facebook.com/v6.0/debug_token")
-                    .queryParam("input_token", userFbToken)
-                    .queryParam("access_token", access_token);
-            logger.debug("Facebook profile uri {}", uriBuilder.toUriString());
-            
-            JsonNode resp = restTemplate.getForObject(uriBuilder.toUriString(), JsonNode.class);
-            if (resp.findPath("data").findValue("is_valid").asBoolean()) {
+            if (checkFbToken(userFbId, userFbToken) == true) {
                 UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
                         null, userDetails.getAuthorities());
                 return TokenResponse(userAuth);
-            } else{
+            } else {
                 return messageResponse(HttpStatus.BAD_REQUEST, "failed", "Token invalid");
             }
-
         } catch (UsernameNotFoundException ex) {
             return messageResponse(HttpStatus.BAD_REQUEST, "failed", "Not connected");
         } catch (Exception e) {
             logger.error("Location: /login/facebook", e);
             return messageResponse(HttpStatus.INTERNAL_SERVER_ERROR, "failed", "Something went wrong");
         }
-        return messageResponse(HttpStatus.BAD_REQUEST, "failed", "Not connected");
     }
 
     private ResponseEntity<?> TokenResponse(Authentication authentication) {
@@ -177,6 +163,40 @@ public class AuthenticationController {
         response.put("status", status);
         response.put("data", data);
         return ResponseEntity.status(code.value()).body(response);
+    }
+
+    private boolean checkFbToken(String userFbId, String userFbToken) {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+
+        UriComponentsBuilder uriBuilder = UriComponentsBuilder
+                .fromUriString("https://graph.facebook.com/v6.0/debug_token").queryParam("input_token", userFbToken)
+                .queryParam("access_token", access_token);
+        logger.debug("Facebook profile uri {}", uriBuilder.toUriString());
+
+        JsonNode resp = restTemplate.getForObject(uriBuilder.toUriString(), JsonNode.class);
+        return resp.findPath("data").findValue("is_valid").asBoolean()
+                && resp.findPath("data").findValue("user_id").asText().equals(userFbId);
+    }
+
+    @PostMapping(value = "/register/facebook")
+    public ResponseEntity<?> registerFb(@Valid DTORegisterFormFb fbForm, BindingResult result) {
+        if (result.hasErrors()) {
+            FieldError error = result.getFieldError();
+            return messageResponse(HttpStatus.BAD_REQUEST, "failed", error.getDefaultMessage() + " is invalid");
+        }
+        if (userService.existsByFbId(fbForm.getFbId())) {
+            return messageResponse(HttpStatus.BAD_REQUEST, "failed", "FbId already registered");
+        }
+        if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
+            if (userService.register(fbForm)) {
+                messageResponse(HttpStatus.ACCEPTED, "success", "Your accout has been created");
+            }
+            return messageResponse(HttpStatus.INTERNAL_SERVER_ERROR, "failed", "Something went wrong");
+        }else{
+            return messageResponse(HttpStatus.BAD_REQUEST, "failed", "Token invalid");
+        }
     }
 
 }

@@ -44,29 +44,25 @@ public class EntityUser {
 
     private String thumbnail;
 
-   // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi
-   // dùng cái này get nó ra là nó tự query.
-   @OneToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "role_id")
-   private EntityMasterData userRole;
+    // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi
+    // dùng cái này get nó ra là nó tự query.
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "role_id")
+    private EntityMasterData userRole;
 
-   @OneToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "country_id")
-   private EntityMasterData userCountry;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id")
+    private EntityMasterData userCountry;
 
-   @OneToOne(fetch = FetchType.LAZY)
-   @JoinColumn(name = "plan_id")
-   private EntityMasterData userPlan;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_id")
+    private EntityMasterData userPlan;
 
     private String fbId;
 
-    @OneToMany(mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserRelease> releaseUsers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserTrack> trackUsers = new ArrayList<>();
 }
