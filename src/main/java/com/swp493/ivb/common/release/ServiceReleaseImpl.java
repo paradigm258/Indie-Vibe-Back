@@ -1,11 +1,15 @@
 package com.swp493.ivb.common.release;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -14,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.ServiceMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
@@ -35,6 +40,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Autowired
     private ServiceUser userService;
+
+    @Autowired
+    private AmazonS3 s3;
 
     @Override
     public Optional<String> uploadRelease(String artistId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
@@ -58,9 +66,23 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
         // insert for track and release
         Set<EntityMasterData> releaseGenres = new HashSet<>();
-        release.setTracks(info.getTracks().stream().map(trackInfo -> {
+
+        List<DTOTrackReleaseUpload> tracksInfo = info.getTracks();
+        if (tracksInfo.size() != audioFiles.length)
+            return Optional.empty();
+
+        AtomicInteger i = new AtomicInteger(0);
+
+        release.setTracks(tracksInfo.stream().map(trackInfo -> {
             EntityTrack track = new EntityTrack();
             track.setTitle(trackInfo.getTitle());
+            try {
+                InputStream inputStream = audioFiles[i.get()].getInputStream();
+                long length = audioFiles[0].getSize();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             track.setMp3128("128");
             track.setMp3320("320");
             track.setDuration128(128);
