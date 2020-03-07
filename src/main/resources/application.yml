@@ -10,10 +10,10 @@ spring:
             client:
                 registration:
                     facebook:
-                        client-id: 591447728362435
-                        client-secret: a8fc749d01bb516304c33afbdf48551b
+                        client-id: 130595185046801
+                        client-secret: add6a7389aa169d1bb87637d4ea9d378
                         client-authentication-method: basic
-                        access-token: 591447728362435|ljIUVkQfWKXxtkzrRUfTPCcxxOU
+                        access-token: 130595185046801|kJZiStPIhpbIdnJLr2oAqfaghUE
             resourceserver:
                 indie:
                     introspection-uri: http://localhost:8080/introspect
