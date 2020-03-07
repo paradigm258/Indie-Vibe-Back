@@ -191,7 +191,7 @@ public class AuthenticationController {
         }
         if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
             if (userService.register(fbForm)) {
-                messageResponse(HttpStatus.ACCEPTED, "success", "Your accout has been created");
+                return messageResponse(HttpStatus.ACCEPTED, "success", "Your accout has been created");
             }
             return messageResponse(HttpStatus.INTERNAL_SERVER_ERROR, "failed", "Something went wrong");
         }else{

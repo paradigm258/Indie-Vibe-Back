@@ -36,13 +36,17 @@ public class EntityUser {
     @Email
     private String email;
 
-    @NotBlank
     private String password;
 
     @NotBlank
     private String displayName;
 
     private String thumbnail;
+
+    private String fbId;
+    
+    @NotBlank
+    private String artistStatus;
 
     // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi
     // dùng cái này get nó ra là nó tự query.
@@ -57,8 +61,6 @@ public class EntityUser {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private EntityMasterData userPlan;
-
-    private String fbId;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserRelease> releaseUsers = new ArrayList<>();

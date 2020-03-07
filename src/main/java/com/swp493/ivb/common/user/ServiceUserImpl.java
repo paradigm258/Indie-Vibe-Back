@@ -97,6 +97,7 @@ public class ServiceUserImpl implements ServiceUser {
         user.setDisplayName(fbForm.getDisplayName());
         user.setEmail(fbForm.getEmail());
         user.setFbId(fbForm.getFbId());
+        user.setThumbnail(fbForm.getThumbnail());
         user = userDefault(user);
         try {
             userRepository.save(user);
@@ -111,6 +112,7 @@ public class ServiceUserImpl implements ServiceUser {
         user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").orElse(null));
         user.setUserCountry(masterDataRepo.findById("c-vnm").orElse(null));
         user.setUserPlan(masterDataRepo.findById("p-free").orElse(null));
+        user.setArtistStatus("open");
         return user;
     }
 }
