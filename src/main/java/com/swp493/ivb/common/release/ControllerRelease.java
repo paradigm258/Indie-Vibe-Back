@@ -1,7 +1,13 @@
 package com.swp493.ivb.common.release;
 
+import java.io.IOException;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,47 +32,54 @@ public class ControllerRelease {
     @Autowired
     private ServiceRelease releaseService;
 
-    @PostMapping(value = "/releases")
-    public ResponseEntity<Payload<String>> uploadNewRelease(
-            @RequestAttribute EntityUser user,
+    @Autowired
+    private AmazonS3 s3;
+
+    @PostMapping(value = "/test")
+    public ResponseEntity<?> test(MultipartFile file) throws IOException {
+        ObjectMetadata metadata = new ObjectMetadata();
+        metadata.setContentLength(file.getSize());
+        metadata.setContentType(file.getContentType());
+        PutObjectRequest putObjectRequest = new PutObjectRequest("indievibe-storage", "key", file.getInputStream(),
+                metadata);
+        s3.putObject(putObjectRequest);
+        // s3.deleteObject("indievibe-storage","key");
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/artist/releases")
+    public ResponseEntity<Payload<String>> uploadNewRelease(@RequestAttribute EntityUser user,
             @RequestParam(name = "info", required = true) String info,
             @RequestParam(name = "thumbnail", required = false) MultipartFile thumbnail,
-            @RequestParam(name = "aduioFiles", required = false) MultipartFile[] audioFiles)
+            @RequestParam(name = "audioFiles", required = false) MultipartFile[] audioFiles)
             throws JsonMappingException, JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
         DTOReleaseInfoUpload releaseInfo = mapper.readValue(info, DTOReleaseInfoUpload.class);
-
+        
+        List<DTOTrackReleaseUpload> trackList = releaseInfo.getTracks();
+        if (trackList.size() != audioFiles.length) {
+            return ResponseEntity.badRequest().body(new Payload<String>().fail("No file for track"));
+        }
         Optional<String> error = CustomValidation.validate(releaseInfo);
         if (error.isPresent()) {
             return ResponseEntity.badRequest().body(new Payload<String>().fail(error.get()));
         }
-        
-        Optional<String> releaseId = releaseService.uploadRelease(user.getId(), releaseInfo, thumbnail,
-        audioFiles);
-        return releaseId.map(r -> ResponseEntity
-                .ok()
-                .body(new Payload<String>()
-                        .success(r)))
-                .orElse(ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body(new Payload<String>()
-                                .fail("Failed to upload")));
+        try {
+            Optional<String> releaseId = releaseService.uploadRelease(user.getId(), releaseInfo, thumbnail, audioFiles);
+            return releaseId.map(r -> ResponseEntity.ok().body(new Payload<String>().success(r))).orElse(
+                    ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Payload<String>().fail("Failed to upload")));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.badRequest().body(new Payload<String>().fail("Invalid id"));
+        }
     }
 
-    @DeleteMapping(value = "/releases/{id}")
-    public ResponseEntity<Payload<String>> uploadNewRelease(
-            @RequestAttribute EntityUser user,
+    @DeleteMapping(value = "/artist/releases/{id}")
+    public ResponseEntity<Payload<String>> uploadNewRelease(@RequestAttribute EntityUser user,
             @PathVariable(required = true) String id) {
 
         Optional<String> releaseId = releaseService.deleteRelease(id);
-        return releaseId.map(r -> ResponseEntity
-                .ok()
-                .body(new Payload<String>()
-                        .success(r)))
-                .orElse(ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .body(new Payload<String>()
-                                .fail("Failed to delete")));
+        return releaseId.map(r -> ResponseEntity.ok().body(new Payload<String>().success(r))).orElse(
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Payload<String>().fail("Failed to delete")));
     }
 }
