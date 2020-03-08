@@ -73,7 +73,7 @@ public class AuthenticationController {
 
     @GetMapping(value = "/me")
     public ResponseEntity<?> me(@RequestAttribute EntityUser user) {
-        return ResponseEntity.ok().body(user);
+        return ResponseEntity.ok().body(userService.findByFbId(user.getId()));
     }
 
     @PostMapping(value = "/login")

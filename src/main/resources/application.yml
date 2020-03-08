@@ -21,6 +21,11 @@ spring:
                     introspection-client-secret: secret
     jpa:
         show-sql: true
+    servlet:
+        multipart:
+            max-file-size: 50MB
 server:
-  forward-headers-strategy: framework
-  port: 5000
+    forward-headers-strategy: framework
+    port: 5000
+    tomcat:
+        max-swallow-size: -1
