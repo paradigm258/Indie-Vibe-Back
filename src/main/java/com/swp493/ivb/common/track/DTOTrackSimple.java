@@ -18,21 +18,11 @@ public class DTOTrackSimple {
 
     protected String title;
 
-    protected int duration128;
-
-    protected int duration320;
-
-    protected int fileSize128;
-
-    protected int fileSize320;
-
-    protected int mp3Offset;
-
     protected String status;
 
     protected String producer;
 
     protected Set<DTOArtistSimple> artists;
 
-    private Set<EntityMasterData> genres;
+    protected Set<EntityMasterData> genres;
 }

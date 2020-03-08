@@ -7,13 +7,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class DTOTrackStream {
-
-    private String url;
+public class DTOTrackStreamInfo {
 
     private int duration;
 
     private int fileSize;
 
     private int mp3Offset;
+
+    private DTOTrackFull info;
 }

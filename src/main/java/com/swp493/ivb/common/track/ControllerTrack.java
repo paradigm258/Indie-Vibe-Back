@@ -30,35 +30,37 @@ public class ControllerTrack {
     @Autowired
     private ServiceTrack trackService;
 
-    @GetMapping(value = "/tracks/{id}")
+    @GetMapping(value = "/stream/info/{bitrate}/{id}")
     @CrossOrigin(origins = "*")
-    public ResponseEntity<Payload<DTOTrackFull>> getTrack(
+    public ResponseEntity<Payload<DTOTrackStreamInfo>> getTrack(
+            @PathVariable int bitrate,
             @PathVariable(required = true) String id) {
-        Optional<DTOTrackFull> trackOpt = trackService.getTrackById(id);
+        Optional<DTOTrackStreamInfo> track = trackService.getTrackStreamInfo(id, bitrate);
 
-        return trackOpt.map(track -> ResponseEntity
+        return track.map(t -> ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(new Payload<DTOTrackFull>().success(track)))
+                .body(new Payload<DTOTrackStreamInfo>().success(t)))
         .orElse(ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(new Payload<DTOTrackFull>().error("Track not found")));
+                .body(new Payload<DTOTrackStreamInfo>().error("Track not found")));
     }
 
-    @GetMapping(value = "/tracks/stream/{id}")
+    @GetMapping(value = "/stream/{bitrate}/{id}")
     @CrossOrigin(origins = "*")
     ResponseEntity<ResourceRegion> stream(
+            @PathVariable int bitrate,
             @PathVariable String id, 
             @RequestHeader(HttpHeaders.RANGE) Optional<String> range) {
-        DTOTrackStream track = trackService.getTrackStreamById(id).get();
+        DTOTrackStream track = trackService.getTrackStreamById(id, bitrate).get();
 
-        // demo for streaming 128kbps mp3 file
-        String url = track.getMp3128();
-        int fileSize = track.getFileSize128();
+        String url = track.getUrl();
+        int fileSize = track.getFileSize();
+        int tenSecSize = (bitrate * 1000) / 8 * 10;
 
         HttpRange httpRange = range
                 .map(str -> HttpRange.parseRanges(str).get(0))
-                .orElse(HttpRange.createByteRange(0, 160000));
+                .orElse(HttpRange.createByteRange(0, tenSecSize));
 
         int start = (int) httpRange.getRangeStart(fileSize);
         int length = (int) (httpRange.getRangeEnd(fileSize) - start + 1);
