@@ -9,7 +9,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -19,11 +18,11 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.user.EntityUserRelease;
+
+import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,9 +37,7 @@ public class EntityRelease {
 
     @Id
     @NotBlank
-    @GenericGenerator(name = "indie-id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
-    @GeneratedValue(generator = "indie-id")
-    private String id;
+    private String id = (new RandomValueStringGenerator(20).generate());
 
     @NotBlank
     private String title;

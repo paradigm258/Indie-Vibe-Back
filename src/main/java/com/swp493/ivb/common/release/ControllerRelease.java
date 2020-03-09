@@ -58,8 +58,8 @@ public class ControllerRelease {
         DTOReleaseInfoUpload releaseInfo = mapper.readValue(info, DTOReleaseInfoUpload.class);
         
         List<DTOTrackReleaseUpload> trackList = releaseInfo.getTracks();
-        if (trackList.size() != audioFiles.length) {
-            return ResponseEntity.badRequest().body(new Payload<String>().fail("No file for track"));
+        if (trackList.size() != audioFiles.length/2) {
+            return ResponseEntity.badRequest().body(new Payload<String>().fail("No audio file for track"));
         }
         Optional<String> error = CustomValidation.validate(releaseInfo);
         if (error.isPresent()) {

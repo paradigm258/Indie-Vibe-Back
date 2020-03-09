@@ -7,7 +7,6 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -17,11 +16,11 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
+
+import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,28 +35,26 @@ public class EntityTrack {
 
     @Id
     @NotBlank
-    @GenericGenerator(name = "indie-id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
-    @GeneratedValue(generator = "indie-id")
-    private String id;
+    private String id = (new RandomValueStringGenerator(20).generate());
 
     @NotBlank
     private String title;
 
     @NotNull
     @Column(name = "duration_128")
-    private int duration128;
+    private long duration128;
 
     @NotNull
     @Column(name = "duration_320")
-    private int duration320;
+    private long duration320;
 
     @NotNull
     @Column(name = "file_size_128")
-    private int fileSize128;
+    private long fileSize128;
 
     @NotNull
     @Column(name = "file_size_320")
-    private int fileSize320;
+    private long fileSize320;
 
     @NotNull
     @Column(name = "mp3_offset")

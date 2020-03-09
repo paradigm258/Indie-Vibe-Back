@@ -1,6 +1,10 @@
 package com.swp493.ivb.common.release;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
@@ -14,7 +18,12 @@ import java.util.stream.Collectors;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.mpatric.mp3agic.InvalidDataException;
+import com.mpatric.mp3agic.Mp3File;
+import com.mpatric.mp3agic.UnsupportedTagException;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.ServiceMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
@@ -66,17 +75,32 @@ public class ServiceReleaseImpl implements ServiceRelease {
         List<DTOTrackReleaseUpload> tracksInfo = info.getTracks();
         List<String> uploadKeyList = new LinkedList<>();
         List<EntityTrack> tracks = new LinkedList<>();
+        File file = null;
         try {
-            //Iterate through input data to populate release's track list
-            for (int i = 0; i < tracksInfo.size(); i++) {
-                //Get respective info and audio file
-                DTOTrackReleaseUpload trackInfo = tracksInfo.get(i);
-                MultipartFile trackContent = audioFiles[i];
+            // Upload thumbnail
+            if (thumbnail != null) {
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(thumbnail.getSize());
+                String key = release.getId();
+                s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                uploadKeyList.add(key);
+                release.setThumbnail(AWSConfig.BUCKET_URL + key);
+            }
 
-                //Populate a track entity
+            // Iterate through input data to populate release's track list
+            for (int i = 0; i < tracksInfo.size(); i++) {
+                // Get respective info and audio file
+                DTOTrackReleaseUpload trackInfo = tracksInfo.get(i);
+                MultipartFile trackContent128 = audioFiles[i * 2];
+                MultipartFile trackContent320 = audioFiles[i * 2 + 1];
+
+                // Populate a track entity
                 EntityTrack track = new EntityTrack();
                 track.setTitle(trackInfo.getTitle());
-                track.setFileSize128((int) trackContent.getSize());
+                track.setFileSize128(trackContent128.getSize());
+                track.setFileSize320(trackContent320.getSize());
+
                 track.setStatus("public");
                 track.setProducer(trackInfo.getProducer());
                 track.setRelease(release);
@@ -87,18 +111,33 @@ public class ServiceReleaseImpl implements ServiceRelease {
                     return genre;
                 }).collect(Collectors.toList()));
 
-                track.setMp3320("320");
-                track.setDuration128((int) trackContent.getSize() / 16);
-                track.setDuration320(320);
-                track.setFileSize320(320000);
-                track.setMp3Offset(111111);
+                file = new File("temp/" + track.getId());
 
-                ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(track.getFileSize128());
-                String key = artist.getId() + "/" + track.getTitle();
-                s3.putObject("indievibe-storage", key, trackContent.getInputStream(), metadata);
+                {
+                    writeInputToOutput(trackContent128.getInputStream(), new FileOutputStream(file));
+                    Mp3File mp3128 = new Mp3File(file);
+                    track.setDuration128(mp3128.getLengthInSeconds());
+                    track.setMp3Offset(mp3128.getStartOffset());
+                }
+                ObjectMetadata metadata128 = new ObjectMetadata();
+                metadata128.setContentLength(track.getFileSize128());
+                String key = track.getId() + "/128";
+                s3.putObject(AWSConfig.BUCKET_NAME, key, trackContent128.getInputStream(), metadata128);
                 uploadKeyList.add(key);
                 track.setMp3128(AWSConfig.BUCKET_URL + key);
+
+
+                {
+                    writeInputToOutput(trackContent320.getInputStream(), new FileOutputStream(file));
+                    Mp3File mp3320 = new Mp3File(file);
+                    track.setDuration320(mp3320.getLengthInSeconds());
+                }
+                ObjectMetadata metadata320 = new ObjectMetadata();
+                metadata320.setContentLength(track.getFileSize320());
+                key = track.getId() + "/320";
+                s3.putObject(AWSConfig.BUCKET_NAME, key, trackContent320.getInputStream(), metadata320);
+                uploadKeyList.add(key);
+                track.setMp3320(AWSConfig.BUCKET_URL + key);
 
                 EntityUserTrack artistTrack = new EntityUserTrack();
                 artistTrack.setUser(artist);
@@ -115,16 +154,21 @@ public class ServiceReleaseImpl implements ServiceRelease {
             log.error("s3 operation failed", e);
             deleteCancel(uploadKeyList);
             return Optional.empty();
-        } catch (NoSuchElementException e){
+        } catch (NoSuchElementException e) {
             log.error("invalid id", e);
             deleteCancel(uploadKeyList);
             return Optional.empty();
+        } catch (UnsupportedTagException | InvalidDataException e) {
+            log.error("Mp3 malformed", e);
+            deleteCancel(uploadKeyList);
+            return Optional.empty();
+        } finally{
+            if(file != null && file.exists()){
+                file.delete();
+            }
         }
+
         release.setTracks(tracks);
-        // release.setTracks(tracksInfo.stream().map(trackInfo -> {
-        // EntityTrack track = new EntityTrack();
-        // return track;
-        // }).collect(Collectors.toList()));
         release.setGenres(releaseGenres);
 
         // insert into user_object for release and user
@@ -144,11 +188,21 @@ public class ServiceReleaseImpl implements ServiceRelease {
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
             releaseRepo.delete(r);
+            try {
+                s3.deleteObject(AWSConfig.BUCKET_NAME, r.getId());
+            } catch (SdkClientException e) {
+                log.error("Failed to delete: " + r.getTitle(), e);
+            }
             r.getTracks().stream().map(track -> {
                 try {
-                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getTitle());
+                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
                 } catch (SdkClientException e) {
-                    log.error("Failed to delete: " + track.getTitle());
+                    log.error("Failed to delete: " + track.getTitle(), e);
+                }
+                try {
+                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/320");
+                } catch (SdkClientException e) {
+                    log.error("Failed to delete: " + track.getTitle(), e);
                 }
                 return null;
             });
@@ -163,6 +217,15 @@ public class ServiceReleaseImpl implements ServiceRelease {
             } catch (SdkClientException e) {
                 log.error("Failed to delete: " + keyToDelete, e);
             }
+        }
+    }
+
+    private void writeInputToOutput(InputStream in, OutputStream out) throws IOException {
+        byte[] buffer = new byte[1024];
+        int len = in.read(buffer);
+        while (len != -1) {
+            out.write(buffer, 0, len);
+            len = in.read(buffer);
         }
     }
 }
