@@ -44,7 +44,7 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
             .authenticationEntryPoint(unauthorizedHandler)
             .and().authorizeRequests()
-            .antMatchers("/home", "/login/**","/introspect","/register/**").permitAll()
+            .antMatchers("/home", "/login/**","/introspect","/register/**","/token").permitAll()
             .antMatchers("/admin/**").hasAuthority("r-admin")
             .antMatchers("/artist/**").hasAuthority("r-artist")
             .anyRequest().fullyAuthenticated()

@@ -28,6 +28,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
+import org.springframework.security.oauth2.provider.TokenRequest;
 import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.validation.BindingResult;
@@ -73,7 +74,24 @@ public class AuthenticationController {
 
     @GetMapping(value = "/me")
     public ResponseEntity<?> me(@RequestAttribute EntityUser user) {
-        return ResponseEntity.ok().body(userService.findByFbId(user.getId()));
+        return ResponseEntity.ok().body(user.getId());
+    }
+
+    @PostMapping(value = "/token")
+    public ResponseEntity<?> refreshToken(@RequestHeader String bearerToken) {
+        try {
+            if(bearerToken.isEmpty()) return null;
+            String refreshTokenValue = bearerToken.substring(7, bearerToken.length());
+            TokenRequest tokenRequest = new TokenRequest(null, "web", null, null);
+            OAuth2AccessToken accessToken = services.refreshAccessToken(refreshTokenValue, tokenRequest);
+            return ResponseEntity.ok().body(accessToken);
+        } catch (AuthenticationException e) {
+            logger.error("/token", e);
+            return ResponseEntity.badRequest().body("Bad credentials");
+        } catch (Exception e){
+            logger.error("/token", e);
+            return messageResponse(HttpStatus.INTERNAL_SERVER_ERROR, "failed", "Something is wrong");
+        }
     }
 
     @PostMapping(value = "/login")
@@ -113,8 +131,8 @@ public class AuthenticationController {
 
     private ResponseEntity<?> TokenResponse(Authentication authentication) {
         IndieUserPrincipal user = (IndieUserPrincipal) authentication.getPrincipal();
-        OAuth2Request request = new OAuth2Request(null, user.getUser().getId(), user.getAuthorities(), true, null, null,
-                null, null, null);
+        OAuth2Request request = new OAuth2Request(null, "web", user.getAuthorities(), true, null, null, null, null,
+                null);
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
         OAuth2AccessToken accessToken = services.createAccessToken(oAuth2Authentication);
         return ResponseEntity.ok().body(accessToken);
@@ -194,7 +212,7 @@ public class AuthenticationController {
                 return messageResponse(HttpStatus.ACCEPTED, "success", "Your accout has been created");
             }
             return messageResponse(HttpStatus.INTERNAL_SERVER_ERROR, "failed", "Something went wrong");
-        }else{
+        } else {
             return messageResponse(HttpStatus.BAD_REQUEST, "failed", "Token invalid");
         }
     }

@@ -78,7 +78,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 			.accessTokenConverter(accessTokenConverter());
 		// @formatter:on
 	}
-
+	
 	@Bean
 	AuthenticationManager AuthenticationManager(){
 		return authenticationManager;
@@ -88,7 +88,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 	DefaultTokenServices DefaultTokenServices(){
 		DefaultTokenServices services= new DefaultTokenServices();
 		services.setAccessTokenValiditySeconds(600);
-		services.setAuthenticationManager(authenticationManager);
+		services.setSupportRefreshToken(true);
 		services.setTokenStore(TokenStore());
 		services.setTokenEnhancer(accessTokenConverter());
 		return services;
