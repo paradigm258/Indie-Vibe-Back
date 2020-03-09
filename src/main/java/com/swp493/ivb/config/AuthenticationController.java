@@ -78,9 +78,8 @@ public class AuthenticationController {
     }
 
     @PostMapping(value = "/token")
-    public ResponseEntity<?> refreshToken(@RequestHeader String bearerToken) {
+    public ResponseEntity<?> refreshToken(@RequestParam("token") String bearerToken) {
         try {
-            if(bearerToken.isEmpty()) return null;
             String refreshTokenValue = bearerToken.substring(7, bearerToken.length());
             TokenRequest tokenRequest = new TokenRequest(null, "web", null, null);
             OAuth2AccessToken accessToken = services.refreshAccessToken(refreshTokenValue, tokenRequest);
