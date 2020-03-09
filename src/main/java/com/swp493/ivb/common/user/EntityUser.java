@@ -17,6 +17,8 @@ import javax.validation.constraints.NotBlank;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
 
+import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,8 +31,7 @@ import lombok.Setter;
 public class EntityUser {
 
     @Id
-    @GeneratedValue(generator = "indie-id")
-    private String id;
+    private String id = (new RandomValueStringGenerator(20).generate());
 
     @NotBlank
     @Email
