@@ -12,4 +12,6 @@ public class DTOArtistSimple {
     protected String id;
 
     protected String displayName;
+
+    protected String type = "artist";
 }

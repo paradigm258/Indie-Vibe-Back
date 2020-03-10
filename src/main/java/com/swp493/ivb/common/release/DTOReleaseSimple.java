@@ -1,6 +1,6 @@
 package com.swp493.ivb.common.release;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 import com.swp493.ivb.common.artist.DTOArtistSimple;
 
@@ -13,15 +13,17 @@ import lombok.Setter;
 @Setter
 public class DTOReleaseSimple {
 
-    private String id;
+    protected String id;
 
-    private String title;
+    protected String title;
 
-    private String thumbnail;
+    protected String thumbnail;
 
-    private Date date;
+    protected Timestamp date;
 
-    private String status;
+    protected String status;
 
-    private DTOArtistSimple artist;
+    protected DTOArtistSimple artist;
+
+    protected String type = "release";
 }

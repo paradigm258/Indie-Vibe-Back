@@ -13,5 +13,5 @@ public class DTOReleaseType {
 
     private String name;
 
-    private String type = "genre";
+    private String type = "release-type";
 }
