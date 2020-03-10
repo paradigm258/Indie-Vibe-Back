@@ -18,8 +18,7 @@ public interface RepositoryUser extends JpaRepository<EntityUser, String> {
 
     public Boolean existsByFbId(String fbId);
 
-    @Query(
-            value = "SELECT COUNT(follower_id) FROM user_follow_user WHERE followed_id=:userId",
-            nativeQuery = true)
+    @Query(value = "SELECT COUNT(follower_id) FROM user_follow_user WHERE followed_id=:userId", nativeQuery = true)
     public int countFollowers(@Param("userId") String userId);
+
 }

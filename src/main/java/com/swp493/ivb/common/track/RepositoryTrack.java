@@ -10,5 +10,4 @@ public interface RepositoryTrack extends JpaRepository<EntityTrack, String> {
 
     Optional<EntityTrack> findById(String id);
 
-    EntityTrack findTrackById(String id);
 }

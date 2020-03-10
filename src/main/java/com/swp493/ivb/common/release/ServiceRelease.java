@@ -10,4 +10,6 @@ public interface ServiceRelease {
             MultipartFile[] audioFiles);
 
     Optional<String> deleteRelease(String releaseId);
+
+    Optional<EntityRelease> getRelease(String releaseId);
 }
