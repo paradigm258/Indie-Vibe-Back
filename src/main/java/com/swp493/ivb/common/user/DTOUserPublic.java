@@ -16,4 +16,6 @@ public class DTOUserPublic {
     protected String thumbnail;
 
     protected int followersCount;
+
+    protected String type = "user";
 }

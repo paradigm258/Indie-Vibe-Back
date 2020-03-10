@@ -25,4 +25,6 @@ public class DTOTrackSimple {
     protected Set<DTOArtistSimple> artists;
 
     protected Set<EntityMasterData> genres;
+
+    protected String type = "track";
 }
