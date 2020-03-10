@@ -70,7 +70,7 @@ public class AuthenticationController {
     ServiceUserSecurityImpl userSecurityService;
 
     @Autowired
-    DefaultTokenServices services;
+    DefaultTokenServices tokenServices;
 
     @GetMapping(value = "/me")
     public ResponseEntity<?> me(@RequestAttribute EntityUser user) {
@@ -78,16 +78,18 @@ public class AuthenticationController {
     }
 
     @PostMapping(value = "/token")
-    public ResponseEntity<?> refreshToken(@RequestParam("token") String bearerToken) {
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String bearerToken) {
         try {
+            if (bearerToken.isEmpty() || !bearerToken.startsWith("Bearer "))
+                return ResponseEntity.badRequest().body("Bad credentials");
             String refreshTokenValue = bearerToken.substring(7, bearerToken.length());
             TokenRequest tokenRequest = new TokenRequest(null, "web", null, null);
-            OAuth2AccessToken accessToken = services.refreshAccessToken(refreshTokenValue, tokenRequest);
+            OAuth2AccessToken accessToken = tokenServices.refreshAccessToken(refreshTokenValue, tokenRequest);
             return ResponseEntity.ok().body(accessToken);
         } catch (AuthenticationException e) {
             logger.error("/token", e);
             return ResponseEntity.badRequest().body("Bad credentials");
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error("/token", e);
             return messageResponse(HttpStatus.INTERNAL_SERVER_ERROR, "failed", "Something is wrong");
         }
@@ -133,7 +135,11 @@ public class AuthenticationController {
         OAuth2Request request = new OAuth2Request(null, "web", user.getAuthorities(), true, null, null, null, null,
                 null);
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
-        OAuth2AccessToken accessToken = services.createAccessToken(oAuth2Authentication);
+        OAuth2AccessToken accessToken = tokenStore.getAccessToken(oAuth2Authentication);
+        if(accessToken != null){
+            tokenServices.revokeToken(accessToken.getValue());
+        }
+        accessToken = tokenServices.createAccessToken(oAuth2Authentication);
         return ResponseEntity.ok().body(accessToken);
     }
 
