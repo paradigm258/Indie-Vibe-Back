@@ -2,6 +2,7 @@ package com.swp493.ivb.common.user;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -15,7 +16,9 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
+import com.swp493.ivb.common.track.EntityTrack;
 
+import org.hibernate.annotations.Where;
 import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
 import lombok.Getter;
@@ -67,4 +70,40 @@ public class EntityUser {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserTrack> trackUsers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "action = 'favorite'")
+    private List<EntityUserTrack> userFavoriteTracks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "action = 'own'")
+    private List<EntityUserTrack> ownUserTracks = new ArrayList<>();
+
+    public List<EntityTrack> getFavoriteTracks(){
+        return getUserFavoriteTracks().stream().map(userTrack ->{
+            return userTrack.getTrack();
+        }).collect(Collectors.toList());
+    }
+
+    public void favoriteTracks(EntityTrack track){
+        EntityUserTrack userTrack = new EntityUserTrack();
+        userTrack.setTrack(track);
+        userTrack.setUser(this);
+        userTrack.setAction("favorite");
+        this.userFavoriteTracks.add(userTrack);
+        track.getTrackUsers().add(userTrack);
+    }
+
+    public void unfavoriteTracks(EntityTrack track){
+        for(EntityUserTrack userTrack : userFavoriteTracks){
+            if(userTrack.getTrack().equals(track)){
+                userFavoriteTracks.remove(userTrack);
+                userTrack.getTrack().getTrackUsers().remove(userTrack);
+                userTrack.setTrack(null);
+                userTrack.setUser(null);
+                return ;
+            }
+        }
+    }
+        
 }

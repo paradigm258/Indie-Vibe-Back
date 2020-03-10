@@ -110,7 +110,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
                     return genre;
                 }).collect(Collectors.toList()));
 
-                file = new File("temp/" + track.getId());
+                file = File.createTempFile(release.getId(), null);
                 {
                     writeInputToOutput(trackContent128.getInputStream(), new FileOutputStream(file));
                     Mp3File mp3128 = new Mp3File(file);
@@ -197,6 +197,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         });
     }
 
+    
     private void deleteCancel(List<String> keyList) {
         for (String keyToDelete : keyList) {
             try {
@@ -214,5 +215,10 @@ public class ServiceReleaseImpl implements ServiceRelease {
             out.write(buffer, 0, len);
             len = in.read(buffer);
         }
+    }
+
+    @Override
+    public Optional<EntityRelease> getRelease(String releaseId) {
+        return releaseRepo.findById(releaseId);
     }
 }

@@ -22,19 +22,23 @@ import com.swp493.ivb.common.user.EntityUserTrack;
 
 import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.EqualsAndHashCode.Include;
 
 @Entity
 @Table(name = "track")
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class EntityTrack {
 
     @Id
     @NotBlank
+    @Include
     private String id = (new RandomValueStringGenerator(20).generate());
 
     @NotBlank
