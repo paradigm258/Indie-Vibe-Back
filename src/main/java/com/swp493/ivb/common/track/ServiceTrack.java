@@ -1,8 +1,7 @@
 package com.swp493.ivb.common.track;
 
+import java.util.List;
 import java.util.Optional;
-
-import com.swp493.ivb.common.user.EntityUser;
 
 public interface ServiceTrack {
 
@@ -15,4 +14,6 @@ public interface ServiceTrack {
     public boolean favoriteTrack(String userId, String trackId);
 
     public boolean unfavoriteTrack(String userId, String trackId);
+
+    public Optional<List<DTOTrackSimple>> getFavorites(String userId);
 }

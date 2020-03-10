@@ -50,15 +50,27 @@ public class ControllerTrack {
                     break;
             }
             if (success) {
-                return ResponseEntity.ok().body(new Payload<>().success("successfully "+action+" track"));
+                return ResponseEntity.ok().body(new Payload<>().success("successfully " + action + " track"));
             } else {
-                return ResponseEntity.badRequest().body(new Payload<>().fail("failed to add to favorite"));
+                return ResponseEntity.badRequest().body(new Payload<>().fail("failed to " + action));
             }
         } catch (Exception e) {
             log.error("/track addFavorite", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        
+
+    }
+
+    @GetMapping(value="/tracks/favorites")
+    public ResponseEntity<?> getFavorites(@RequestAttribute EntityUser user) {
+        try {
+            return trackService.getFavorites(user.getId()).map(list ->{
+                return ResponseEntity.ok().body(new Payload<>().success(list));
+            }).orElse(ResponseEntity.badRequest().body(new Payload<>().fail("No data")));
+        } catch (Exception e) {
+            log.error("tracks/favorites", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Payload<>().error("Something is wrong"));
+        }
     }
 
     @GetMapping(value = "/stream/info/{bitrate}/{id}")

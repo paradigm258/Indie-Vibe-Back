@@ -1,6 +1,8 @@
 package com.swp493.ivb.common.track;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
@@ -118,6 +120,16 @@ public class ServiceTrackImpl implements ServiceTrack {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public Optional<List<DTOTrackSimple>> getFavorites(String userId) {
+        return userRepo.findById(userId).map(user ->{
+            return user.getFavoriteTracks().stream().map(track ->{
+                ModelMapper mapper = new ModelMapper();
+                return mapper.map(track, DTOTrackSimple.class);
+            }).collect(Collectors.toList());
+        });
     }
 
 }
