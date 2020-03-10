@@ -89,6 +89,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 		DefaultTokenServices services= new DefaultTokenServices();
 		services.setAccessTokenValiditySeconds(600);
 		services.setSupportRefreshToken(true);
+		services.setReuseRefreshToken(false);
 		services.setTokenStore(TokenStore());
 		services.setTokenEnhancer(accessTokenConverter());
 		return services;

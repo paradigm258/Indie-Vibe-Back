@@ -62,7 +62,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
         final EntityRelease release = new EntityRelease();
         release.setTitle(info.getTitle());
-        release.setThumbnail("N/A");
         release.setDate(new Timestamp(new Date().getTime()));
         release.setStatus("public");
         release.setReleaseType(masterDataService.getReleaseTypeById(info.getTypeId()).get());
@@ -112,7 +111,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 }).collect(Collectors.toList()));
 
                 file = new File("temp/" + track.getId());
-
                 {
                     writeInputToOutput(trackContent128.getInputStream(), new FileOutputStream(file));
                     Mp3File mp3128 = new Mp3File(file);
@@ -125,7 +123,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 s3.putObject(AWSConfig.BUCKET_NAME, key, trackContent128.getInputStream(), metadata128);
                 uploadKeyList.add(key);
                 track.setMp3128(AWSConfig.BUCKET_URL + key);
-
 
                 {
                     writeInputToOutput(trackContent320.getInputStream(), new FileOutputStream(file));
@@ -147,23 +144,13 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
                 tracks.add(track);
             }
-        } catch (IOException e) {
-            log.error("error trying to connect to s3", e);
-            return Optional.empty();
-        } catch (SdkClientException e) {
-            log.error("s3 operation failed", e);
+        } catch (IOException | SdkClientException | NoSuchElementException | UnsupportedTagException
+                | InvalidDataException e) {
+            log.error("Track upload failed", e);
             deleteCancel(uploadKeyList);
             return Optional.empty();
-        } catch (NoSuchElementException e) {
-            log.error("invalid id", e);
-            deleteCancel(uploadKeyList);
-            return Optional.empty();
-        } catch (UnsupportedTagException | InvalidDataException e) {
-            log.error("Mp3 malformed", e);
-            deleteCancel(uploadKeyList);
-            return Optional.empty();
-        } finally{
-            if(file != null && file.exists()){
+        } finally {
+            if (file != null && file.exists()) {
                 file.delete();
             }
         }
