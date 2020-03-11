@@ -7,6 +7,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -20,13 +21,13 @@ import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
 
-import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
+import org.hibernate.annotations.GenericGenerator;
 
 import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode.Include;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.EqualsAndHashCode.Include;
 
 @Entity
 @Table(name = "track")
@@ -39,7 +40,9 @@ public class EntityTrack {
     @Id
     @NotBlank
     @Include
-    private String id = (new RandomValueStringGenerator(20).generate());
+    @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
+    @GeneratedValue(generator = "id")  
+    private String id;
 
     @NotBlank
     private String title;

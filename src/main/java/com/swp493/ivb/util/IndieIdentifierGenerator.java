@@ -1,24 +1,22 @@
 package com.swp493.ivb.util;
 
 import java.io.Serializable;
-import java.util.Random;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.IdentifierGenerator;
+import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
 public class IndieIdentifierGenerator implements IdentifierGenerator {
 
-    String letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    private Random random = new Random();
-    int idLength = 20;
-
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException {
-        StringBuilder result = new StringBuilder(idLength);
-        for (int i = 0; i < idLength; i++) {
-            result.append(letters.charAt(random.nextInt(letters.length())));
+        Serializable id = session.getEntityPersister(null, object).getClassMetadata().getIdentifier(object, session);
+
+        if (id != null && !id.toString().isEmpty()) {
+            return id.toString();
         }
-        return result.toString();
+        
+        return new RandomValueStringGenerator(20).generate();
     }
 }

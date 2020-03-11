@@ -16,6 +16,8 @@ import com.swp493.ivb.common.view.Payload;
 import com.swp493.ivb.util.CustomValidation;
 
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 public class ControllerRelease {
+
+    private static Logger log = LoggerFactory.getLogger(ServiceReleaseImpl.class);
 
     @Autowired
     private ServiceRelease releaseService;
@@ -52,8 +56,8 @@ public class ControllerRelease {
     @PostMapping(value = "/artist/releases")
     public ResponseEntity<Payload<String>> uploadNewRelease(@RequestAttribute EntityUser user,
             @RequestParam(name = "info", required = true) String info,
-            @RequestParam(name = "thumbnail", required = false) MultipartFile thumbnail,
-            @RequestParam(name = "audioFiles", required = false) MultipartFile[] audioFiles)
+            @RequestParam(name = "thumbnail", required = true) MultipartFile thumbnail,
+            @RequestParam(name = "audioFiles", required = true) MultipartFile[] audioFiles)
             throws JsonMappingException, JsonProcessingException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -72,6 +76,7 @@ public class ControllerRelease {
             return releaseId.map(r -> ResponseEntity.ok().body(new Payload<String>().success(r))).orElse(
                     ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Payload<String>().fail("Failed to upload")));
         } catch (NoSuchElementException e) {
+            log.error("/release", e);
             return ResponseEntity.badRequest().body(new Payload<String>().fail("Invalid id"));
         }
     }

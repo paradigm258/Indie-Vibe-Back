@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
@@ -18,8 +19,8 @@ import javax.validation.constraints.NotBlank;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
 
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
-import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,7 +34,9 @@ import lombok.Setter;
 public class EntityUser {
 
     @Id
-    private String id = (new RandomValueStringGenerator(20).generate());
+    @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
+    @GeneratedValue(generator = "id")  
+    private String id;
 
     @NotBlank
     @Email
