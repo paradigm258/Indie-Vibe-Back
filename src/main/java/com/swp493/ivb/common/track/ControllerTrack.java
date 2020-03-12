@@ -114,4 +114,18 @@ public class ControllerTrack {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
+
+    @GetMapping(value = "/tracks/test/{id}")
+    @CrossOrigin(origins = "*")
+    ResponseEntity<Payload<DTOTrackFull>> trackTest(
+            @PathVariable String id) {
+        Optional<DTOTrackFull> track = trackService.getTrack2(id);
+        
+        return track.map(t -> ResponseEntity
+                .status(HttpStatus.OK)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(new Payload<DTOTrackFull>().success(t)))
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new Payload<DTOTrackFull>().error("Track not found")));
+    }
 }

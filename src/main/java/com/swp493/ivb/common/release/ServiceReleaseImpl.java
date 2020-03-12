@@ -195,18 +195,18 @@ public class ServiceReleaseImpl implements ServiceRelease {
             if(!r.getArtist().isPresent() || !r.getArtist().get().getId().equals(artistId)) return "";
             releaseRepo.delete(r);
             try {
-                s3.deleteObject(AWSConfig.BUCKET_NAME, r.getId());
+                // s3.deleteObject(AWSConfig.BUCKET_NAME, r.getId());
             } catch (SdkClientException e) {
                 log.error("Failed to delete: " + r.getTitle(), e);
             }
             r.getTracks().stream().map(track -> {
                 try {
-                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
+                    // s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
                 } catch (SdkClientException e) {
                     log.error("Failed to delete: " + track.getTitle(), e);
                 }
                 try {
-                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/320");
+                    // s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/320");
                 } catch (SdkClientException e) {
                     log.error("Failed to delete: " + track.getTitle(), e);
                 }

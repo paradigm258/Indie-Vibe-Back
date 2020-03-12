@@ -109,4 +109,6 @@ public class EntityUser {
         this.userFavoriteTracks.remove(userTrack);
     }
 
+    @OneToMany(mappedBy = "user")
+    private Set<EntityUserTrack2> userTracks;
 }

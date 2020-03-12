@@ -2,6 +2,7 @@ package com.swp493.ivb.common.track;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -20,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
+import com.swp493.ivb.common.user.EntityUserTrack2;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
@@ -101,6 +103,6 @@ public class EntityTrack {
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserTrack> trackUsers = new ArrayList<>();
 
-    
-    
+    @OneToMany(mappedBy = "track")
+    private Set<EntityUserTrack2> userTracks;
 }
