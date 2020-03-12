@@ -19,11 +19,11 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.user.EntityUserRelease;
-
-import org.hibernate.annotations.GenericGenerator;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -55,15 +55,6 @@ public class EntityRelease {
     @NotBlank
     private String status;
 
-//    // for getting release's artist
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinTable(
-//            name = "user_object", 
-//            joinColumns = @JoinColumn(name = "release_id"), 
-//            inverseJoinColumns = @JoinColumn(name = "user_id"))
-//    @WhereJoinTable(clause = "action='own'")
-//    private EntityArtist artist;
-
     // for getting release's genres
     @OneToMany(
             fetch = FetchType.LAZY,
@@ -89,5 +80,8 @@ public class EntityRelease {
     @OneToMany(mappedBy = "release",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<EntityUserRelease> releaseUsers = new ArrayList<>();;
+    private List<EntityUserRelease> releaseUsers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "release")
+    private Set<EntityUserRelease> userReleases;
 }

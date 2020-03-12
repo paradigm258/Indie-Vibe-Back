@@ -2,6 +2,7 @@ package com.swp493.ivb.common.user;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
@@ -108,5 +109,7 @@ public class EntityUser {
             }
         }
     }
-        
+
+    @OneToMany(mappedBy = "user")
+    private Set<EntityUserTrack2> userTracks;
 }

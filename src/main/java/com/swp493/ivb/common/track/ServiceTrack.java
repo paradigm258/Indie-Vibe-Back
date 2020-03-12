@@ -16,4 +16,6 @@ public interface ServiceTrack {
     public boolean unfavoriteTrack(String userId, String trackId);
 
     public Optional<List<DTOTrackSimple>> getFavorites(String userId);
+
+    public Optional<DTOTrackFull> getTrack2(String id);
 }

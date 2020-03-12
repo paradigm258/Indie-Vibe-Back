@@ -2,6 +2,7 @@ package com.swp493.ivb.common.track;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -20,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
+import com.swp493.ivb.common.user.EntityUserTrack2;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -80,15 +82,6 @@ public class EntityTrack {
     @Column(name = "mp3_320")
     private String mp3320;
 
-//    // for getting track's artists
-//    @ManyToMany(fetch = FetchType.LAZY)
-//    @JoinTable(
-//            name = "user_object", 
-//            joinColumns = @JoinColumn(name = "track_id"), 
-//            inverseJoinColumns = @JoinColumn(name = "user_id"))
-//    @WhereJoinTable(clause = "action='own'")
-//    private List<EntityArtist> artists;
-
     // for getting track's genres
     @OneToMany(
             fetch = FetchType.LAZY,
@@ -109,4 +102,7 @@ public class EntityTrack {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<EntityUserTrack> trackUsers = new ArrayList<>();
+
+    @OneToMany(mappedBy = "track")
+    private Set<EntityUserTrack2> userTracks;
 }
