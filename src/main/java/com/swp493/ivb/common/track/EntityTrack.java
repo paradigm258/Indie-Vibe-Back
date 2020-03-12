@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.track;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +22,6 @@ import javax.validation.constraints.NotNull;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
-import com.swp493.ivb.common.user.EntityUserTrack2;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
@@ -86,7 +86,7 @@ public class EntityTrack {
 
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own' or action = 'featured'")
-    private List<EntityUserTrack> artist = new ArrayList<>();
+    private Set<EntityUserTrack> artist = new HashSet<>();
     
 
     // for getting track's genres
@@ -103,6 +103,4 @@ public class EntityTrack {
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserTrack> trackUsers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "track")
-    private Set<EntityUserTrack2> userTracks;
 }

@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.release;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,18 +22,14 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
-import com.mpatric.mp3agic.UnsupportedTagException;
 import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.ServiceMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
-import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.EntityUserRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
-import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.config.AWSConfig;
 
 import org.modelmapper.ModelMapper;
@@ -127,47 +124,47 @@ public class ServiceReleaseImpl implements ServiceRelease {
             releaseId = release.getId();
 
             // upload tracks and thumbnails
-            // if (thumbnail != null) {
-            //     ObjectMetadata metadata = new ObjectMetadata();
-            //     metadata.setContentLength(thumbnail.getSize());
-            //     String key = release.getId();
-            //     s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
-            //             .withCannedAcl(CannedAccessControlList.PublicRead));
-            //     uploadKeyList.add(key);
-            //     release.setThumbnail(AWSConfig.BUCKET_URL + key);
-            // }
+            if (thumbnail != null) {
+                ObjectMetadata metadata = new ObjectMetadata();
+                metadata.setContentLength(thumbnail.getSize());
+                String key = release.getId();
+                s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                uploadKeyList.add(key);
+                release.setThumbnail(AWSConfig.BUCKET_URL + key);
+            }
 
-            // for (int i = 0; i < tracks.size(); i++) {
-            //     EntityTrack track = tracks.get(i);
-            //     MultipartFile trackContent128 = audioFiles[i * 2];
-            //     MultipartFile trackContent320 = audioFiles[i * 2 + 1];
-            //     track.setFileSize128(trackContent128.getSize());
-            //     track.setFileSize320(trackContent320.getSize());
+            for (int i = 0; i < tracks.size(); i++) {
+                EntityTrack track = tracks.get(i);
+                MultipartFile trackContent128 = audioFiles[i * 2];
+                MultipartFile trackContent320 = audioFiles[i * 2 + 1];
+                track.setFileSize128(trackContent128.getSize());
+                track.setFileSize320(trackContent320.getSize());
 
-            //     file = File.createTempFile(release.getId(), null);
+                file = File.createTempFile(release.getId(), null);
 
-            //     writeInputToOutput(trackContent128.getInputStream(), new FileOutputStream(file));
-            //     Mp3File mp3128 = new Mp3File(file);
-            //     track.setDuration128(mp3128.getLengthInMilliseconds());
-            //     track.setMp3Offset(mp3128.getStartOffset());
-            //     ObjectMetadata metadata128 = new ObjectMetadata();
-            //     metadata128.setContentLength(track.getFileSize128());
-            //     String key = track.getId() + "/128";
-            //     s3.putObject(AWSConfig.BUCKET_NAME, key, trackContent128.getInputStream(), metadata128);
-            //     uploadKeyList.add(key);
-            //     track.setMp3128(AWSConfig.BUCKET_URL + key);
+                writeInputToOutput(trackContent128.getInputStream(), new FileOutputStream(file));
+                Mp3File mp3128 = new Mp3File(file);
+                track.setDuration128(mp3128.getLengthInMilliseconds());
+                track.setMp3Offset(mp3128.getStartOffset());
+                ObjectMetadata metadata128 = new ObjectMetadata();
+                metadata128.setContentLength(track.getFileSize128());
+                String key = track.getId() + "/128";
+                s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata128);
+                uploadKeyList.add(key);
+                track.setMp3128(AWSConfig.BUCKET_URL + key);
 
-            //     writeInputToOutput(trackContent320.getInputStream(), new FileOutputStream(file));
-            //     Mp3File mp3320 = new Mp3File(file);
-            //     track.setDuration320(mp3320.getLengthInMilliseconds());
+                writeInputToOutput(trackContent320.getInputStream(), new FileOutputStream(file));
+                Mp3File mp3320 = new Mp3File(file);
+                track.setDuration320(mp3320.getLengthInMilliseconds());
 
-            //     ObjectMetadata metadata320 = new ObjectMetadata();
-            //     metadata320.setContentLength(track.getFileSize320());
-            //     key = track.getId() + "/320";
-            //     s3.putObject(AWSConfig.BUCKET_NAME, key, trackContent320.getInputStream(), metadata320);
-            //     uploadKeyList.add(key);
-            //     track.setMp3320(AWSConfig.BUCKET_URL + key);
-            // }
+                ObjectMetadata metadata320 = new ObjectMetadata();
+                metadata320.setContentLength(track.getFileSize320());
+                key = track.getId() + "/320";
+                s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata320);
+                uploadKeyList.add(key);
+                track.setMp3320(AWSConfig.BUCKET_URL + key);
+            }
 
             release.setTracks(tracks);
             releaseRepo.save(release);
@@ -195,18 +192,18 @@ public class ServiceReleaseImpl implements ServiceRelease {
             if(!r.getArtist().isPresent() || !r.getArtist().get().getId().equals(artistId)) return "";
             releaseRepo.delete(r);
             try {
-                // s3.deleteObject(AWSConfig.BUCKET_NAME, r.getId());
+                s3.deleteObject(AWSConfig.BUCKET_NAME, r.getId());
             } catch (SdkClientException e) {
                 log.error("Failed to delete: " + r.getTitle(), e);
             }
             r.getTracks().stream().map(track -> {
                 try {
-                    // s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
+                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
                 } catch (SdkClientException e) {
                     log.error("Failed to delete: " + track.getTitle(), e);
                 }
                 try {
-                    // s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/320");
+                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/320");
                 } catch (SdkClientException e) {
                     log.error("Failed to delete: " + track.getTitle(), e);
                 }

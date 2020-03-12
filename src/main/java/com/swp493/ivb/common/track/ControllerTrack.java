@@ -119,7 +119,7 @@ public class ControllerTrack {
     @CrossOrigin(origins = "*")
     ResponseEntity<Payload<DTOTrackFull>> trackTest(
             @PathVariable String id) {
-        Optional<DTOTrackFull> track = trackService.getTrack2(id);
+        Optional<DTOTrackFull> track = trackService.getTrackById(id);
         
         return track.map(t -> ResponseEntity
                 .status(HttpStatus.OK)

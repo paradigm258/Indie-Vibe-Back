@@ -1,6 +1,5 @@
 package com.swp493.ivb.common.user;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -108,7 +107,4 @@ public class EntityUser {
         userTrack.setAction("favorite");
         this.userFavoriteTracks.remove(userTrack);
     }
-
-    @OneToMany(mappedBy = "user")
-    private Set<EntityUserTrack2> userTracks;
 }

@@ -5,8 +5,6 @@ import java.util.Optional;
 
 public interface ServiceTrack {
 
-    public Optional<DTOTrackFull> getTrackById(String id);
-
     public Optional<DTOTrackStreamInfo> getTrackStreamInfo(String id, int bitrate);
 
     public Optional<DTOTrackStream> getTrackStreamById(String id, int bitrate);
@@ -17,5 +15,5 @@ public interface ServiceTrack {
 
     public Optional<List<DTOTrackSimple>> getFavorites(String userId);
 
-    public Optional<DTOTrackFull> getTrack2(String id);
+    public Optional<DTOTrackFull> getTrackById(String id);
 }

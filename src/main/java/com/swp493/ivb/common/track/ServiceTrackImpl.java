@@ -5,8 +5,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.swp493.ivb.common.artist.DTOArtistSimple;
+import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.user.EntityUser;
-import com.swp493.ivb.common.user.RepositoryUser;
+import com.swp493.ivb.common.user.EntityUserRelease;
+import com.swp493.ivb.common.user.EntityUserTrack;
 import com.swp493.ivb.common.user.ServiceUser;
 
 import org.modelmapper.ModelMapper;
@@ -14,15 +17,6 @@ import org.modelmapper.TypeMap;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import com.swp493.ivb.common.artist.DTOArtistSimple;
-import com.swp493.ivb.common.release.DTOReleaseSimple;
-import com.swp493.ivb.common.user.EntityUser;
-import com.swp493.ivb.common.user.EntityUserRelease2;
-import com.swp493.ivb.common.user.EntityUserTrack2;
-import com.swp493.ivb.common.user.RepositoryUser;
-import com.swp493.ivb.common.user.RepositoryUserRelease;
-import com.swp493.ivb.common.user.RepositoryUserTrack;
 
 @Service
 public class ServiceTrackImpl implements ServiceTrack {
@@ -33,22 +27,6 @@ public class ServiceTrackImpl implements ServiceTrack {
     @Autowired
     private ServiceUser userService;
 
-    @Autowired
-    private RepositoryUserTrack userTrackRepo;
-
-    @Autowired
-    private RepositoryUserRelease userReleaseRepo;
-
-    @Override
-    public Optional<DTOTrackFull> getTrackById(String id) {
-        Optional<EntityTrack> trackEntity = trackRepo.findById(id);
-
-        return trackEntity.map(track -> {
-            ModelMapper mapper = new ModelMapper();
-            return mapper.map(track, DTOTrackFull.class);
-        });
-    }
-
     @Override
     public Optional<DTOTrackStreamInfo> getTrackStreamInfo(String id, int bitrate) {
         Optional<EntityTrack> trackEntity = trackRepo.findById(id);
@@ -58,20 +36,20 @@ public class ServiceTrackImpl implements ServiceTrack {
                 DTOTrackStreamInfo.class);
 
         switch (bitrate) {
-        case 128:
-            typeMap.addMappings(m -> {
-                m.map(src -> src.getDuration128(), DTOTrackStreamInfo::setDuration);
-                m.map(src -> src.getFileSize128(), DTOTrackStreamInfo::setFileSize);
-            });
-            break;
-        case 320:
-            typeMap.addMappings(m -> {
-                m.map(src -> src.getDuration320(), DTOTrackStreamInfo::setDuration);
-                m.map(src -> src.getFileSize320(), DTOTrackStreamInfo::setFileSize);
-            });
-            break;
-        default:
-            return Optional.empty();
+            case 128:
+                typeMap.addMappings(m -> {
+                    m.map(src -> src.getDuration128(), DTOTrackStreamInfo::setDuration);
+                    m.map(src -> src.getFileSize128(), DTOTrackStreamInfo::setFileSize);
+                });
+                break;
+            case 320:
+                typeMap.addMappings(m -> {
+                    m.map(src -> src.getDuration320(), DTOTrackStreamInfo::setDuration);
+                    m.map(src -> src.getFileSize320(), DTOTrackStreamInfo::setFileSize);
+                });
+                break;
+            default:
+                return Optional.empty();
         }
 
         return trackEntity.map(track -> {
@@ -90,22 +68,22 @@ public class ServiceTrackImpl implements ServiceTrack {
         TypeMap<EntityTrack, DTOTrackStream> typeMap = mapper.createTypeMap(EntityTrack.class, DTOTrackStream.class);
 
         switch (bitrate) {
-        case 128:
-            typeMap.addMappings(m -> {
-                m.map(src -> src.getMp3128(), DTOTrackStream::setUrl);
-                m.map(src -> src.getDuration128(), DTOTrackStream::setDuration);
-                m.map(src -> src.getFileSize128(), DTOTrackStream::setFileSize);
-            });
-            break;
-        case 320:
-            typeMap.addMappings(m -> {
-                m.map(src -> src.getMp3320(), DTOTrackStream::setUrl);
-                m.map(src -> src.getDuration320(), DTOTrackStream::setDuration);
-                m.map(src -> src.getFileSize320(), DTOTrackStream::setFileSize);
-            });
-            break;
-        default:
-            return Optional.empty();
+            case 128:
+                typeMap.addMappings(m -> {
+                    m.map(src -> src.getMp3128(), DTOTrackStream::setUrl);
+                    m.map(src -> src.getDuration128(), DTOTrackStream::setDuration);
+                    m.map(src -> src.getFileSize128(), DTOTrackStream::setFileSize);
+                });
+                break;
+            case 320:
+                typeMap.addMappings(m -> {
+                    m.map(src -> src.getMp3320(), DTOTrackStream::setUrl);
+                    m.map(src -> src.getDuration320(), DTOTrackStream::setDuration);
+                    m.map(src -> src.getFileSize320(), DTOTrackStream::setFileSize);
+                });
+                break;
+            default:
+                return Optional.empty();
         }
 
         return trackEntity.map(track -> mapper.map(track, DTOTrackStream.class));
@@ -157,7 +135,7 @@ public class ServiceTrackImpl implements ServiceTrack {
     }
 
     @Override
-    public Optional<DTOTrackFull> getTrack2(String id) {
+    public Optional<DTOTrackFull> getTrackById(String id) {
         Optional<EntityTrack> track = trackRepo.findById(id);
 
         if (track.isPresent()) {
@@ -165,17 +143,12 @@ public class ServiceTrackImpl implements ServiceTrack {
             DTOTrackFull res = mapper.map(track.get(), DTOTrackFull.class);
 
             // set artists who own or featured the track
-            Set<EntityUserTrack2> owners = userTrackRepo.findByTrackAndActionOrAction(track.get(), "own", "featured");
-            res.setArtists(owners.stream()
-                .map(ut -> mapper.map(ut.getUser(), DTOArtistSimple.class))
-                .collect(Collectors.toSet()));
+            Set<EntityUserTrack> trackArtists = track.get().getArtist();
+            res.setArtists(trackArtists.stream().map(ut -> mapper.map(ut.getUser(), DTOArtistSimple.class))
+                    .collect(Collectors.toSet()));
 
             // set artist who own the release (that the track belongs to)
-            Optional<EntityUserRelease2> releaseOwner = userReleaseRepo
-                    .findByReleaseAndAction(track.get().getRelease(), "own");
-            res.setRelease(releaseOwner.map(r -> mapper
-                    .map(r.getRelease(), DTOReleaseSimple.class))
-                    .orElse(null));
+            Optional<EntityUserRelease> releaseOwner = track.map(t -> t.getRelease().getArtistRelease().get(0));
             res.setRelease(releaseOwner.map(ro -> {
                 DTOReleaseSimple resRelease = mapper.map(ro.getRelease(), DTOReleaseSimple.class);
                 resRelease.setArtist(mapper.map(ro.getUser(), DTOArtistSimple.class));
@@ -184,7 +157,7 @@ public class ServiceTrackImpl implements ServiceTrack {
 
             return Optional.of(res);
         }
-        
+
         return Optional.empty();
     }
 }
