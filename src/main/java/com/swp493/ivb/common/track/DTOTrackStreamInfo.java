@@ -16,4 +16,6 @@ public class DTOTrackStreamInfo {
     private int mp3Offset;
 
     private DTOTrackFull info;
+
+    private String url;
 }

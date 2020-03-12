@@ -38,12 +38,14 @@ public class ServiceTrackImpl implements ServiceTrack {
         switch (bitrate) {
             case 128:
                 typeMap.addMappings(m -> {
+                    m.map(src -> src.getMp3128(), DTOTrackStreamInfo::setUrl);
                     m.map(src -> src.getDuration128(), DTOTrackStreamInfo::setDuration);
                     m.map(src -> src.getFileSize128(), DTOTrackStreamInfo::setFileSize);
                 });
                 break;
             case 320:
                 typeMap.addMappings(m -> {
+                    m.map(src -> src.getMp3320(), DTOTrackStreamInfo::setUrl);
                     m.map(src -> src.getDuration320(), DTOTrackStreamInfo::setDuration);
                     m.map(src -> src.getFileSize320(), DTOTrackStreamInfo::setFileSize);
                 });
@@ -105,14 +107,12 @@ public class ServiceTrackImpl implements ServiceTrack {
         if (user != null && track != null) {
             switch (action) {
                 case "unfavorite":
-                    if (user.getFavoriteTracks().contains(track)) {
-                        user.unfavoriteTracks(track);
+                    if (user.unfavoriteTracks(track)) { 
                         trackRepo.save(track);
                     }
                     break;
                 case "favorite":
-                    if (!user.getFavoriteTracks().contains(track)) {
-                        user.favoriteTracks(track);
+                    if (user.favoriteTracks(track)) {
                         trackRepo.flush();
                     }
                     break;
@@ -127,9 +127,9 @@ public class ServiceTrackImpl implements ServiceTrack {
     @Override
     public Optional<List<DTOTrackSimple>> getFavorites(String userId) {
         return userService.getUserForProcessing(userId).map(user -> {
-            return user.getFavoriteTracks().stream().map(track -> {
+            return user.getUserFavoriteTracks().stream().map(track -> {
                 ModelMapper mapper = new ModelMapper();
-                return mapper.map(track, DTOTrackSimple.class);
+                return mapper.map(track.getTrack(), DTOTrackSimple.class);
             }).collect(Collectors.toList());
         });
     }

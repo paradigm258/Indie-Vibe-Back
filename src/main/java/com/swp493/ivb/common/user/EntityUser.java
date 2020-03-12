@@ -1,9 +1,7 @@
 package com.swp493.ivb.common.user;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
@@ -27,9 +25,11 @@ import org.hibernate.annotations.DiscriminatorFormula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.EqualsAndHashCode.Include;
 
 @Entity
 @Table(name = "user")
@@ -39,11 +39,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode
 public class EntityUser {
 
     @Id
     @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
     @GeneratedValue(generator = "id")
+    @Include
     private String id;
 
     @NotBlank
@@ -86,25 +88,23 @@ public class EntityUser {
     @Where(clause = "action = 'favorite'")
     private Set<EntityUserTrack> userFavoriteTracks = new HashSet<>();
 
-    public List<EntityTrack> getFavoriteTracks() {
-        return getUserFavoriteTracks().stream().map(userTrack -> {
-            return userTrack.getTrack();
-        }).collect(Collectors.toList());
-    }
-
-    public void favoriteTracks(EntityTrack track) {
+    public boolean favoriteTracks(EntityTrack track) {
         EntityUserTrack userTrack = new EntityUserTrack();
         userTrack.setTrack(track);
         userTrack.setUser(this);
         userTrack.setAction("favorite");
+        if(userFavoriteTracks.contains(userTrack)) return false;
         this.userFavoriteTracks.add(userTrack);
+        return true;
     }
 
-    public void unfavoriteTracks(EntityTrack track) {
+    public boolean unfavoriteTracks(EntityTrack track) {
         EntityUserTrack userTrack = new EntityUserTrack();
         userTrack.setTrack(track);
         userTrack.setUser(this);
         userTrack.setAction("favorite");
+        if(!userFavoriteTracks.contains(userTrack)) return false;
         this.userFavoriteTracks.remove(userTrack);
+        return true;
     }
 }
