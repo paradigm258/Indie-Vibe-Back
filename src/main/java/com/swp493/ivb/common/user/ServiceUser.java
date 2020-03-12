@@ -9,8 +9,6 @@ public interface ServiceUser {
 
     int countFollowers(String userId);
 
-    Optional<EntityUser> getUserForProcessing(String id);
-
     Optional<DTOUserPublic> getUserPublic(String id);
 
     boolean register(DTORegisterForm userForm);
