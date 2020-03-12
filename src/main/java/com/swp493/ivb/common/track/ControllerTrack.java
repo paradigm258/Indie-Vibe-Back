@@ -27,7 +27,7 @@ public class ControllerTrack {
     @Autowired
     private ServiceTrack trackService;
 
-    @PostMapping(value = "/track/{trackId}")
+    @PostMapping(value = "/tracks/{trackId}")
     public ResponseEntity<?> favoriteAction(@PathVariable String trackId, @RequestParam String action,
             @RequestAttribute EntityUser user) {
         try {
@@ -68,9 +68,11 @@ public class ControllerTrack {
 
     @GetMapping(value = "/stream/info/{bitrate}/{id}")
     @CrossOrigin(origins = "*")
-    public ResponseEntity<Payload<DTOTrackStreamInfo>> getTrack(@PathVariable int bitrate,
+    public ResponseEntity<Payload<DTOTrackStreamInfo>> getTrack(
+        @RequestAttribute("user") EntityUser user,     
+        @PathVariable int bitrate,
             @PathVariable(required = true) String id) {
-        Optional<DTOTrackStreamInfo> track = trackService.getTrackStreamInfo(id, bitrate);
+        Optional<DTOTrackStreamInfo> track = trackService.getTrackStreamInfo(id, bitrate,user.getId());
 
         return track
                 .map(t -> ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
@@ -82,8 +84,9 @@ public class ControllerTrack {
     @GetMapping(value = "/tracks/test/{id}")
     @CrossOrigin(origins = "*")
     ResponseEntity<Payload<DTOTrackFull>> trackTest(
+            @RequestAttribute(name = "user") EntityUser user,
             @PathVariable String id) {
-        Optional<DTOTrackFull> track = trackService.getTrackById(id);
+        Optional<DTOTrackFull> track = trackService.getTrackById(id,user.getId());
         
         return track.map(t -> ResponseEntity
                 .status(HttpStatus.OK)

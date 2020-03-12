@@ -27,4 +27,6 @@ public class DTOTrackSimple {
     protected Set<EntityMasterData> genres;
 
     protected String type = "track";
+
+    protected Set<String> relation ;
 }

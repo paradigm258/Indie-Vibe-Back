@@ -28,7 +28,7 @@ public class ServiceTrackImpl implements ServiceTrack {
     private RepositoryUser userRepo;
 
     @Override
-    public Optional<DTOTrackStreamInfo> getTrackStreamInfo(String id, int bitrate) {
+    public Optional<DTOTrackStreamInfo> getTrackStreamInfo(String id, int bitrate, String userId) {
         Optional<EntityTrack> trackEntity = trackRepo.findById(id);
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
@@ -55,7 +55,7 @@ public class ServiceTrackImpl implements ServiceTrack {
         }
 
         return trackEntity.map(track -> {
-            DTOTrackFull info = getTrackFullFromEntity(track).map(t -> t).orElse(null);
+            DTOTrackFull info = getTrackFullFromEntity(track, userId).map(t -> t).orElse(null);
             DTOTrackStreamInfo trackStreamInfo = mapper.map(track, DTOTrackStreamInfo.class);
             trackStreamInfo.setInfo(info);
             return trackStreamInfo;
@@ -106,20 +106,26 @@ public class ServiceTrackImpl implements ServiceTrack {
     }
 
     @Override
-    public Optional<DTOTrackFull> getTrackById(String id) {
+    public Optional<DTOTrackFull> getTrackById(String id,String userId) {
         Optional<EntityTrack> track = trackRepo.findById(id);
-
         if (track.isPresent()) {
-            return getTrackFullFromEntity(track.get());
+            return getTrackFullFromEntity(track.get(), userId);
         }
 
         return Optional.empty();
     }
 
-    private Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track) {
+    private Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, String userId) {
+        EntityUser user = userRepo.findById(userId).get();
         ModelMapper mapper = new ModelMapper();
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
-
+        res.setRelation(track.getTrackUsers().stream().map(eut ->{
+            if(eut.getUser().equals(user)){
+                return eut.getAction();
+            }else{
+                return "";
+            }
+        }).collect(Collectors.toSet()));
         // set artists who own or featured the track
         Set<EntityUserTrack> trackArtists = track.getArtist();
         res.setArtists(trackArtists.stream().map(ut -> mapper.map(ut.getUser(), DTOArtistSimple.class))
@@ -135,4 +141,5 @@ public class ServiceTrackImpl implements ServiceTrack {
 
         return Optional.of(res);
     }
+    
 }
