@@ -22,6 +22,7 @@ import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Where;
 
 import lombok.EqualsAndHashCode;
 import lombok.EqualsAndHashCode.Include;
@@ -41,7 +42,7 @@ public class EntityTrack {
     @NotBlank
     @Include
     @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
-    @GeneratedValue(generator = "id")  
+    @GeneratedValue(generator = "id")
     private String id;
 
     @NotBlank
@@ -80,23 +81,15 @@ public class EntityTrack {
     @Column(name = "mp3_320")
     private String mp3320;
 
-//    // for getting track's artists
-//    @ManyToMany(fetch = FetchType.LAZY)
-//    @JoinTable(
-//            name = "user_object", 
-//            joinColumns = @JoinColumn(name = "track_id"), 
-//            inverseJoinColumns = @JoinColumn(name = "user_id"))
-//    @WhereJoinTable(clause = "action='own'")
-//    private List<EntityArtist> artists;
+
+    @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "action = 'own' or action = 'featured'")
+    private List<EntityUserTrack> artist = new ArrayList<>();
+    
 
     // for getting track's genres
-    @OneToMany(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.PERSIST)
-    @JoinTable(
-            name="object_genre",
-            joinColumns = @JoinColumn(name = "track_id"),
-            inverseJoinColumns = @JoinColumn(name = "genre_id"))
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "object_genre", joinColumns = @JoinColumn(name = "track_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
     private List<EntityMasterData> genres;
 
     // for getting track's release
@@ -105,8 +98,9 @@ public class EntityTrack {
     private EntityRelease release;
 
     // for insertion into 'user_object' table, user's operations with track
-    @OneToMany(mappedBy = "track",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
+    @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserTrack> trackUsers = new ArrayList<>();
+
+    
+    
 }

@@ -21,15 +21,25 @@ public class ServiceUserSecurityImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<EntityUser> user = repo.findByEmail(username);
-        if(!user.isPresent()){
-            throw new UsernameNotFoundException(username);
+        try {
+            Optional<EntityUser> user = repo.findByEmail(username);
+
+            if (!user.isPresent()) {
+                throw new UsernameNotFoundException(username);
+            }
+            return new IndieUserPrincipal(user.get());
+        } catch (UsernameNotFoundException e) {
+           throw e;
+        } catch (Exception e){
+            e.printStackTrace();
+            throw e;
         }
-        return new IndieUserPrincipal(user.get());
+        
     }
-    public UserDetails loadUserByFbId(String fbId) throws UsernameNotFoundException{
+
+    public UserDetails loadUserByFbId(String fbId) throws UsernameNotFoundException {
         Optional<EntityUser> user = repo.findByFbId(fbId);
-        if(!user.isPresent()){
+        if (!user.isPresent()) {
             throw new UsernameNotFoundException(fbId);
         }
         return new IndieUserPrincipal(user.get());

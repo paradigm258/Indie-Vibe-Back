@@ -1,14 +1,19 @@
 package com.swp493.ivb.common.user;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
+import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -19,6 +24,7 @@ import javax.validation.constraints.NotBlank;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
 
+import org.hibernate.annotations.DiscriminatorFormula;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 
@@ -28,6 +34,9 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "user")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorFormula(value = "role_id")
+@DiscriminatorValue("r-free")
 @NoArgsConstructor
 @Getter
 @Setter
@@ -35,7 +44,7 @@ public class EntityUser {
 
     @Id
     @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
-    @GeneratedValue(generator = "id")  
+    @GeneratedValue(generator = "id")
     private String id;
 
     @NotBlank
@@ -50,7 +59,7 @@ public class EntityUser {
     private String thumbnail;
 
     private String fbId;
-    
+
     @NotBlank
     private String artistStatus;
 
@@ -69,44 +78,35 @@ public class EntityUser {
     private EntityMasterData userPlan;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EntityUserRelease> releaseUsers = new ArrayList<>();
+    private Set<EntityUserRelease> releaseUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EntityUserTrack> trackUsers = new ArrayList<>();
+    private Set<EntityUserTrack> trackUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'favorite'")
-    private List<EntityUserTrack> userFavoriteTracks = new ArrayList<>();
+    private Set<EntityUserTrack> userFavoriteTracks = new HashSet<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Where(clause = "action = 'own'")
-    private List<EntityUserTrack> ownUserTracks = new ArrayList<>();
-
-    public List<EntityTrack> getFavoriteTracks(){
-        return getUserFavoriteTracks().stream().map(userTrack ->{
+    public List<EntityTrack> getFavoriteTracks() {
+        return getUserFavoriteTracks().stream().map(userTrack -> {
             return userTrack.getTrack();
         }).collect(Collectors.toList());
     }
 
-    public void favoriteTracks(EntityTrack track){
+    public void favoriteTracks(EntityTrack track) {
         EntityUserTrack userTrack = new EntityUserTrack();
         userTrack.setTrack(track);
         userTrack.setUser(this);
         userTrack.setAction("favorite");
         this.userFavoriteTracks.add(userTrack);
-        track.getTrackUsers().add(userTrack);
     }
 
-    public void unfavoriteTracks(EntityTrack track){
-        for(EntityUserTrack userTrack : userFavoriteTracks){
-            if(userTrack.getTrack().equals(track)){
-                userFavoriteTracks.remove(userTrack);
-                userTrack.getTrack().getTrackUsers().remove(userTrack);
-                userTrack.setTrack(null);
-                userTrack.setUser(null);
-                return ;
-            }
-        }
+    public void unfavoriteTracks(EntityTrack track) {
+        EntityUserTrack userTrack = new EntityUserTrack();
+        userTrack.setTrack(track);
+        userTrack.setUser(this);
+        userTrack.setAction("favorite");
+        this.userFavoriteTracks.remove(userTrack);
     }
-        
+
 }

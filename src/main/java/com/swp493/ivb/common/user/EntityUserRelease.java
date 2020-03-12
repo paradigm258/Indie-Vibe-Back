@@ -37,7 +37,6 @@ public class EntityUserRelease implements Serializable {
     @JoinColumn(name = "user_id")
     private EntityUser user;
 
-    @Id
     private String action;
 
     @Override

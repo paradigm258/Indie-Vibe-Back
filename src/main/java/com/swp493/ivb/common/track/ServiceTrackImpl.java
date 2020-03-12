@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
+import com.swp493.ivb.common.user.ServiceUser;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
@@ -20,7 +21,7 @@ public class ServiceTrackImpl implements ServiceTrack {
     private RepositoryTrack trackRepo;
 
     @Autowired
-    private RepositoryUser userRepo;
+    private ServiceUser userService;
 
     @Override
     public Optional<DTOTrackFull> getTrackById(String id) {
@@ -105,15 +106,22 @@ public class ServiceTrackImpl implements ServiceTrack {
     }
 
     private boolean actionTrack(String userId, String trackId, String action) {
-        EntityUser user = userRepo.findById(userId).orElse(null);
+        EntityUser user = userService.getUserForProcessing(userId).orElse(null);
         EntityTrack track = trackRepo.findById(trackId).orElse(null);
         if (user != null && track != null) {
             switch (action) {
                 case "unfavorite":
-                    user.unfavoriteTracks(track);
+                    if (user.getFavoriteTracks().contains(track)) {
+                        user.unfavoriteTracks(track);
+                        trackRepo.save(track);
+                    }
                     break;
                 case "favorite":
-                    user.favoriteTracks(track);
+                    if (!user.getFavoriteTracks().contains(track)) {
+                        user.favoriteTracks(track);
+                        trackRepo.flush();
+                    }
+                    break;
                 default:
                     break;
             }
@@ -124,8 +132,8 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Override
     public Optional<List<DTOTrackSimple>> getFavorites(String userId) {
-        return userRepo.findById(userId).map(user ->{
-            return user.getFavoriteTracks().stream().map(track ->{
+        return userService.getUserForProcessing(userId).map(user -> {
+            return user.getFavoriteTracks().stream().map(track -> {
                 ModelMapper mapper = new ModelMapper();
                 return mapper.map(track, DTOTrackSimple.class);
             }).collect(Collectors.toList());

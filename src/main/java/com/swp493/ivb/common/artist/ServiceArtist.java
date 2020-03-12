@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.artist;
 
-public interface ServiceArtist {
+import java.util.Optional;
 
+public interface ServiceArtist {
+    public Optional<EntityArtist> getArtist(String id);
 }
