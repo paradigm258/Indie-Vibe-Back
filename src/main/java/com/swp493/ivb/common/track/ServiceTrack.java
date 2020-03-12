@@ -7,8 +7,6 @@ public interface ServiceTrack {
 
     public Optional<DTOTrackStreamInfo> getTrackStreamInfo(String id, int bitrate);
 
-    public Optional<DTOTrackStream> getTrackStreamById(String id, int bitrate);
-
     public boolean favoriteTrack(String userId, String trackId);
 
     public boolean unfavoriteTrack(String userId, String trackId);

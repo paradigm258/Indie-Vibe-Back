@@ -17,6 +17,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -24,20 +31,13 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.mpatric.mp3agic.Mp3File;
 import com.swp493.ivb.common.artist.EntityArtist;
-import com.swp493.ivb.common.artist.ServiceArtist;
+import com.swp493.ivb.common.artist.RepositoryArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
-import com.swp493.ivb.common.mdata.ServiceMasterData;
+import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.user.EntityUserRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
 import com.swp493.ivb.config.AWSConfig;
-
-import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ServiceReleaseImpl implements ServiceRelease {
@@ -48,10 +48,10 @@ public class ServiceReleaseImpl implements ServiceRelease {
     private RepositoryRelease releaseRepo;
 
     @Autowired
-    private ServiceMasterData masterDataService;
+    private RepositoryMasterData masterDataRepo;
 
     @Autowired
-    private ServiceArtist serviceArtist;
+    private RepositoryArtist artistRepo;
 
     @Autowired
     private AmazonS3 s3;
@@ -70,9 +70,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
             release.setDate(new Timestamp(new Date().getTime()));
             release.setStatus("public");
             release.setThumbnail("N/A");
-            release.setReleaseType(masterDataService.getReleaseTypeById(info.getTypeId()).get());
+            release.setReleaseType(masterDataRepo.findByIdAndType(info.getTypeId(), "release").get());
 
-            EntityArtist artist = serviceArtist.getArtist(artistId).get();
+            EntityArtist artist = artistRepo.findById(artistId).get();
             // insert for track and release
             Set<EntityMasterData> releaseGenres = new HashSet<>();
 
@@ -87,7 +87,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 track.setRelease(release);
 
                 track.setGenres(Arrays.stream(trackInfo.getGenres()).map(genreId -> {
-                    EntityMasterData genre = masterDataService.getGenreById(genreId).get();
+                    EntityMasterData genre = masterDataRepo.findByIdAndType(genreId, "genre").get();
                     releaseGenres.add(genre);
                     return genre;
                 }).collect(Collectors.toList()));
@@ -220,7 +220,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Override
     public Optional<List<DTOReleaseSimple>> getOwnRelease(String artistId) {
-        Optional<EntityArtist> artist = serviceArtist.getArtist(artistId);
+        Optional<EntityArtist> artist = artistRepo.findById(artistId);
         return artist.map(a ->{
             ModelMapper mapper = new ModelMapper();
             List<DTOReleaseSimple> list = a.getOwnReleases().stream().map(r ->{

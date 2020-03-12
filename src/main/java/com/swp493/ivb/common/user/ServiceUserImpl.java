@@ -53,11 +53,6 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public Optional<EntityUser> getUserForProcessing(String id) {
-        return userRepository.findById(id);
-    }
-
-    @Override
     public Optional<DTOUserPublic> getUserPublic(String id) {
         Optional<EntityUser> userEntity = userRepository.findById(id);
 
