@@ -17,5 +17,5 @@ public class DTOUserPublic {
 
     protected int followersCount;
 
-    protected String type = "user";
+    protected String type = "profile";
 }
