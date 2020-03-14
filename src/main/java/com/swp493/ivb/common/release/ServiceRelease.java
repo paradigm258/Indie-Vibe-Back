@@ -15,4 +15,6 @@ public interface ServiceRelease {
     Optional<EntityRelease> getRelease(String releaseId);
 
     Optional<List<DTOReleaseSimple>> getOwnRelease(String userId);
+
+    Optional<DTOReleaseSimple> getRelease(String releaseId, String userId);
 }
