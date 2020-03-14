@@ -20,14 +20,13 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
+import com.swp493.ivb.common.playlist.EntityPlaylistTrack;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 
-import lombok.EqualsAndHashCode;
-import lombok.EqualsAndHashCode.Include;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -37,12 +36,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
 public class EntityTrack {
 
     @Id
     @NotBlank
-    @Include
     @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
     @GeneratedValue(generator = "id")
     private String id;
@@ -103,6 +100,7 @@ public class EntityTrack {
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserTrack> trackUsers = new ArrayList<>();
 
-    
+    @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EntityPlaylistTrack> trackPlaylists = new ArrayList<>();
 
 }

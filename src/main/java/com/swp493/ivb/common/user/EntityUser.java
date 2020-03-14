@@ -85,6 +85,9 @@ public class EntityUser {
     private Set<EntityUserTrack> trackUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EntityUserPlaylist> userPlaylists = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'favorite'")
     private Set<EntityUserTrack> userFavoriteTracks = new HashSet<>();
 
