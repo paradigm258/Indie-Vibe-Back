@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.playlist;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -10,9 +11,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.track.DTOTrackFull;
 import com.swp493.ivb.common.track.DTOTrackPlaylist;
-import com.swp493.ivb.common.track.DTOTrackSimple;
 import com.swp493.ivb.common.track.EntityTrack;
-import com.swp493.ivb.common.track.RepositoryTrack;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.EntityUserPlaylist;
 import com.swp493.ivb.common.user.RepositoryUser;
@@ -24,8 +23,6 @@ import org.modelmapper.TypeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,9 +38,6 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     private RepositoryUser userRepo;
 
     @Autowired
-    private RepositoryTrack trackRepo;
-
-    @Autowired
     private AmazonS3 s3;
 
     public String createPlaylist(DTOPlaylistCreate playlistInfo, String userId) throws Exception {
@@ -57,8 +51,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         ObjectMetadata metadata = new ObjectMetadata();
         MultipartFile thumbnail = playlistInfo.getThumbnail();
         try {
-            // s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, playlistId, thumbnail.getInputStream(), metadata)
-            //         .withCannedAcl(CannedAccessControlList.PublicRead));
+            s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, playlistId, thumbnail.getInputStream(), metadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
             playlist.setThumbnail(AWSConfig.BUCKET_URL + playlistId);
 
             EntityUserPlaylist eup = new EntityUserPlaylist();
@@ -82,9 +76,9 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         try {
             if (playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own")) {
                 playlistRepo.deleteById(playlistId);
-                // s3.deleteObject(AWSConfig.BUCKET_NAME, playlistId);
+                s3.deleteObject(AWSConfig.BUCKET_NAME, playlistId);
                 return true;
-            }else{
+            } else {
                 return false;
             }
         } catch (Exception e) {
@@ -108,30 +102,40 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public DTOPlaylistFull getPlaylistFull(String playlistId, String userId, int pageIndex) throws Exception {
-        if(!playlistRepo.existsByIdAndUserPlaylistsUserId(playlistId, userId)) throw new Exception("No permission");
-        EntityPlaylist playlist = playlistRepo.findById(playlistId).get(); 
+    public Optional<DTOPlaylistFull> getPlaylistFull(String playlistId, String userId, int pageIndex) throws Exception {
+        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
+
+        if (!oPlaylist.isPresent())
+            return Optional.empty();
+
+        EntityPlaylist playlist = oPlaylist.get();
+
+        // Return empty optional if playlist is not public and user have no permission
+        if (!playlist.getStatus().equals("public")
+                && !playlistRepo.existsByIdAndUserPlaylistsUserId(playlistId, userId))
+            return Optional.empty();
+
         List<EntityPlaylistTrack> tracks = playlist.getTrackPlaylist();
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistFull playlistFull = mapper.map(playlist, DTOPlaylistFull.class);
-        playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(),DTOUserPublic.class));
+        playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistFull.setFollowersCount(playlist.getUserPlaylists().size());
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         paging.setTotal(tracks.size());
-        paging.setOffset(pageIndex*5);
-        int limit = paging.getOffset()+4<paging.getTotal()?paging.getOffset():paging.getTotal();
+        paging.setOffset(pageIndex * 5);
+        int limit = paging.getOffset() + 4 < paging.getTotal() ? paging.getOffset() : paging.getTotal();
         paging.setLimit(limit);
-        paging.setItems(tracks.subList(paging.getOffset(), paging.getLimit()).stream().map(track ->{
+        paging.setItems(tracks.subList(paging.getOffset(), paging.getLimit()).stream().map(track -> {
             DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
             trackPlaylist.setAddedAt(track.getInsertedDate());
             TypeMap<EntityTrack, DTOTrackFull> typeMap = mapper.createTypeMap(EntityTrack.class, DTOTrackFull.class);
-            typeMap.addMapping(src ->{
+            typeMap.addMapping(src -> {
                 return mapper.map(src.getRelease(), DTOReleaseSimple.class);
             }, DTOTrackFull::setRelease);
             trackPlaylist.setTrack(mapper.map(track.getTrack(), DTOTrackFull.class));
             return trackPlaylist;
         }).collect(Collectors.toList()));
         playlistFull.setTracks(paging);
-        return playlistFull;
+        return Optional.of(playlistFull);
     }
 }

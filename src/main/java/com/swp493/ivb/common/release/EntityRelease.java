@@ -2,6 +2,7 @@ package com.swp493.ivb.common.release;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -64,7 +65,7 @@ public class EntityRelease {
 
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own'")
-    private List<EntityUserRelease> artistRelease;
+    private List<EntityUserRelease> artistRelease = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "object_genre", joinColumns = @JoinColumn(name = "release_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
@@ -81,7 +82,7 @@ public class EntityRelease {
 
     // for insertion into 'user_object' table, user's operations with release
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EntityUserRelease> releaseUsers = new ArrayList<>();
+    private Set<EntityUserRelease> releaseUsers = new HashSet<>();
 
     public Optional<EntityUser> getArtist() {
         return artistRelease.stream().map(releaseUsers ->{

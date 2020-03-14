@@ -5,6 +5,8 @@ import javax.validation.Valid;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ControllerPlaylist {
 
+    private static Logger log = LoggerFactory.getLogger(ControllerPlaylist.class);
+
     @Autowired
     ServicePlaylist playlistService;
 
@@ -31,7 +35,8 @@ public class ControllerPlaylist {
         try {
             if (result.hasErrors()) {
                 FieldError error = result.getFieldError();
-                return ResponseEntity.badRequest().body(new Payload<>().fail(error.getField() + " is invalid" +error.getCode()));
+                return ResponseEntity.badRequest()
+                        .body(new Payload<>().fail(error.getField() + " is invalid" + error.getCode()));
             }
             return ResponseEntity.ok()
                     .body(new Payload<>().success(playlistService.createPlaylist(playlistInfo, user.getId())));
@@ -50,7 +55,7 @@ public class ControllerPlaylist {
             else
                 return ResponseEntity.badRequest().body(new Payload<>().fail("No permission"));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error delete playlist", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new Payload<>().fail("Something is wrong"));
         }
@@ -68,9 +73,12 @@ public class ControllerPlaylist {
     }
 
     @GetMapping(value = "/playlists/{id}")
-    public ResponseEntity<?> getPlaylist(@RequestAttribute("user") EntityUser user, @PathVariable String id, @RequestParam(defaultValue = "0") int pageIndex){
+    public ResponseEntity<?> getPlaylist(@RequestAttribute("user") EntityUser user, @PathVariable String id,
+            @RequestParam(defaultValue = "0") int pageIndex) {
         try {
-            return ResponseEntity.ok().body(new Payload<>().success(playlistService.getPlaylistFull(id, user.getId(), pageIndex)));
+            return playlistService.getPlaylistFull(id, user.getId(), pageIndex)
+                    .map(p -> ResponseEntity.ok().body(new Payload<>().success(p)))
+                    .orElse(ResponseEntity.noContent().build());
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
