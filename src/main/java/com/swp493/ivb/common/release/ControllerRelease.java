@@ -11,7 +11,6 @@ import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 import com.swp493.ivb.util.CustomValidation;
 
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,14 +70,18 @@ public class ControllerRelease {
                 ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Payload<String>().fail("Failed to delete")));
     }
 
-    @GetMapping(value = "/releases/info/{id}/")
+    @GetMapping(value = "/releases/info/{id}")
     public ResponseEntity<?> getRelease(@PathVariable(required = true) String id) {
-        ModelMapper mapper = new ModelMapper();
-        Optional<EntityRelease> release = releaseService.getRelease(id);
-        return release.map(r -> {
-            DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
-            return ResponseEntity.ok().body(new Payload<>().success(releaseSimple));
-        }).orElse(ResponseEntity.noContent().build());
+        try {
+            Optional<DTOReleaseSimple> releaseSimple = releaseService.getRelease(id,"");
+            return releaseSimple.isPresent()
+                    ?ResponseEntity.ok().body(new Payload<>().success(releaseSimple))
+                    :ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error getting release info: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Payload<>().error("Something is wrong"));
+        }
+        
     }
 
 }

@@ -30,11 +30,13 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.mpatric.mp3agic.Mp3File;
+import com.swp493.ivb.common.artist.DTOArtistSimple;
 import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.artist.RepositoryArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
+import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.EntityUserRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
 import com.swp493.ivb.config.AWSConfig;
@@ -129,7 +131,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 metadata.setContentLength(thumbnail.getSize());
                 String key = release.getId();
                 s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
-                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                       .withCannedAcl(CannedAccessControlList.PublicRead));
                 uploadKeyList.add(key);
                 release.setThumbnail(AWSConfig.BUCKET_URL + key);
             }
@@ -189,7 +191,8 @@ public class ServiceReleaseImpl implements ServiceRelease {
     public Optional<String> deleteRelease(String releaseId, String artistId) {
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
-            if(!r.getArtist().isPresent() || !r.getArtist().get().getId().equals(artistId)) return "";
+            if (!r.getArtist().isPresent() || !r.getArtist().get().getId().equals(artistId))
+                return "";
             releaseRepo.delete(r);
             try {
                 s3.deleteObject(AWSConfig.BUCKET_NAME, r.getId());
@@ -221,9 +224,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
     @Override
     public Optional<List<DTOReleaseSimple>> getOwnRelease(String artistId) {
         Optional<EntityArtist> artist = artistRepo.findById(artistId);
-        return artist.map(a ->{
+        return artist.map(a -> {
             ModelMapper mapper = new ModelMapper();
-            List<DTOReleaseSimple> list = a.getOwnReleases().stream().map(r ->{
+            List<DTOReleaseSimple> list = a.getOwnReleases().stream().map(r -> {
                 return mapper.map(r, DTOReleaseSimple.class);
             }).collect(Collectors.toList());
             return list;
@@ -247,6 +250,19 @@ public class ServiceReleaseImpl implements ServiceRelease {
             out.write(buffer, 0, len);
             len = in.read(buffer);
         }
+    }
+
+    @Override
+    public Optional<DTOReleaseSimple> getRelease(String releaseId, String userId) {
+            ModelMapper mapper = new ModelMapper();
+            Optional<EntityRelease> release = releaseRepo.findById(releaseId);
+            return release.map(r -> {
+                DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
+                Optional<EntityUser> artist = r.getArtist(); 
+                releaseSimple.setArtist(mapper.map(artist.isPresent()?artist.get():artist,DTOArtistSimple.class));
+                return releaseSimple;
+            });
+        
     }
 
 }
