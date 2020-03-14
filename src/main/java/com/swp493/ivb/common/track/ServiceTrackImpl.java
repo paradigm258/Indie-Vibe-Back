@@ -53,9 +53,9 @@ public class ServiceTrackImpl implements ServiceTrack {
         default:
             return Optional.empty();
         }
-
+        EntityUser user = userRepo.findById(userId).get();
         return trackEntity.map(track -> {
-            DTOTrackFull info = getTrackFullFromEntity(track, userId).map(t -> t).orElse(null);
+            DTOTrackFull info = getTrackFullFromEntity(track, user).map(t -> t).orElse(null);
             DTOTrackStreamInfo trackStreamInfo = mapper.map(track, DTOTrackStreamInfo.class);
             trackStreamInfo.setInfo(info);
             return trackStreamInfo;
@@ -110,16 +110,17 @@ public class ServiceTrackImpl implements ServiceTrack {
     public Optional<DTOTrackFull> getTrackById(String id, String userId) {
         Optional<EntityTrack> track = trackRepo.findById(id);
         if (track.isPresent()) {
-            return getTrackFullFromEntity(track.get(), userId);
+            Optional<EntityUser> user = userRepo.findById(userId);
+            return getTrackFullFromEntity(track.get(), user.get());
         }
 
         return Optional.empty();
     }
 
-    private Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, String userId) {
-        EntityUser user = userRepo.findById(userId).get();
+    public static Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, EntityUser user) {
         ModelMapper mapper = new ModelMapper();
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
+        
         res.setRelation(track.getTrackUsers().stream().map(eut -> {
             if (eut.getUser().equals(user)) {
                 return eut.getAction();

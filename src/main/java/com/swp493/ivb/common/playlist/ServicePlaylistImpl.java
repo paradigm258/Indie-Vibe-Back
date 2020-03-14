@@ -12,7 +12,9 @@ import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.track.DTOTrackFull;
 import com.swp493.ivb.common.track.DTOTrackPlaylist;
 import com.swp493.ivb.common.track.EntityTrack;
+import com.swp493.ivb.common.track.ServiceTrackImpl;
 import com.swp493.ivb.common.user.DTOUserPublic;
+import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.EntityUserPlaylist;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
@@ -112,8 +114,10 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
         // Return empty optional if playlist is not public and user have no permission
         if (!playlist.getStatus().equals("public")
-                && !playlistRepo.existsByIdAndUserPlaylistsUserId(playlistId, userId))
+                && !playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId,"own"))
             return Optional.empty();
+        
+        EntityUser user = userRepo.findById(userId).get();
 
         List<EntityPlaylistTrack> tracks = playlist.getTrackPlaylist();
         ModelMapper mapper = new ModelMapper();
@@ -128,11 +132,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         paging.setItems(tracks.subList(paging.getOffset(), paging.getLimit()).stream().map(track -> {
             DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
             trackPlaylist.setAddedAt(track.getInsertedDate());
-            TypeMap<EntityTrack, DTOTrackFull> typeMap = mapper.createTypeMap(EntityTrack.class, DTOTrackFull.class);
-            typeMap.addMapping(src -> {
-                return mapper.map(src.getRelease(), DTOReleaseSimple.class);
-            }, DTOTrackFull::setRelease);
-            trackPlaylist.setTrack(mapper.map(track.getTrack(), DTOTrackFull.class));
+            DTOTrackFull trackFull = ServiceTrackImpl.getTrackFullFromEntity(track.getTrack(), user).get();
+            trackPlaylist.setTrack(trackFull);
             return trackPlaylist;
         }).collect(Collectors.toList()));
         playlistFull.setTracks(paging);
