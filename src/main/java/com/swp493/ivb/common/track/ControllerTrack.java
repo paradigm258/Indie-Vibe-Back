@@ -33,49 +33,61 @@ public class ControllerTrack {
         try {
             boolean success = false;
             switch (action) {
-                case "favorite":
-                    success = trackService.favoriteTrack(user.getId(), trackId);
-                    break;
-                case "unfavorite":
-                    success = trackService.unfavoriteTrack(user.getId(), trackId);
-                    break;
-                default:
-                    break;
+            case "favorite":
+                success = trackService.favoriteTrack(user.getId(), trackId);
+                break;
+            case "unfavorite":
+                success = trackService.unfavoriteTrack(user.getId(), trackId);
+                break;
+            default:
+                break;
             }
             if (success) {
-                return ResponseEntity.ok().body(new Payload<>().success("successfully " + action + " track"));
+                return ResponseEntity
+                        .ok()
+                        .body(new Payload<>().success("successfully " + action + " track"));
             } else {
-                return ResponseEntity.badRequest().body(new Payload<>().fail("failed to " + action));
+                return ResponseEntity
+                        .badRequest()
+                        .body(new Payload<>().fail("failed to " + action));
             }
         } catch (Exception e) {
             log.error("/track addFavorite", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
     }
 
-    @GetMapping(value="/tracks/favorites")
+    @GetMapping(value = "/tracks/favorites")
     public ResponseEntity<?> getFavorites(@RequestAttribute EntityUser user) {
         try {
-            return trackService.getFavorites(user.getId()).map(list ->{
-                return ResponseEntity.ok().body(new Payload<>().success(list));
-            }).orElse(ResponseEntity.badRequest().body(new Payload<>().fail("No data")));
+            return trackService.getFavorites(user.getId())
+                    .map(list -> {
+                        return ResponseEntity
+                                .ok()
+                                .body(new Payload<>().success(list));
+            }).orElse(ResponseEntity
+                    .badRequest()
+                    .body(new Payload<>().fail("No data")));
         } catch (Exception e) {
             log.error("tracks/favorites", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Payload<>().error("Something is wrong"));
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new Payload<>().error("Something is wrong"));
         }
     }
 
     @GetMapping(value = "/stream/info/{bitrate}/{id}")
     @CrossOrigin(origins = "*")
     public ResponseEntity<Payload<DTOTrackStreamInfo>> getTrack(
-        @RequestAttribute("user") EntityUser user,     
+        @RequestAttribute("user") EntityUser user,
         @PathVariable int bitrate,
-            @PathVariable(required = true) String id) {
+        @PathVariable(required = true) String id) {
         Optional<DTOTrackStreamInfo> track = trackService.getTrackStreamInfo(id, bitrate,user.getId());
 
         return track
-                .map(t -> ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                .map(t -> ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .body(new Payload<DTOTrackStreamInfo>().success(t)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new Payload<DTOTrackStreamInfo>().error("Track not found")));

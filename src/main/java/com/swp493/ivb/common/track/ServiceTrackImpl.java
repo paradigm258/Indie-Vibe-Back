@@ -98,15 +98,16 @@ public class ServiceTrackImpl implements ServiceTrack {
     @Override
     public Optional<List<DTOTrackSimple>> getFavorites(String userId) {
         return userRepo.findById(userId).map(user -> {
-            return user.getUserFavoriteTracks().stream().map(track -> {
-                ModelMapper mapper = new ModelMapper();
-                return mapper.map(track.getTrack(), DTOTrackSimple.class);
-            }).collect(Collectors.toList());
+            return user.getUserFavoriteTracks().stream()
+                    .map(track -> {
+                        ModelMapper mapper = new ModelMapper();
+                        return mapper.map(track.getTrack(), DTOTrackSimple.class);
+                    }).collect(Collectors.toList());
         });
     }
 
     @Override
-    public Optional<DTOTrackFull> getTrackById(String id,String userId) {
+    public Optional<DTOTrackFull> getTrackById(String id, String userId) {
         Optional<EntityTrack> track = trackRepo.findById(id);
         if (track.isPresent()) {
             return getTrackFullFromEntity(track.get(), userId);
@@ -119,13 +120,14 @@ public class ServiceTrackImpl implements ServiceTrack {
         EntityUser user = userRepo.findById(userId).get();
         ModelMapper mapper = new ModelMapper();
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
-        res.setRelation(track.getTrackUsers().stream().map(eut ->{
-            if(eut.getUser().equals(user)){
+        res.setRelation(track.getTrackUsers().stream().map(eut -> {
+            if (eut.getUser().equals(user)) {
                 return eut.getAction();
-            }else{
+            } else {
                 return "";
             }
         }).collect(Collectors.toSet()));
+
         // set artists who own or featured the track
         Set<EntityUserTrack> trackArtists = track.getArtist();
         res.setArtists(trackArtists.stream().map(ut -> mapper.map(ut.getUser(), DTOArtistSimple.class))
@@ -141,5 +143,5 @@ public class ServiceTrackImpl implements ServiceTrack {
 
         return Optional.of(res);
     }
-    
+
 }
