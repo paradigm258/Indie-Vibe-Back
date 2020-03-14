@@ -8,13 +8,13 @@ public class Payload<T> {
     @JsonInclude(Include.NON_EMPTY)
     private String status;
 
-    @JsonInclude(Include.NON_EMPTY)
+    @JsonInclude(Include.NON_NULL)
     private T data;
 
-    @JsonInclude(Include.NON_EMPTY)
+    @JsonInclude(Include.NON_NULL)
     private String message;
 
-    @JsonInclude(Include.NON_EMPTY)
+    @JsonInclude(Include.NON_NULL)
     private Integer code;
 
     public Payload() {
