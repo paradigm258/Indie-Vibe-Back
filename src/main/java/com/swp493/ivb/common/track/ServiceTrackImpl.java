@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import org.modelmapper.PropertyMap;
 import org.modelmapper.TypeMap;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,22 +37,22 @@ public class ServiceTrackImpl implements ServiceTrack {
                 DTOTrackStreamInfo.class);
 
         switch (bitrate) {
-        case 128:
-            typeMap.addMappings(m -> {
-                m.map(src -> src.getMp3128(), DTOTrackStreamInfo::setUrl);
-                m.map(src -> src.getDuration128(), DTOTrackStreamInfo::setDuration);
-                m.map(src -> src.getFileSize128(), DTOTrackStreamInfo::setFileSize);
-            });
-            break;
-        case 320:
-            typeMap.addMappings(m -> {
-                m.map(src -> src.getMp3320(), DTOTrackStreamInfo::setUrl);
-                m.map(src -> src.getDuration320(), DTOTrackStreamInfo::setDuration);
-                m.map(src -> src.getFileSize320(), DTOTrackStreamInfo::setFileSize);
-            });
-            break;
-        default:
-            return Optional.empty();
+            case 128:
+                typeMap.addMappings(m -> {
+                    m.map(src -> src.getMp3128(), DTOTrackStreamInfo::setUrl);
+                    m.map(src -> src.getDuration128(), DTOTrackStreamInfo::setDuration);
+                    m.map(src -> src.getFileSize128(), DTOTrackStreamInfo::setFileSize);
+                });
+                break;
+            case 320:
+                typeMap.addMappings(m -> {
+                    m.map(src -> src.getMp3320(), DTOTrackStreamInfo::setUrl);
+                    m.map(src -> src.getDuration320(), DTOTrackStreamInfo::setDuration);
+                    m.map(src -> src.getFileSize320(), DTOTrackStreamInfo::setFileSize);
+                });
+                break;
+            default:
+                return Optional.empty();
         }
         EntityUser user = userRepo.findById(userId).get();
         return trackEntity.map(track -> {
@@ -77,18 +78,18 @@ public class ServiceTrackImpl implements ServiceTrack {
         EntityTrack track = trackRepo.findById(trackId).orElse(null);
         if (user != null && track != null) {
             switch (action) {
-            case "unfavorite":
-                if (user.unfavoriteTracks(track)) {
-                    trackRepo.save(track);
-                }
-                break;
-            case "favorite":
-                if (user.favoriteTracks(track)) {
-                    trackRepo.flush();
-                }
-                break;
-            default:
-                break;
+                case "unfavorite":
+                    if (user.unfavoriteTracks(track)) {
+                        trackRepo.save(track);
+                    }
+                    break;
+                case "favorite":
+                    if (user.favoriteTracks(track)) {
+                        trackRepo.flush();
+                    }
+                    break;
+                default:
+                    break;
             }
             return true;
         }
@@ -98,11 +99,16 @@ public class ServiceTrackImpl implements ServiceTrack {
     @Override
     public Optional<List<DTOTrackSimple>> getFavorites(String userId) {
         return userRepo.findById(userId).map(user -> {
-            return user.getUserFavoriteTracks().stream()
-                    .map(track -> {
-                        ModelMapper mapper = new ModelMapper();
-                        return mapper.map(track.getTrack(), DTOTrackSimple.class);
-                    }).collect(Collectors.toList());
+            return user.getUserFavoriteTracks().stream().map(track -> {
+                ModelMapper mapper = new ModelMapper();
+                mapper.addMappings(new PropertyMap<EntityTrack, DTOTrackSimple>() {
+                    @Override
+                    protected void configure() {
+                        map().setDuration(track.getTrack().getDuration320());
+                    }
+                });
+                return mapper.map(track.getTrack(), DTOTrackSimple.class);
+            }).collect(Collectors.toList());
         });
     }
 
@@ -120,7 +126,7 @@ public class ServiceTrackImpl implements ServiceTrack {
     public static Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, EntityUser user) {
         ModelMapper mapper = new ModelMapper();
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
-        
+        res.setDuration(track.getDuration320());
         res.setRelation(track.getTrackUsers().stream().map(eut -> {
             if (eut.getUser().equals(user)) {
                 return eut.getAction();

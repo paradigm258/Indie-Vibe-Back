@@ -62,9 +62,12 @@ public class ControllerPlaylist {
     }
 
     @GetMapping(value = "/me/playlists")
-    public ResponseEntity<?> getPlaylists(@RequestAttribute("user") EntityUser user) {
+    public ResponseEntity<?> getMyPlaylist(@RequestAttribute("user") EntityUser user,
+            @RequestParam(defaultValue = "0") int pageIndex) {
         try {
-            return ResponseEntity.ok().body(new Payload<>().success(playlistService.getPlaylists(user.getId())));
+            return ResponseEntity.ok().body(
+                    new Payload<>().success(playlistService.getPlaylists(user.getId(),true,pageIndex))
+                );
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -72,13 +75,25 @@ public class ControllerPlaylist {
         }
     }
 
-    @GetMapping(value = "/playlists/{id}")
-    public ResponseEntity<?> getPlaylist(@RequestAttribute("user") EntityUser user, @PathVariable String id,
+    @GetMapping(value = "/playlists/full/{id}")
+    public ResponseEntity<?> getPlaylistFull(@RequestAttribute("user") EntityUser user, @PathVariable String id,
             @RequestParam(defaultValue = "0") int pageIndex) {
         try {
             return playlistService.getPlaylistFull(id, user.getId(), pageIndex)
                     .map(p -> ResponseEntity.ok().body(new Payload<>().success(p)))
                     .orElse(ResponseEntity.noContent().build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new Payload<>().fail("Something is wrong"));
+        }
+    }
+
+    @GetMapping(value = "/{userId}/playlists")
+    public ResponseEntity<?> getPlaylistSimple(@RequestAttribute("user") EntityUser user, @PathVariable String id,
+    @RequestParam(defaultValue = "0") int pageIndex){
+        try {
+            return ResponseEntity.ok().body(new Payload<>().success(playlistService.getPlaylists(user.getId(),false,pageIndex)));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

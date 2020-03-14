@@ -22,6 +22,8 @@ public class DTOTrackSimple {
 
     protected String producer;
 
+    protected long duration;
+
     protected Set<DTOArtistSimple> artists;
 
     protected Set<EntityMasterData> genres;

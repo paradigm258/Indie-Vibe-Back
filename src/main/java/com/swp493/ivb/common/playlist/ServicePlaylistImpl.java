@@ -8,10 +8,8 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.track.DTOTrackFull;
 import com.swp493.ivb.common.track.DTOTrackPlaylist;
-import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.track.ServiceTrackImpl;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.EntityUser;
@@ -21,7 +19,6 @@ import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
 
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,20 +84,19 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             log.error("Failed to delete playlist: " + playlistId, e);
             throw e;
         }
-
     }
 
     @Override
-    public List<DTOPlaylistSimple> getPlaylists(String userId) {
-        List<EntityPlaylist> list = playlistRepo.findByUserPlaylistsUserId(userId);
-        List<DTOPlaylistSimple> listSimple = list.stream().map(l -> {
+    public List<DTOPlaylistSimple> getPlaylists(String userId, boolean getPrivate, int pageIndex) {
+        List<EntityPlaylist> list = getPrivate ? playlistRepo.findByUserPlaylistsUserId(userId)
+                                               : playlistRepo.findByStatusAndUserPlaylistsUserId("public", userId);
+        return list.subList(pageIndex * 5, pageIndex * 5 + 9).stream().map(l -> {
             ModelMapper mapper = new ModelMapper();
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
             simple.setTracksCount(l.getTrackPlaylist().size());
             return simple;
         }).collect(Collectors.toList());
-        return listSimple;
     }
 
     @Override
@@ -114,9 +110,9 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
         // Return empty optional if playlist is not public and user have no permission
         if (!playlist.getStatus().equals("public")
-                && !playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId,"own"))
+                && !playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own"))
             return Optional.empty();
-        
+
         EntityUser user = userRepo.findById(userId).get();
 
         List<EntityPlaylistTrack> tracks = playlist.getTrackPlaylist();
@@ -124,6 +120,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         DTOPlaylistFull playlistFull = mapper.map(playlist, DTOPlaylistFull.class);
         playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistFull.setFollowersCount(playlist.getUserPlaylists().size());
+
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         paging.setTotal(tracks.size());
         paging.setOffset(pageIndex * 5);
@@ -136,6 +133,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             trackPlaylist.setTrack(trackFull);
             return trackPlaylist;
         }).collect(Collectors.toList()));
+
         playlistFull.setTracks(paging);
         return Optional.of(playlistFull);
     }
