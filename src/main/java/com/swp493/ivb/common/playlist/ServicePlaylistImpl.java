@@ -1,13 +1,16 @@
 package com.swp493.ivb.common.playlist;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.DTOTrackFull;
 import com.swp493.ivb.common.track.DTOTrackPlaylist;
 import com.swp493.ivb.common.track.EntityTrack;
@@ -186,9 +189,15 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         switch (action) {
             case "add":
                 success = playlist.addTrack(track);
+                playlist.getGenres().addAll(track.getGenres());
                 break;
             case "remove":
                 success = playlist.removeTrack(track);
+                Set<EntityMasterData> newGenres = new HashSet<>();
+                playlist.getPlaylistTracks().stream().forEach(pt ->{
+                    newGenres.addAll(pt.getTrack().getGenres());
+                });
+                playlist.setGenres(newGenres);
                 break;
             default:
                 break;

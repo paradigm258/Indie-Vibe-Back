@@ -2,16 +2,22 @@ package com.swp493.ivb.common.playlist;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
+import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.user.EntityUserPlaylist;
 
@@ -52,6 +58,10 @@ public class EntityPlaylist {
     @OneToMany(mappedBy = "playlist",cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own'")
     private List<EntityUserPlaylist> owner = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinTable(name = "object_genre", joinColumns = @JoinColumn(name = "playlist_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
+    private Set<EntityMasterData> genres = new HashSet<>();
 
     public boolean addTrack(EntityTrack track){
         EntityPlaylistTrack playlistTrack = new EntityPlaylistTrack();
