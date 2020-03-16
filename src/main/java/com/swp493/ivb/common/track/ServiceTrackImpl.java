@@ -125,6 +125,7 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     public static Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, EntityUser user) {
         ModelMapper mapper = new ModelMapper();
+        mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
         res.setDuration(track.getDuration320());
         res.setRelation(track.getTrackUsers().stream().map(eut -> {
