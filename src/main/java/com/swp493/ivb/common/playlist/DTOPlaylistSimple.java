@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.playlist;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.swp493.ivb.common.user.DTOUserPublic;
@@ -23,7 +24,7 @@ public class DTOPlaylistSimple {
 
     protected String status;
 
-    protected Set<String> relations;
+    protected Set<String> relations = new HashSet<>();
 
     protected DTOUserPublic owner;
 

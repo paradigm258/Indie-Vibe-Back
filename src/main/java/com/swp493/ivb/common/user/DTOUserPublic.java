@@ -1,5 +1,8 @@
 package com.swp493.ivb.common.user;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,6 +19,8 @@ public class DTOUserPublic {
     protected String thumbnail;
 
     protected int followersCount;
+    
+    protected Set<String> relation = new HashSet<>();
 
     protected String type = "profile";
 }
