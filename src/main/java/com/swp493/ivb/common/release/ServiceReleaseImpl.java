@@ -253,7 +253,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
             Optional<EntityRelease> release = releaseRepo.findById(releaseId);
             return release.map(r -> {
                 DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
-                releaseSimple.setRelations(r.getReleaseUsers().stream().map(eul -> {
+                releaseSimple.setRelation(r.getReleaseUsers().stream().map(eul -> {
                     if (eul.getUser().getId().equals(userId)) {
                         return eul.getAction();
                     } else {

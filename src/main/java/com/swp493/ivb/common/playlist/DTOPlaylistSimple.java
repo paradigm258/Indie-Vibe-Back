@@ -24,7 +24,7 @@ public class DTOPlaylistSimple {
 
     protected String status;
 
-    protected Set<String> relations = new HashSet<>();
+    protected Set<String> relation = new HashSet<>();
 
     protected DTOUserPublic owner;
 

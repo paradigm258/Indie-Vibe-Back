@@ -25,7 +25,7 @@ public class DTOReleaseSimple {
 
     protected String status;
 
-    protected Set<String> relations = new HashSet<>();
+    protected Set<String> relation = new HashSet<>();
 
     protected DTOArtistSimple artist;
 
