@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.release;
 
 import java.sql.Timestamp;
+import java.util.Set;
 
 import com.swp493.ivb.common.artist.DTOArtistSimple;
 
@@ -22,6 +23,8 @@ public class DTOReleaseSimple {
     protected Timestamp date;
 
     protected String status;
+
+    protected Set<String> relations;
 
     protected DTOArtistSimple artist;
 

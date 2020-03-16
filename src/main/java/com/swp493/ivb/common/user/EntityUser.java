@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.user;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -12,6 +13,8 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -19,6 +22,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
+import com.swp493.ivb.common.playlist.EntityPlaylist;
 import com.swp493.ivb.common.track.EntityTrack;
 
 import org.hibernate.annotations.DiscriminatorFormula;
@@ -64,6 +68,8 @@ public class EntityUser {
     @NotBlank
     private String artistStatus;
 
+    private int followerCount;
+
     // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi
     // dùng cái này get nó ra là nó tự query.
     @OneToOne(fetch = FetchType.LAZY)
@@ -78,6 +84,14 @@ public class EntityUser {
     @JoinColumn(name = "plan_id")
     private EntityMasterData userPlan;
 
+    @ManyToMany
+    @JoinTable(name = "user_follow_user",joinColumns = @JoinColumn(name = "follower_id"), 
+    inverseJoinColumns = @JoinColumn(name = "followed_id"))
+    private List<EntityUser> followedUsers;
+
+    @ManyToMany(mappedBy = "followedUsers")
+    private List<EntityUser> followerUsers;
+    
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EntityUserRelease> releaseUsers = new HashSet<>();
 
@@ -108,6 +122,26 @@ public class EntityUser {
         userTrack.setAction("favorite");
         if(!userFavoriteTracks.contains(userTrack)) return false;
         this.userFavoriteTracks.remove(userTrack);
+        return true;
+    }
+
+    public boolean favoritePlaylist(EntityPlaylist playlist) {
+        EntityUserPlaylist userPlaylist = new EntityUserPlaylist();
+        userPlaylist.setPlaylist(playlist);
+        userPlaylist.setUser(this);
+        userPlaylist.setAction("favorite");
+        if(userPlaylists.contains(userPlaylist)) return false;
+        this.userPlaylists.add(userPlaylist);
+        return true;
+    }
+
+    public boolean unfavoritePlaylist(EntityPlaylist playlist) {
+        EntityUserPlaylist userPlaylist = new EntityUserPlaylist();
+        userPlaylist.setPlaylist(playlist);
+        userPlaylist.setUser(this);
+        userPlaylist.setAction("favorite");
+        if(!userPlaylists.contains(userPlaylist)) return false;
+        this.userPlaylists.remove(userPlaylist);
         return true;
     }
 }

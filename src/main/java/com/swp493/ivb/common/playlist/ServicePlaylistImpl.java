@@ -1,25 +1,29 @@
 package com.swp493.ivb.common.playlist;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.swp493.ivb.common.release.DTOReleaseSimple;
+import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.track.DTOTrackFull;
 import com.swp493.ivb.common.track.DTOTrackPlaylist;
 import com.swp493.ivb.common.track.EntityTrack;
+import com.swp493.ivb.common.track.RepositoryTrack;
+import com.swp493.ivb.common.track.ServiceTrackImpl;
 import com.swp493.ivb.common.user.DTOUserPublic;
+import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.EntityUserPlaylist;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
 
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,8 +42,12 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     private RepositoryUser userRepo;
 
     @Autowired
+    private RepositoryTrack trackRepo;
+
+    @Autowired
     private AmazonS3 s3;
 
+    @Override
     public String createPlaylist(DTOPlaylistCreate playlistInfo, String userId) throws Exception {
         EntityPlaylist playlist = new EntityPlaylist();
         playlist.setTitle(playlistInfo.getTitle());
@@ -72,6 +80,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         }
     }
 
+    @Override
     public boolean deletePlaylist(String playlistId, String userId) throws Exception {
         try {
             if (playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own")) {
@@ -85,24 +94,33 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             log.error("Failed to delete playlist: " + playlistId, e);
             throw e;
         }
-
     }
 
     @Override
-    public List<DTOPlaylistSimple> getPlaylists(String userId) {
-        List<EntityPlaylist> list = playlistRepo.findByUserPlaylistsUserId(userId);
-        List<DTOPlaylistSimple> listSimple = list.stream().map(l -> {
+    public List<DTOPlaylistSimple> getPlaylists(String userId, boolean getPrivate, int offset, int limit) {
+        List<EntityPlaylist> list = getPrivate ? playlistRepo.findByUserPlaylistsUserId(userId)
+                                               : playlistRepo.findByStatusAndUserPlaylistsUserId("public", userId);
+        int total = list.size();
+        offset = offset<total && offset>=0 ? offset : total;
+        limit = limit<total && limit>=offset ? limit : total;                                       
+        return list.subList(offset, limit).stream().map(l -> {
             ModelMapper mapper = new ModelMapper();
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
-            simple.setTracksCount(l.getTrackPlaylist().size());
+            simple.setTracksCount(l.getPlaylistTracks().size());
+            simple.setRelations(l.getUserPlaylists().stream().map(eul -> {
+                if (eul.getUser().getId().equals(userId)) {
+                    return eul.getAction();
+                } else {
+                    return "";
+                }
+            }).collect(Collectors.toSet()));
             return simple;
         }).collect(Collectors.toList());
-        return listSimple;
     }
 
     @Override
-    public Optional<DTOPlaylistFull> getPlaylistFull(String playlistId, String userId, int pageIndex) throws Exception {
+    public Optional<DTOPlaylistFull> getPlaylistFull(String playlistId, String userId, int offset, int limit) throws Exception {
         Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
 
         if (!oPlaylist.isPresent())
@@ -112,30 +130,135 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
         // Return empty optional if playlist is not public and user have no permission
         if (!playlist.getStatus().equals("public")
-                && !playlistRepo.existsByIdAndUserPlaylistsUserId(playlistId, userId))
+                && !playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own"))
             return Optional.empty();
 
-        List<EntityPlaylistTrack> tracks = playlist.getTrackPlaylist();
+        EntityUser user = userRepo.findById(userId).get();
+
+        List<EntityPlaylistTrack> tracks = playlist.getPlaylistTracks();
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistFull playlistFull = mapper.map(playlist, DTOPlaylistFull.class);
         playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
+        playlistFull.setTracksCount(tracks.size());
         playlistFull.setFollowersCount(playlist.getUserPlaylists().size());
+        playlistFull.setRelations(playlist.getUserPlaylists().stream().map(eul -> {
+            if (eul.getUser().getId().equals(userId)) {
+                return eul.getAction();
+            } else {
+                return "";
+            }
+        }).collect(Collectors.toSet()));
+        
         Paging<DTOTrackPlaylist> paging = new Paging<>();
-        paging.setTotal(tracks.size());
-        paging.setOffset(pageIndex * 5);
-        int limit = paging.getOffset() + 4 < paging.getTotal() ? paging.getOffset() : paging.getTotal();
+        int total = tracks.size();
+        offset = offset<total && offset>=0 ? offset : total;
+        limit = limit<total && limit>=offset ? limit : total;
+        paging.setTotal(total);
+        paging.setOffset(offset);
         paging.setLimit(limit);
         paging.setItems(tracks.subList(paging.getOffset(), paging.getLimit()).stream().map(track -> {
             DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
             trackPlaylist.setAddedAt(track.getInsertedDate());
-            TypeMap<EntityTrack, DTOTrackFull> typeMap = mapper.createTypeMap(EntityTrack.class, DTOTrackFull.class);
-            typeMap.addMapping(src -> {
-                return mapper.map(src.getRelease(), DTOReleaseSimple.class);
-            }, DTOTrackFull::setRelease);
-            trackPlaylist.setTrack(mapper.map(track.getTrack(), DTOTrackFull.class));
+            DTOTrackFull trackFull = ServiceTrackImpl.getTrackFullFromEntity(track.getTrack(), user).get();
+            trackPlaylist.setTrack(trackFull);
             return trackPlaylist;
         }).collect(Collectors.toList()));
+
         playlistFull.setTracks(paging);
         return Optional.of(playlistFull);
+    }
+
+    @Override
+    public Optional<DTOPlaylistSimple> getPlaylistSimple(String playlistId, String userId) throws Exception {
+        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
+        if (!oPlaylist.isPresent())
+            return Optional.empty();
+
+        EntityPlaylist playlist = oPlaylist.get();
+
+        // Return empty optional if playlist is not public and user have no permission
+        if (!playlist.getStatus().equals("public")
+                && !playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own"))
+            return Optional.empty();
+
+        ModelMapper mapper = new ModelMapper();
+        DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistFull.class);
+        playlistSimple.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
+        playlistSimple.setTracksCount(playlist.getPlaylistTracks().size());
+        playlistSimple.setRelations(playlist.getUserPlaylists().stream().map(eul -> {
+            if (eul.getUser().getId().equals(userId)) {
+                return eul.getAction();
+            } else {
+                return "";
+            }
+        }).collect(Collectors.toSet()));
+        return Optional.of(playlistSimple);
+    }
+
+    public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId){
+        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
+        if(!oPlaylist.isPresent()) return false;
+        EntityPlaylist playlist = oPlaylist.get();
+        Optional<EntityTrack> oTrack = trackRepo.findById(trackId);
+        if(!oTrack.isPresent()) return false;
+        EntityTrack track = oTrack.get();
+
+        if( !(playlist.getStatus().equals("public")|| playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId,userId,"own"))&&
+            !(track.getStatus().equals("public") || trackRepo.existsByIdAndTrackUsersUserIdAndTrackUsersAction(trackId,userId,"own"))
+            ) return false;
+        boolean success = false;
+        switch (action) {
+            case "add":
+                success = playlist.addTrack(track);
+                playlist.getGenres().addAll(track.getGenres());
+                break;
+            case "remove":
+                success = playlist.removeTrack(track);
+                Set<EntityMasterData> newGenres = new HashSet<>();
+                playlist.getPlaylistTracks().stream().forEach(pt ->{
+                    newGenres.addAll(pt.getTrack().getGenres());
+                });
+                playlist.setGenres(newGenres);
+                break;
+            default:
+                break;
+        }
+        if(success){
+            playlistRepo.flush();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean actionPlaylist(String playlistId, String userId, String action) {
+        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
+        if(!oPlaylist.isPresent()) return false;
+        EntityPlaylist playlist = oPlaylist.get();
+
+        Optional<EntityUser> oUser = userRepo.findById(userId);
+        if(!oUser.isPresent()) return false;
+        EntityUser user = oUser.get();
+
+        if(!(playlist.getStatus().equals("public")
+        || playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId,userId,"own")))
+        return false;
+        boolean success = false;
+        switch (action) {
+            case "favorite":
+                success = user.favoritePlaylist(playlist);
+                break;
+            case "unfavorite":
+                success = user.unfavoritePlaylist(playlist);
+                break;
+            default:
+                break;
+        }
+        if(success){
+            userRepo.flush();
+            return true;
+        }
+        return false;
+
     }
 }
