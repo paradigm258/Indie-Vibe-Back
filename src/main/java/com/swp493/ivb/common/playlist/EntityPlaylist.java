@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.playlist;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -11,6 +12,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
+import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.user.EntityUserPlaylist;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -42,7 +44,7 @@ public class EntityPlaylist {
     private String status;
 
     @OneToMany(mappedBy = "playlist",cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<EntityPlaylistTrack> trackPlaylist = new ArrayList<>();
+    private List<EntityPlaylistTrack> playlistTracks = new ArrayList<>();
 
     @OneToMany(mappedBy = "playlist",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EntityUserPlaylist> userPlaylists = new ArrayList<>();
@@ -50,5 +52,24 @@ public class EntityPlaylist {
     @OneToMany(mappedBy = "playlist",cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own'")
     private List<EntityUserPlaylist> owner = new ArrayList<>();
+
+    public boolean addTrack(EntityTrack track){
+        EntityPlaylistTrack playlistTrack = new EntityPlaylistTrack();
+        playlistTrack.setPlaylist(this);
+        playlistTrack.setTrack(track);
+        playlistTrack.setInsertedDate(new Date());
+        if(playlistTracks.contains(playlistTrack)) return false;
+        playlistTracks.add(playlistTrack);
+        return true;
+    }
+    public boolean removeTrack(EntityTrack track){
+        EntityPlaylistTrack playlistTrack = new EntityPlaylistTrack();
+        playlistTrack.setPlaylist(this);
+        playlistTrack.setTrack(track);
+        playlistTrack.setInsertedDate(new Date());
+        if(!playlistTracks.contains(playlistTrack)) return false;
+        playlistTracks.remove(playlistTrack);
+        return true;
+    }
 
 }
