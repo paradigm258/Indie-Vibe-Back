@@ -12,8 +12,6 @@ public interface ServiceRelease {
 
     Optional<String> deleteRelease(String releaseId, String artistId);
 
-    Optional<EntityRelease> getRelease(String releaseId);
-
     Optional<List<DTOReleaseSimple>> getOwnRelease(String userId);
 
     Optional<DTOReleaseSimple> getRelease(String releaseId, String userId);

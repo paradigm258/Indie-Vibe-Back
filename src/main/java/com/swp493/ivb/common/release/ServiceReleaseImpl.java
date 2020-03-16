@@ -217,11 +217,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     @Override
-    public Optional<EntityRelease> getRelease(String releaseId) {
-        return releaseRepo.findById(releaseId);
-    }
-
-    @Override
     public Optional<List<DTOReleaseSimple>> getOwnRelease(String artistId) {
         Optional<EntityArtist> artist = artistRepo.findById(artistId);
         return artist.map(a -> {
@@ -258,6 +253,13 @@ public class ServiceReleaseImpl implements ServiceRelease {
             Optional<EntityRelease> release = releaseRepo.findById(releaseId);
             return release.map(r -> {
                 DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
+                releaseSimple.setRelations(r.getReleaseUsers().stream().map(eul -> {
+                    if (eul.getUser().getId().equals(userId)) {
+                        return eul.getAction();
+                    } else {
+                        return "";
+                    }
+                }).collect(Collectors.toSet()));
                 Optional<EntityUser> artist = r.getArtist(); 
                 releaseSimple.setArtist(mapper.map(artist.isPresent()?artist.get():artist,DTOArtistSimple.class));
                 return releaseSimple;

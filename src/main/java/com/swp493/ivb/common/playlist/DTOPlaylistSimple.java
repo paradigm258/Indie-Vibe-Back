@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.playlist;
 
+import java.util.Set;
+
 import com.swp493.ivb.common.user.DTOUserPublic;
 
 import lombok.Getter;
@@ -20,6 +22,8 @@ public class DTOPlaylistSimple {
     protected String description;
 
     protected String status;
+
+    protected Set<String> relations;
 
     protected DTOUserPublic owner;
 
