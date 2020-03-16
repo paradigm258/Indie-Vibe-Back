@@ -108,6 +108,13 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
             simple.setTracksCount(l.getPlaylistTracks().size());
+            simple.setRelations(l.getUserPlaylists().stream().map(eul -> {
+                if (eul.getUser().getId().equals(userId)) {
+                    return eul.getAction();
+                } else {
+                    return "";
+                }
+            }).collect(Collectors.toSet()));
             return simple;
         }).collect(Collectors.toList());
     }
@@ -134,6 +141,13 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistFull.setTracksCount(tracks.size());
         playlistFull.setFollowersCount(playlist.getUserPlaylists().size());
+        playlistFull.setRelations(playlist.getUserPlaylists().stream().map(eul -> {
+            if (eul.getUser().getId().equals(userId)) {
+                return eul.getAction();
+            } else {
+                return "";
+            }
+        }).collect(Collectors.toSet()));
         
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         int total = tracks.size();
@@ -171,6 +185,13 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistFull.class);
         playlistSimple.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistSimple.setTracksCount(playlist.getPlaylistTracks().size());
+        playlistSimple.setRelations(playlist.getUserPlaylists().stream().map(eul -> {
+            if (eul.getUser().getId().equals(userId)) {
+                return eul.getAction();
+            } else {
+                return "";
+            }
+        }).collect(Collectors.toSet()));
         return Optional.of(playlistSimple);
     }
 
