@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.track;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.swp493.ivb.common.artist.DTOArtistSimple;
@@ -30,5 +31,5 @@ public class DTOTrackSimple {
 
     protected String type = "track";
 
-    protected Set<String> relation ;
+    protected Set<String> relation = new HashSet<>();
 }

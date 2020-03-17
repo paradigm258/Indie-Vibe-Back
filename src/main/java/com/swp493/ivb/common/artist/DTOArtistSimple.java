@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.artist;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import lombok.Getter;
@@ -17,5 +18,5 @@ public class DTOArtistSimple {
 
     protected String type = "artist";
 
-    protected Set<String> relation;
+    protected Set<String> relation = new HashSet<>();
 }

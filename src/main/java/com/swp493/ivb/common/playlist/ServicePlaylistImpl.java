@@ -111,7 +111,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
             simple.setTracksCount(l.getPlaylistTracks().size());
-            simple.setRelations(l.getUserPlaylists().stream().map(eul -> {
+            simple.setRelation(l.getUserPlaylists().stream().map(eul -> {
                 if (eul.getUser().getId().equals(userId)) {
                     return eul.getAction();
                 } else {
@@ -144,7 +144,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistFull.setTracksCount(tracks.size());
         playlistFull.setFollowersCount(playlist.getUserPlaylists().size());
-        playlistFull.setRelations(playlist.getUserPlaylists().stream().map(eul -> {
+        playlistFull.setRelation(playlist.getUserPlaylists().stream().map(eul -> {
             if (eul.getUser().getId().equals(userId)) {
                 return eul.getAction();
             } else {
@@ -188,7 +188,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistFull.class);
         playlistSimple.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistSimple.setTracksCount(playlist.getPlaylistTracks().size());
-        playlistSimple.setRelations(playlist.getUserPlaylists().stream().map(eul -> {
+        playlistSimple.setRelation(playlist.getUserPlaylists().stream().map(eul -> {
             if (eul.getUser().getId().equals(userId)) {
                 return eul.getAction();
             } else {
