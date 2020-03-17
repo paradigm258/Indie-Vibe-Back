@@ -115,11 +115,11 @@ public class ControllerPlaylist {
         }
     }
     
-    @PostMapping(value="/playlists/track")
+    @PostMapping(value="/playlists/{playlistID}/track")
     public ResponseEntity<?> addTrack(
-        @RequestParam("playlistId") String playlistId, 
-        @RequestParam("trackId") String trackId,
-        @RequestAttribute("user") EntityUser user) {
+        @PathVariable String playlistId, 
+        @RequestParam String trackId,
+        @RequestAttribute EntityUser user) {
         try {
             if(playlistService.actionPlaylistTrack(playlistId, trackId, "add", user.getId())){
                 return Payload.successMessage("Added track to playlist");
