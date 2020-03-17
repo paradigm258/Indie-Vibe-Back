@@ -9,5 +9,5 @@ public interface RepositoryPlaylist extends JpaRepository<EntityPlaylist,String>
     List<EntityPlaylist> findByUserPlaylistsUserId(String userId);
     List<EntityPlaylist> findByStatusAndUserPlaylistsUserId(String status, String userId);
     boolean existsByIdAndUserPlaylistsUserId(String playlistId, String userId);
-    
+    boolean existsByIdAndStatus(String playlistId, String status);
 }

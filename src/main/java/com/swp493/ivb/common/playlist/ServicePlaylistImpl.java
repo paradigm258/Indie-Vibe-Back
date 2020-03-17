@@ -56,13 +56,18 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         playlist = playlistRepo.save(playlist);
         String playlistId = playlist.getId();
 
-        ObjectMetadata metadata = new ObjectMetadata();
-        MultipartFile thumbnail = playlistInfo.getThumbnail();
         try {
-            if (thumbnail != null) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            MultipartFile thumbnail = playlistInfo.getThumbnail();
+            if(thumbnail != null){
                 s3.putObject(
-                        new PutObjectRequest(AWSConfig.BUCKET_NAME, playlistId, thumbnail.getInputStream(), metadata)
-                                .withCannedAcl(CannedAccessControlList.PublicRead));
+                new PutObjectRequest(
+                    AWSConfig.BUCKET_NAME, 
+                    playlistId, 
+                    thumbnail.getInputStream(), 
+                    metadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead)
+                );
                 playlist.setThumbnail(AWSConfig.BUCKET_URL + playlistId);
             }
 
@@ -79,7 +84,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
                 playlistRepo.delete(playlist);
             }
             log.error("Error create playlist", e);
-            throw new Exception(e);
+            throw e;
         }
     }
 
@@ -104,7 +109,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         List<EntityPlaylist> list = getPrivate ? playlistRepo.findByUserPlaylistsUserId(userId)
                                                : playlistRepo.findByStatusAndUserPlaylistsUserId("public", userId);
         int total = list.size();
-        offset = offset<total && offset>=0 ? offset : total;
+        offset = offset<total && offset>=0 ? offset : 0;
         limit = limit<total && limit>=offset ? limit : total;                                       
         return list.subList(offset, limit).stream().map(l -> {
             ModelMapper mapper = new ModelMapper();
@@ -124,16 +129,10 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     @Override
     public Optional<DTOPlaylistFull> getPlaylistFull(String playlistId, String userId, int offset, int limit) throws Exception {
-        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
-
-        if (!oPlaylist.isPresent())
-            return Optional.empty();
-
-        EntityPlaylist playlist = oPlaylist.get();
+        EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
 
         // Return empty optional if playlist is not public and user have no permission
-        if (!playlist.getStatus().equals("public")
-                && !playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own"))
+        if (!hasAccessPermission(playlistId, userId))
             return Optional.empty();
 
         EntityUser user = userRepo.findById(userId).get();
@@ -154,8 +153,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         int total = tracks.size();
-        offset = offset<total && offset>=0 ? offset : total;
-        limit = limit<total && limit>=offset ? limit : total;
+        offset = offset<total && offset>=0 ? offset : 0;
+        limit = limit<total && limit>=offset ? limit : offset;
         paging.setTotal(total);
         paging.setOffset(offset);
         paging.setLimit(limit);
@@ -173,16 +172,11 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     @Override
     public Optional<DTOPlaylistSimple> getPlaylistSimple(String playlistId, String userId) throws Exception {
-        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
-        if (!oPlaylist.isPresent())
-            return Optional.empty();
 
-        EntityPlaylist playlist = oPlaylist.get();
+        EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
 
         // Return empty optional if playlist is not public and user have no permission
-        if (!playlist.getStatus().equals("public")
-                && !playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own"))
-            return Optional.empty();
+        if(!hasAccessPermission(playlistId, userId)) return Optional.empty();
 
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistFull.class);
@@ -198,6 +192,9 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         return Optional.of(playlistSimple);
     }
 
+
+
+    @Override
     public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId){
         Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
         if(!oPlaylist.isPresent()) return false;
@@ -263,5 +260,10 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         }
         return false;
 
+    }
+
+    private boolean hasAccessPermission(String playlistId, String userId) {
+        return  playlistRepo.existsByIdAndStatus(playlistId,"public")
+            ||  playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own");   
     }
 }

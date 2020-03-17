@@ -3,6 +3,15 @@ package com.swp493.ivb.common.view;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Getter
+@Setter
 public class Payload<T> {
 
     @JsonInclude(Include.NON_EMPTY)
@@ -44,35 +53,22 @@ public class Payload<T> {
         return this;
     }
 
-    public String getStatus() {
-        return status;
+    public static ResponseEntity<?> internalError(){
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new Payload<>().fail("Something is wrong"));
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public static  ResponseEntity<Payload<Object>> successResponse(Object data){
+        return ResponseEntity.ok().body(new Payload<>().success(data));
     }
 
-    public T getData() {
-        return data;
+    public static  ResponseEntity<Payload<Object>> failureResponse(Object message){
+        return ResponseEntity.badRequest().body(new Payload<>().fail(message));
     }
 
-    public void setData(T data) {
-        this.data = data;
+    public static ResponseEntity<?> successMessage(String message) {
+        Payload<?> payload = new Payload<>();
+        payload.setMessage(message);
+        return ResponseEntity.ok().body(payload);
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public Integer getCode() {
-        return code;
-    }
-
-    public void setCode(Integer code) {
-        this.code = code;
-    }
 }

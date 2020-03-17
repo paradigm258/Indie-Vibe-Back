@@ -7,8 +7,6 @@ import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
 
 import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,8 +17,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ServiceUserImpl implements ServiceUser {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceUserImpl.class);
-
     @Autowired
     RepositoryUser userRepository;
 
@@ -30,30 +26,28 @@ public class ServiceUserImpl implements ServiceUser {
     @Autowired
     PasswordEncoder encoder;
 
-    public boolean existsByEmail(String email) {
+    public boolean existsByEmail(String email) throws Exception{
         return userRepository.existsByEmail(email);
     }
 
-    public boolean existsByFbId(String fbId) {
+    public boolean existsByFbId(String fbId) throws Exception{
         return userRepository.existsByFbId(fbId);
     }
 
-    public void register(EntityUser user) {
-
+    public void register(EntityUser user) throws Exception{
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
-
         userRepository.save(user);
     }
 
     @Override
-    public int countFollowers(String userId) {
+    public int countFollowers(String userId) throws Exception{
         return userRepository.countFollowers(userId);
     }
 
     @Override
-    public Optional<DTOUserPublic> getUserPublic(String id) {
+    public Optional<DTOUserPublic> getUserPublic(String id) throws Exception{
         Optional<EntityUser> userEntity = userRepository.findById(id);
 
         return userEntity.map(user -> {
@@ -65,42 +59,29 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public boolean register(DTORegisterForm userForm) {
+    public void register(DTORegisterForm userForm) throws Exception{
         EntityUser user = new EntityUser();
         user.setDisplayName(userForm.getDisplayName());
         user.setEmail(userForm.getEmail());
         user.setPassword(encoder.encode(userForm.getPassword()));
         user = userDefault(user);
-        try {
-            userRepository.save(user);
-            return true;
-        } catch (Exception e) {
-            logger.error("failed to save user", e);
-            return false;
-        }
-
+        userRepository.save(user);
     }
 
     @Override
-    public Optional<EntityUser> findByFbId(String fbId) {
+    public Optional<EntityUser> findByFbId(String fbId) throws Exception{
         return userRepository.findByFbId(fbId);
     }
 
     @Override
-    public boolean register(DTORegisterFormFb fbForm) {
+    public void register(DTORegisterFormFb fbForm) throws Exception {
         EntityUser user = new EntityUser();
         user.setDisplayName(fbForm.getDisplayName());
         user.setEmail(fbForm.getEmail());
         user.setFbId(fbForm.getFbId());
         user.setThumbnail(fbForm.getThumbnail());
         user = userDefault(user);
-        try {
-            userRepository.save(user);
-            return true;
-        } catch (Exception e) {
-            logger.error("failed to save user", e);
-            return false;
-        }
+        userRepository.save(user);
     }
 
     private EntityUser userDefault(EntityUser user){

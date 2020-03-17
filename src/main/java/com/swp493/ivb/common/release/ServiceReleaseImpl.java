@@ -172,7 +172,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
             releaseRepo.save(release);
 
             return Optional.of(release.getId());
-        } catch (Exception e) {
+        }catch(NoSuchElementException e){
+            throw e;
+        }catch (Exception e) {
             log.error("Track upload failed", e);
             if (!releaseId.isEmpty()) {
                 releaseRepo.deleteById(releaseId);
@@ -184,7 +186,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 file.delete();
             }
         }
-
     }
 
     @Override
