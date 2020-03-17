@@ -7,18 +7,18 @@ import com.swp493.ivb.config.DTORegisterFormFb;
 
 public interface ServiceUser {
 
-    int countFollowers(String userId);
+    int countFollowers(String userId) throws Exception;
 
-    Optional<DTOUserPublic> getUserPublic(String id);
+    Optional<DTOUserPublic> getUserPublic(String id) throws Exception;
 
-    boolean register(DTORegisterForm userForm);
+    void register(DTORegisterForm userForm) throws Exception;
 
-    boolean register(DTORegisterFormFb fbForm);
+    void register(DTORegisterFormFb fbForm) throws Exception;
 
-    boolean existsByEmail(String email);
+    boolean existsByEmail(String email) throws Exception;
 
-    boolean existsByFbId(String fbId);
+    boolean existsByFbId(String fbId) throws Exception;
 
-    Optional<EntityUser> findByFbId(String fbId);
+    Optional<EntityUser> findByFbId(String fbId) throws Exception;
     
 }

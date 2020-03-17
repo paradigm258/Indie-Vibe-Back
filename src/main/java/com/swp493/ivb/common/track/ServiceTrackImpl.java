@@ -80,7 +80,7 @@ public class ServiceTrackImpl implements ServiceTrack {
             switch (action) {
                 case "unfavorite":
                     if (user.unfavoriteTracks(track)) {
-                        trackRepo.save(track);
+                        trackRepo.flush();
                     }
                     break;
                 case "favorite":

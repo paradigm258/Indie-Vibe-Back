@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.playlist;
 
+import java.util.NoSuchElementException;
+
 import javax.validation.Valid;
 
 import com.swp493.ivb.common.user.EntityUser;
@@ -8,7 +10,6 @@ import com.swp493.ivb.common.view.Payload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -36,15 +37,12 @@ public class ControllerPlaylist {
         try {
             if (result.hasErrors()) {
                 FieldError error = result.getFieldError();
-                return ResponseEntity.badRequest()
-                        .body(new Payload<>().fail(error.getField() + " is invalid" + error.getCode()));
+                return Payload.failureResponse(error.getField() + " is invalid" + error.getCode());
             }
-            return ResponseEntity.ok()
-                    .body(new Payload<>().success(playlistService.createPlaylist(playlistInfo, user.getId())));
+            return Payload.successResponse(playlistService.createPlaylist(playlistInfo, user.getId()));
         } catch (Exception e) {
             log.error("Error create playlist", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
 
     }
@@ -53,13 +51,14 @@ public class ControllerPlaylist {
     public ResponseEntity<?> deletePlaylist(@RequestAttribute("user") EntityUser user, @PathVariable String id) {
         try {
             if (playlistService.deletePlaylist(id, user.getId()))
-                return ResponseEntity.ok().body(new Payload<>().success(id));
+                return Payload.successResponse(id);
             else
-                return ResponseEntity.badRequest().body(new Payload<>().fail("No permission"));
+                return Payload.failureResponse("No permission");
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid id");
         } catch (Exception e) {
             log.error("Error delete playlist", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
 
@@ -67,13 +66,10 @@ public class ControllerPlaylist {
     public ResponseEntity<?> getMyPlaylist(@RequestAttribute("user") EntityUser user,
         @RequestParam(defaultValue = "0") int offset,@RequestParam(defaultValue = "20") int limit) {
         try {
-            return ResponseEntity.ok().body(
-                    new Payload<>().success(playlistService.getPlaylists(user.getId(),true,offset, limit))
-                );
+            return Payload.successResponse(playlistService.getPlaylists(user.getId(), true, offset, limit));
         } catch (Exception e) {
             log.error("Error get user playlists", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
 
@@ -82,12 +78,13 @@ public class ControllerPlaylist {
             @RequestParam(defaultValue = "0") int offset,@RequestParam(defaultValue = "20") int limit) {
         try {
             return playlistService.getPlaylistFull(id, user.getId(), offset, limit)
-                    .map(p -> ResponseEntity.ok().body(new Payload<>().success(p)))
+                    .map(p -> Payload.successResponse(p))
                     .orElse(ResponseEntity.noContent().build());
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid id");
         } catch (Exception e) {
             log.error("Error get full playlist", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
 
@@ -95,12 +92,13 @@ public class ControllerPlaylist {
     public ResponseEntity<?> getPlaylistSimple(@PathVariable("id") String playlistId,@RequestAttribute("user") EntityUser user) {
         try{
             return playlistService.getPlaylistSimple(playlistId,user.getId())
-                                    .map(p -> ResponseEntity.ok().body(new Payload<>().success(p)))
+                                    .map(p -> Payload.successResponse(p))
                                     .orElse(ResponseEntity.noContent().build());
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid id");
         }catch (Exception e){
             log.error("Error get simple playlist", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
 
@@ -108,11 +106,12 @@ public class ControllerPlaylist {
     public ResponseEntity<?> getPlaylistSimple(@RequestAttribute("user") EntityUser user, @PathVariable String userId,
     @RequestParam(defaultValue = "0") int offset,@RequestParam(defaultValue = "20")int limit){
         try {
-            return ResponseEntity.ok().body(new Payload<>().success(playlistService.getPlaylists(userId,false,offset,limit)));
+            return Payload.successResponse(playlistService.getPlaylists(userId,false,offset,limit));
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid id");
         } catch (Exception e) {
             log.error("Error get user public playlists", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
     
@@ -123,14 +122,15 @@ public class ControllerPlaylist {
         @RequestAttribute("user") EntityUser user) {
         try {
             if(playlistService.actionPlaylistTrack(playlistId, trackId, "add", user.getId())){
-                return ResponseEntity.ok().body(new Payload<>().success(""));
+                return Payload.successMessage("Added track to playlist");
             }else{
-                return ResponseEntity.unprocessableEntity().body(new Payload<>().fail(""));
+                return Payload.failureResponse("Can't add track to playlist");
             }
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid id");
         } catch (Exception e) {
             log.error("Error get add track to playlist", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
 
@@ -141,14 +141,15 @@ public class ControllerPlaylist {
         @RequestAttribute("user") EntityUser user) {
         try {
             if(playlistService.actionPlaylistTrack(playlistId, trackId,"remove", user.getId())){
-                return ResponseEntity.ok().body(new Payload<>().success(""));
+                return Payload.successMessage("Track removed");
             }else{
-                return ResponseEntity.unprocessableEntity().body(new Payload<>().fail(""));
+                return Payload.failureResponse("Failed to remove track");
             }
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid id");
         } catch (Exception e) {
             log.error("Error remove track from playlist", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
 
@@ -159,14 +160,15 @@ public class ControllerPlaylist {
         @RequestParam String action) {
         try{
             if(playlistService.actionPlaylist(id, user.getId(), action)){
-                return ResponseEntity.ok().body(new Payload<>().success(""));
+                return Payload.successMessage("Playlist "+action);
             }else{
-                return ResponseEntity.unprocessableEntity().body(new Payload<>().fail(""));
+                return Payload.failureResponse("Failed to "+action+" playlist");
             }
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid id");
         }catch(Exception e){
             log.error("Error set favorite for playlist", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().fail("Something is wrong"));
+            return Payload.internalError();
         }
     }
     

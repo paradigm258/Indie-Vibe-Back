@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.track;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -43,17 +44,15 @@ public class ControllerTrack {
                 break;
             }
             if (success) {
-                return ResponseEntity
-                        .ok()
-                        .body(new Payload<>().success("successfully " + action + " track"));
+                return Payload.successMessage("successfully " + action + " track");
             } else {
-                return ResponseEntity
-                        .badRequest()
-                        .body(new Payload<>().fail("failed to " + action));
+                return Payload.failureResponse("failed to " + action);
             }
-        } catch (Exception e) {
-            log.error("/track addFavorite", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }catch(NoSuchElementException e) {
+            return Payload.failureResponse("Invalid Id");
+        }catch (Exception e) {
+            log.error("Error favorite track", e);
+            return Payload.internalError();
         }
     }
 
@@ -61,36 +60,24 @@ public class ControllerTrack {
     public ResponseEntity<?> getFavorites(@RequestAttribute EntityUser user) {
         try {
             return trackService.getFavorites(user.getId())
-                    .map(list -> {
-                        return ResponseEntity
-                                .ok()
-                                .body(new Payload<>().success(list));
-            }).orElse(ResponseEntity
-                    .badRequest()
-                    .body(new Payload<>().fail("No data")));
+                    .map(list -> Payload.successResponse(list)).orElse(Payload.failureResponse("message"));
         } catch (Exception e) {
             log.error("tracks/favorites", e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new Payload<>().error("Something is wrong"));
+            return Payload.internalError();
         }
     }
 
     @GetMapping(value = "/stream/info/{bitrate}/{id}")
     @CrossOrigin(origins = "*")
-    public ResponseEntity<Payload<DTOTrackStreamInfo>> getTrack(
+    public ResponseEntity<?> getTrack(
         @RequestAttribute("user") EntityUser user,
         @PathVariable int bitrate,
         @PathVariable(required = true) String id) {
         Optional<DTOTrackStreamInfo> track = trackService.getTrackStreamInfo(id, bitrate,user.getId());
 
         return track
-                .map(t -> ResponseEntity
-                        .status(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(new Payload<DTOTrackStreamInfo>().success(t)))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new Payload<DTOTrackStreamInfo>().error("Track not found")));
+                .map(t -> Payload.successResponse(t))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping(value = "/tracks/test/{id}")
