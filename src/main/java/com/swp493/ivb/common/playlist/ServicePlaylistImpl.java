@@ -192,8 +192,6 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         return Optional.of(playlistSimple);
     }
 
-
-
     @Override
     public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId){
         Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
@@ -231,17 +229,11 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public boolean actionPlaylist(String playlistId, String userId, String action) {
-        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
-        if(!oPlaylist.isPresent()) return false;
-        EntityPlaylist playlist = oPlaylist.get();
+    public boolean actionPlaylist(String playlistId, String userId, String action) throws Exception {
+        EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
+        EntityUser user = userRepo.findById(userId).get();
 
-        Optional<EntityUser> oUser = userRepo.findById(userId);
-        if(!oUser.isPresent()) return false;
-        EntityUser user = oUser.get();
-
-        if(!(playlist.getStatus().equals("public")
-        || playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId,userId,"own")))
+        if(!hasAccessPermission(playlistId, userId))
         return false;
         boolean success = false;
         switch (action) {

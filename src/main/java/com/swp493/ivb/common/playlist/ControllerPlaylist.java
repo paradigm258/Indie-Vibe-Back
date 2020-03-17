@@ -103,7 +103,7 @@ public class ControllerPlaylist {
     }
 
     @GetMapping(value = "/{userId}/playlists")
-    public ResponseEntity<?> getPlaylistSimple(@RequestAttribute("user") EntityUser user, @PathVariable String userId,
+    public ResponseEntity<?> getUserPlaylistSimple(@RequestAttribute("user") EntityUser user, @PathVariable String userId,
     @RequestParam(defaultValue = "0") int offset,@RequestParam(defaultValue = "20")int limit){
         try {
             return Payload.successResponse(playlistService.getPlaylists(userId,false,offset,limit));
@@ -115,7 +115,7 @@ public class ControllerPlaylist {
         }
     }
     
-    @PostMapping(value="/playlists/{playlistID}/track")
+    @PostMapping(value="/playlists/{playlistId}/track")
     public ResponseEntity<?> addTrack(
         @PathVariable String playlistId, 
         @RequestParam String trackId,
@@ -134,11 +134,11 @@ public class ControllerPlaylist {
         }
     }
 
-    @DeleteMapping(value="/playlists/track")
+    @DeleteMapping(value="/playlists/{playlistId}/track")
     public ResponseEntity<?> removeTrack(
-        @RequestParam("playlistId") String playlistId, 
-        @RequestParam("trackId") String trackId,
-        @RequestAttribute("user") EntityUser user) {
+        @RequestParam String playlistId, 
+        @RequestParam String trackId,
+        @RequestAttribute EntityUser user) {
         try {
             if(playlistService.actionPlaylistTrack(playlistId, trackId,"remove", user.getId())){
                 return Payload.successMessage("Track removed");
@@ -160,7 +160,7 @@ public class ControllerPlaylist {
         @RequestParam String action) {
         try{
             if(playlistService.actionPlaylist(id, user.getId(), action)){
-                return Payload.successMessage("Playlist "+action);
+                return Payload.successMessage("Playlist successfully "+action);
             }else{
                 return Payload.failureResponse("Failed to "+action+" playlist");
             }
