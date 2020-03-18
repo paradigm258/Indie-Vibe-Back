@@ -51,7 +51,7 @@ public class ControllerRelease {
             }
             Optional<String> releaseId = releaseService.uploadRelease(user.getId(), releaseInfo, thumbnail, audioFiles);
             if (releaseId.isPresent()) {
-                return Payload.successMessage(releaseId.get());
+                return Payload.successResponse(releaseId.get());
             } else {
                 return Payload.failureResponse("Failed to upload");
             }
@@ -72,7 +72,7 @@ public class ControllerRelease {
         try {
             Optional<String> releaseId = releaseService.deleteRelease(id, user.getId());
             if(releaseId.isPresent()){
-                return Payload.successMessage(releaseId.get());
+                return Payload.successResponse(releaseId.get());
             }else{
                 return Payload.failureResponse("Failed to delete release");
             }

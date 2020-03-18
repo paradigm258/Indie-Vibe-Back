@@ -118,7 +118,7 @@ public class ControllerPlaylist {
         @RequestAttribute EntityUser user) {
         try {
             if(playlistService.actionPlaylistTrack(playlistId, trackId, "add", user.getId())){
-                return Payload.successMessage("Added track to playlist");
+                return Payload.successResponse("Added track to playlist");
             }else{
                 return Payload.failureResponse("Can't add track to playlist");
             }
@@ -137,7 +137,7 @@ public class ControllerPlaylist {
         @RequestAttribute EntityUser user) {
         try {
             if(playlistService.actionPlaylistTrack(playlistId, trackId,"remove", user.getId())){
-                return Payload.successMessage("Track removed");
+                return Payload.successResponse("Track removed");
             }else{
                 return Payload.failureResponse("Failed to remove track");
             }
@@ -156,7 +156,7 @@ public class ControllerPlaylist {
         @RequestParam String action) {
         try{
             if(playlistService.actionPlaylist(id, user.getId(), action)){
-                return Payload.successMessage("Playlist successfully "+action);
+                return Payload.successResponse("Playlist successfully "+action);
             }else{
                 return Payload.failureResponse("Failed to "+action+" playlist");
             }

@@ -97,7 +97,7 @@ public class ServiceTrackImpl implements ServiceTrack {
     }
 
     @Override
-    public Optional<List<DTOTrackSimple>> getFavorites(String userId) {
+    public Optional<List<DTOTrackSimple>> getUserFavorites(String userId) {
         return userRepo.findById(userId).map(user -> {
             return user.getUserFavoriteTracks().stream().map(track -> {
                 ModelMapper mapper = new ModelMapper();

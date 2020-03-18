@@ -155,7 +155,7 @@ public class AuthenticationController {
                 return Payload.failureResponse("Email already exists");
             }
             userService.register(registerForm);
-            return Payload.successMessage("Your account has been created.");
+            return Payload.successResponse("Your account has been created.");
         } catch (Exception e) {
             logger.error("Location: /register", e);
             return Payload.internalError();
@@ -170,7 +170,7 @@ public class AuthenticationController {
             OAuth2AccessToken token = tokenStore.readAccessToken(tokenValue);
             if (token != null) {
                 tokenStore.removeAccessToken(token);
-                return Payload.successMessage("Logout success");
+                return Payload.successResponse("Logout success");
             }
             return Payload.failureResponse("No token");
         } catch (Exception e) {
@@ -207,7 +207,7 @@ public class AuthenticationController {
             }
             if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
                 userService.register(fbForm);
-                return Payload.successMessage("Your accout has been created");
+                return Payload.successResponse("Your accout has been created");
             } else {
                 return Payload.failureResponse("Token invalid");
             }

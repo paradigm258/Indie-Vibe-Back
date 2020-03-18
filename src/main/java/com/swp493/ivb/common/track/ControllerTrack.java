@@ -44,7 +44,7 @@ public class ControllerTrack {
                 break;
             }
             if (success) {
-                return Payload.successMessage("successfully " + action + " track");
+                return Payload.successResponse("successfully " + action + " track");
             } else {
                 return Payload.failureResponse("failed to " + action);
             }
