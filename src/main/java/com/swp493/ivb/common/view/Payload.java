@@ -64,11 +64,4 @@ public class Payload<T> {
     public static  ResponseEntity<Payload<Object>> failureResponse(Object message){
         return ResponseEntity.badRequest().body(new Payload<>().fail(message));
     }
-
-    public static ResponseEntity<?> successMessage(String message) {
-        Payload<?> payload = new Payload<>();
-        payload.setMessage(message);
-        return ResponseEntity.ok().body(payload);
-    }
-
 }
