@@ -17,12 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import javax.naming.NoPermissionException;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -36,10 +31,17 @@ import com.swp493.ivb.common.artist.RepositoryArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.common.track.EntityTrack;
-import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.track.RepositoryTrack;
 import com.swp493.ivb.common.user.EntityUserRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
 import com.swp493.ivb.config.AWSConfig;
+
+import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ServiceReleaseImpl implements ServiceRelease {
@@ -51,6 +53,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Autowired
     private RepositoryMasterData masterDataRepo;
+
+    @Autowired
+    private RepositoryTrack trackRepo;
 
     @Autowired
     private RepositoryArtist artistRepo;
@@ -250,22 +255,32 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Override
     public Optional<DTOReleaseSimple> getRelease(String releaseId, String userId) {
-            ModelMapper mapper = new ModelMapper();
-            Optional<EntityRelease> release = releaseRepo.findById(releaseId);
-            return release.map(r -> {
-                DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
-                releaseSimple.setRelation(r.getReleaseUsers().stream().map(eul -> {
-                    if (eul.getUser().getId().equals(userId)) {
-                        return eul.getAction();
-                    } else {
-                        return "";
-                    }
-                }).collect(Collectors.toSet()));
-                Optional<EntityUser> artist = r.getArtist(); 
-                releaseSimple.setArtist(mapper.map(artist.isPresent()?artist.get():artist,DTOArtistSimple.class));
-                return releaseSimple;
-            });
-        
+        ModelMapper mapper = new ModelMapper();
+        Optional<EntityRelease> release = releaseRepo.findById(releaseId);
+        return release.map(r -> {
+            DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
+            releaseSimple.setRelation(
+                r.getReleaseUsers().stream()
+                .filter(eul -> eul.getUser().getId().equals(userId))
+                .map(eul-> eul.getAction())
+                .collect(Collectors.toSet())
+            );
+            r.getArtist().ifPresent(a ->releaseSimple.setArtist(mapper.map(a, DTOArtistSimple.class)));
+            return releaseSimple;
+        });
     }
 
+    @Override
+    public List<String> streamRelease(String releaseId, String userId) throws Exception {
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new NoPermissionException();
+        return trackRepo.findAllByReleaseId(releaseId).stream()
+                    .map(t -> t.getId())
+                    .collect(Collectors.toList()
+                );
+    }
+
+    private boolean hasReleaseAccessPermission(String releaseId, String userId){
+        return  releaseRepo.existsByIdAndStatus(releaseId, "public")
+            ||  releaseRepo.existsByIdAndReleaseUsersUserIdAndReleaseUsersAction(releaseId, userId, "own");
+    }
 }

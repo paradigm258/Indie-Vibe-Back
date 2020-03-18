@@ -51,7 +51,12 @@ public class EntityPlaylistTrack implements Serializable{
         if (!(obj instanceof EntityPlaylistTrack)) return false;
 
         EntityPlaylistTrack that = (EntityPlaylistTrack) obj;
-        return Objects.equals(playlist,that.playlist)&&Objects.equals(track, that.track);
+        return Objects.equals(playlist.getId(),that.playlist.getId())&&Objects.equals(track.getId(), that.track.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(playlist.getId(),track.getId(),insertedDate);
     }
     
 }

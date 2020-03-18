@@ -21,4 +21,7 @@ public interface ServiceUser {
 
     Optional<EntityUser> findByFbId(String fbId) throws Exception;
     
+    void followUser(String followerId, String followedId);
+
+    void unfolloweUser(String followerId, String followedId);
 }

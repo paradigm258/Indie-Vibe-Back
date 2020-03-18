@@ -11,5 +11,5 @@ public interface ServicePlaylist {
     public Optional<DTOPlaylistSimple> getPlaylistSimple(String playlistId, String userId) throws Exception;
     public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId);
     public boolean actionPlaylist(String playlistId, String userId, String action) throws Exception;
-    
+    public List<String> playlistStream(String playlistId, String userId) throws Exception;
 }

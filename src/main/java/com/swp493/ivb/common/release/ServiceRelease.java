@@ -15,4 +15,6 @@ public interface ServiceRelease {
     Optional<List<DTOReleaseSimple>> getOwnRelease(String userId);
 
     Optional<DTOReleaseSimple> getRelease(String releaseId, String userId);
+
+    List<String> streamRelease(String releaseId, String userId) throws Exception;
 }

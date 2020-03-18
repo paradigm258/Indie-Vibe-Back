@@ -2,6 +2,7 @@ package com.swp493.ivb.common.playlist;
 
 import java.util.NoSuchElementException;
 
+import javax.naming.NoPermissionException;
 import javax.validation.Valid;
 
 import com.swp493.ivb.common.user.EntityUser;
@@ -31,9 +32,9 @@ public class ControllerPlaylist {
     ServicePlaylist playlistService;
 
     @PostMapping(value = "/playlists")
-    public ResponseEntity<?> createPlaylist(@RequestAttribute("user") EntityUser user,
+    public ResponseEntity<?> createPlaylist(
+            @RequestAttribute("user") EntityUser user,
             @Valid DTOPlaylistCreate playlistInfo, BindingResult result) {
-
         try {
             if (result.hasErrors()) {
                 FieldError error = result.getFieldError();
@@ -44,7 +45,6 @@ public class ControllerPlaylist {
             log.error("Error create playlist", e);
             return Payload.internalError();
         }
-
     }
 
     @DeleteMapping(value = "/playlists/{id}")
@@ -62,20 +62,11 @@ public class ControllerPlaylist {
         }
     }
 
-    @GetMapping(value = "/me/playlists")
-    public ResponseEntity<?> getMyPlaylist(@RequestAttribute("user") EntityUser user,
-        @RequestParam(defaultValue = "0") int offset,@RequestParam(defaultValue = "20") int limit) {
-        try {
-            return Payload.successResponse(playlistService.getPlaylists(user.getId(), true, offset, limit));
-        } catch (Exception e) {
-            log.error("Error get user playlists", e);
-            return Payload.internalError();
-        }
-    }
-
     @GetMapping(value = "/playlists/full/{id}")
-    public ResponseEntity<?> getPlaylistFull(@RequestAttribute("user") EntityUser user, @PathVariable String id,
-            @RequestParam(defaultValue = "0") int offset,@RequestParam(defaultValue = "20") int limit) {
+    public ResponseEntity<?> getPlaylistFull(
+            @RequestAttribute("user") EntityUser user, @PathVariable String id,
+            @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "20") int limit) {
         try {
             return playlistService.getPlaylistFull(id, user.getId(), offset, limit)
                     .map(p -> Payload.successResponse(p))
@@ -89,7 +80,9 @@ public class ControllerPlaylist {
     }
 
     @GetMapping(value = "/playlists/simple/{id}")
-    public ResponseEntity<?> getPlaylistSimple(@PathVariable("id") String playlistId,@RequestAttribute("user") EntityUser user) {
+    public ResponseEntity<?> getPlaylistSimple(
+        @PathVariable("id") String playlistId,
+        @RequestAttribute("user") EntityUser user) {
         try{
             return playlistService.getPlaylistSimple(playlistId,user.getId())
                                     .map(p -> Payload.successResponse(p))
@@ -103,8 +96,11 @@ public class ControllerPlaylist {
     }
 
     @GetMapping(value = "/{userId}/playlists")
-    public ResponseEntity<?> getUserPlaylistSimple(@RequestAttribute("user") EntityUser user, @PathVariable String userId,
-    @RequestParam(defaultValue = "0") int offset,@RequestParam(defaultValue = "20")int limit){
+    public ResponseEntity<?> getUserPlaylistSimple(
+        @RequestAttribute("user") EntityUser user, 
+        @PathVariable String userId,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "20")int limit){
         try {
             return Payload.successResponse(playlistService.getPlaylists(userId,false,offset,limit));
         }catch(NoSuchElementException e){
@@ -168,6 +164,22 @@ public class ControllerPlaylist {
             return Payload.failureResponse("Invalid id");
         }catch(Exception e){
             log.error("Error set favorite for playlist", e);
+            return Payload.internalError();
+        }
+    }
+    
+    @GetMapping(value="/stream/playlist/{playlistId}")
+    public ResponseEntity<?> streamPlaylist(
+        @PathVariable String playlistId,
+        @RequestAttribute EntityUser user) {
+        try {
+            return Payload.successResponse(playlistService.playlistStream(playlistId, user.getId()));
+        }catch (NoPermissionException e){
+            return Payload.failureResponse("This playlist is private");
+        }catch (NoSuchElementException e) {
+            return Payload.failureResponse("Invalid id");
+        } catch (Exception e) {
+            log.error("Error get stream playlist", e);
             return Payload.internalError();
         }
     }

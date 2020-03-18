@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import javax.naming.NoPermissionException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp493.ivb.common.user.EntityUser;
@@ -94,4 +96,19 @@ public class ControllerRelease {
             return Payload.internalError();
         }
     }
+
+    @GetMapping(value="/stream/release/{releaseId}")
+    public ResponseEntity<?> streamRelease(@PathVariable String releaseId,@RequestAttribute EntityUser user) {
+        try {
+            return Payload.successResponse(releaseService.streamRelease(releaseId, user.getId()));
+        }catch(NoPermissionException e){
+            return Payload.failureResponse("This release id private");
+        }catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid Id");
+        } catch (Exception e) {
+            log.error("Error get release stream", e);
+            return Payload.internalError();
+        }
+    }
+    
 }

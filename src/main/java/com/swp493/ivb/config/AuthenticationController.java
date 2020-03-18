@@ -185,7 +185,8 @@ public class AuthenticationController {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
-                .fromUriString("https://graph.facebook.com/v6.0/debug_token").queryParam("input_token", userFbToken)
+                .fromUriString("https://graph.facebook.com/v6.0/debug_token")
+                .queryParam("input_token", userFbToken)
                 .queryParam("access_token", access_token);
         logger.debug("Facebook profile uri {}", uriBuilder.toUriString());
 
@@ -213,7 +214,5 @@ public class AuthenticationController {
         } catch (Exception e) {
             return Payload.internalError();
         }
-        
     }
-
 }

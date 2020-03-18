@@ -85,10 +85,10 @@ public class EntityUser {
     @ManyToMany
     @JoinTable(name = "user_follow_user",joinColumns = @JoinColumn(name = "follower_id"), 
     inverseJoinColumns = @JoinColumn(name = "followed_id"))
-    private List<EntityUser> followedUsers;
+    private Set<EntityUser> followedUsers;
 
     @ManyToMany(mappedBy = "followedUsers")
-    private List<EntityUser> followerUsers;
+    private Set<EntityUser> followerUsers;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EntityUserRelease> releaseUsers = new HashSet<>();
@@ -142,4 +142,6 @@ public class EntityUser {
         this.userPlaylists.remove(userPlaylist);
         return true;
     }
+
+    
 }

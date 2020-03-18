@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.naming.NoPermissionException;
+
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -116,13 +118,10 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
             simple.setTracksCount(l.getPlaylistTracks().size());
-            simple.setRelation(l.getUserPlaylists().stream().map(eul -> {
-                if (eul.getUser().getId().equals(userId)) {
-                    return eul.getAction();
-                } else {
-                    return "";
-                }
-            }).collect(Collectors.toSet()));
+            simple.setRelation(l.getUserPlaylists().stream()
+                .filter(eul -> eul.getUser().getId().equals(userId))
+                .map(eul ->  eul.getAction())
+                .collect(Collectors.toSet()));
             return simple;
         }).collect(Collectors.toList());
     }
@@ -132,7 +131,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
 
         // Return empty optional if playlist is not public and user have no permission
-        if (!hasAccessPermission(playlistId, userId))
+        if (!hasPlaylistAccessPermission(playlistId, userId))
             return Optional.empty();
 
         EntityUser user = userRepo.findById(userId).get();
@@ -143,18 +142,16 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistFull.setTracksCount(tracks.size());
         playlistFull.setFollowersCount(playlist.getUserPlaylists().size());
-        playlistFull.setRelation(playlist.getUserPlaylists().stream().map(eul -> {
-            if (eul.getUser().getId().equals(userId)) {
-                return eul.getAction();
-            } else {
-                return "";
-            }
-        }).collect(Collectors.toSet()));
+        playlistFull.setRelation(user.getUserPlaylists().parallelStream()
+            .filter(eul -> eul.getPlaylist().getId().equals(playlistId))
+            .map(eul -> eul.getAction())
+            .collect(Collectors.toSet())
+        );
         
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         int total = tracks.size();
-        offset = offset<total && offset>=0 ? offset : 0;
-        limit = limit<total && limit>=offset ? limit : offset;
+        if(offset>=total || offset<0) offset = 0;
+        if(limit>=total || limit<offset)  limit = offset;
         paging.setTotal(total);
         paging.setOffset(offset);
         paging.setLimit(limit);
@@ -172,38 +169,28 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     @Override
     public Optional<DTOPlaylistSimple> getPlaylistSimple(String playlistId, String userId) throws Exception {
-
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
 
-        // Return empty optional if playlist is not public and user have no permission
-        if(!hasAccessPermission(playlistId, userId)) return Optional.empty();
+        if(!hasPlaylistAccessPermission(playlistId, userId)) return Optional.empty();
 
         ModelMapper mapper = new ModelMapper();
-        DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistFull.class);
+        DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistSimple.class);
         playlistSimple.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistSimple.setTracksCount(playlist.getPlaylistTracks().size());
-        playlistSimple.setRelation(playlist.getUserPlaylists().stream().map(eul -> {
-            if (eul.getUser().getId().equals(userId)) {
-                return eul.getAction();
-            } else {
-                return "";
-            }
-        }).collect(Collectors.toSet()));
+        playlistSimple.setRelation(playlist.getUserPlaylists().stream()
+            .filter(eul -> eul.getUser().getId().equals(userId))
+            .map(eul ->  eul.getAction())
+            .collect(Collectors.toSet()));
         return Optional.of(playlistSimple);
     }
 
     @Override
     public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId){
-        Optional<EntityPlaylist> oPlaylist = playlistRepo.findById(playlistId);
-        if(!oPlaylist.isPresent()) return false;
-        EntityPlaylist playlist = oPlaylist.get();
-        Optional<EntityTrack> oTrack = trackRepo.findById(trackId);
-        if(!oTrack.isPresent()) return false;
-        EntityTrack track = oTrack.get();
+        EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
+        EntityTrack track = trackRepo.findById(trackId).get();
 
-        if( !(playlist.getStatus().equals("public")|| playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId,userId,"own"))&&
-            !(track.getStatus().equals("public") || trackRepo.existsByIdAndTrackUsersUserIdAndTrackUsersAction(trackId,userId,"own"))
-            ) return false;
+        if( !hasPlaylistAccessPermission(playlistId, userId) &&
+            !hasTrackAccessPermission(trackId, userId)) return false;
         boolean success = false;
         switch (action) {
             case "add":
@@ -233,7 +220,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityUser user = userRepo.findById(userId).get();
 
-        if(!hasAccessPermission(playlistId, userId))
+        if(!hasPlaylistAccessPermission(playlistId, userId))
         return false;
         boolean success = false;
         switch (action) {
@@ -254,8 +241,19 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     }
 
-    private boolean hasAccessPermission(String playlistId, String userId) {
+    private boolean hasPlaylistAccessPermission(String playlistId, String userId) {
         return  playlistRepo.existsByIdAndStatus(playlistId,"public")
             ||  playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own");   
+    }
+
+    private boolean hasTrackAccessPermission(String trackId, String userId){
+        return  trackRepo.existsByIdAndStatus(trackId,"public")
+            ||  trackRepo.existsByIdAndTrackUsersUserIdAndTrackUsersAction(trackId,userId,"own");
+    }
+
+    @Override
+    public List<String> playlistStream(String playlistId, String userId) throws Exception{
+        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new NoPermissionException();
+        return playlistRepo.findAllTrackIdById(playlistId); 
     }
 }

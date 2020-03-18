@@ -56,17 +56,6 @@ public class ControllerTrack {
         }
     }
 
-    @GetMapping(value = "/tracks/favorites")
-    public ResponseEntity<?> getFavorites(@RequestAttribute EntityUser user) {
-        try {
-            return trackService.getFavorites(user.getId())
-                    .map(list -> Payload.successResponse(list)).orElse(Payload.failureResponse("message"));
-        } catch (Exception e) {
-            log.error("tracks/favorites", e);
-            return Payload.internalError();
-        }
-    }
-
     @GetMapping(value = "/stream/info/{bitrate}/{id}")
     @CrossOrigin(origins = "*")
     public ResponseEntity<?> getTrack(
