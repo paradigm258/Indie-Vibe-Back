@@ -71,7 +71,9 @@ public class ControllerPlaylist {
             return playlistService.getPlaylistFull(id, user.getId(), offset, limit)
                     .map(p -> Payload.successResponse(p))
                     .orElse(ResponseEntity.noContent().build());
-        }catch(NoSuchElementException e){
+        }catch(NoPermissionException e){
+            return Payload.failureResponse("No permission");
+        } catch(NoSuchElementException e){
             return Payload.failureResponse("Invalid id");
         } catch (Exception e) {
             log.error("Error get full playlist", e);

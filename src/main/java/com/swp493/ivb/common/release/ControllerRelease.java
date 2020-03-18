@@ -84,10 +84,10 @@ public class ControllerRelease {
         }
     }
 
-    @GetMapping(value = "/releases/info/{id}")
+    @GetMapping(value = "/releases/simple/{id}")
     public ResponseEntity<?> getRelease(@PathVariable(required = true) String id,@RequestAttribute EntityUser user) {
         try {
-            Optional<DTOReleaseSimple> releaseSimple = releaseService.getRelease(id, user.getId());
+            Optional<DTOReleaseSimple> releaseSimple = releaseService.getSimpleRelease(id, user.getId());
             return Payload.successResponse(releaseSimple.get());
         } catch(NoSuchElementException e){
             return Payload.failureResponse("Invalid Id");
@@ -111,4 +111,20 @@ public class ControllerRelease {
         }
     }
     
+    @GetMapping(value = "/releases/full/{releaseId}")
+    public ResponseEntity<?> getReleaseFull(
+        @PathVariable(required = true) String id,
+        @RequestAttribute EntityUser user,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "20") int limit){
+        try {
+            Optional<DTOReleaseFull> releaseFull = releaseService.getReleaseFull(id, user.getId(), offset, limit);
+            return Payload.successResponse(releaseFull.get());
+        } catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid Id");
+        }catch (Exception e) {
+            log.error("Error getting release info: ", e);
+            return Payload.internalError();
+        }
+    }
 }

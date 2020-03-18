@@ -30,10 +30,12 @@ import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.artist.RepositoryArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
+import com.swp493.ivb.common.track.DTOTrackSimple;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.track.RepositoryTrack;
 import com.swp493.ivb.common.user.EntityUserRelease;
 import com.swp493.ivb.common.user.EntityUserTrack;
+import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
 
 import org.modelmapper.ModelMapper;
@@ -254,7 +256,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     @Override
-    public Optional<DTOReleaseSimple> getRelease(String releaseId, String userId) {
+    public Optional<DTOReleaseSimple> getSimpleRelease(String releaseId, String userId) {
         ModelMapper mapper = new ModelMapper();
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
@@ -282,5 +284,38 @@ public class ServiceReleaseImpl implements ServiceRelease {
     private boolean hasReleaseAccessPermission(String releaseId, String userId){
         return  releaseRepo.existsByIdAndStatus(releaseId, "public")
             ||  releaseRepo.existsByIdAndReleaseUsersUserIdAndReleaseUsersAction(releaseId, userId, "own");
+    }
+
+    @Override
+    public Optional<DTOReleaseFull> getReleaseFull(String releaseId, String userId, int offset, int limit) {
+        ModelMapper mapper = new ModelMapper();
+        Optional<EntityRelease> release = releaseRepo.findById(releaseId);
+        return release.map(r -> {
+            DTOReleaseFull releaseFull = mapper.map(r, DTOReleaseFull.class);
+            releaseFull.setRelation(
+                r.getReleaseUsers().stream()
+                .filter(eul -> eul.getUser().getId().equals(userId))
+                .map(eul-> eul.getAction())
+                .collect(Collectors.toSet())
+            );
+            r.getArtist().ifPresent(a ->releaseFull.setArtist(mapper.map(a, DTOArtistSimple.class)));
+
+            Paging<DTOTrackSimple> paging = new Paging<>();
+            List<EntityTrack> tracks = r.getTracks();
+            paging.setPageInfo(tracks.size(), limit, offset);
+            paging.setItems(tracks.subList(offset, limit).parallelStream().map(t ->{
+                DTOTrackSimple trackSimple = mapper.map(t, DTOTrackSimple.class);
+                trackSimple.setArtists(t.getArtist().stream().map(at->{
+                    return mapper.map(at.getUser(), DTOArtistSimple.class);
+                }).collect(Collectors.toSet()));
+                trackSimple.setRelation(t.getTrackUsers().stream()
+                    .filter(ut -> ut.getUser().getId().equals(userId))
+                    .map(ut -> ut.getAction())
+                    .collect(Collectors.toSet())
+                );
+                return trackSimple;
+            }).collect(Collectors.toList()));
+            return releaseFull;
+        });
     }
 }

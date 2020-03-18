@@ -56,6 +56,10 @@ public class EntityPlaylist {
     private List<EntityUserPlaylist> userPlaylists = new ArrayList<>();
 
     @OneToMany(mappedBy = "playlist",cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "action = 'favorite'")
+    private List<EntityUserPlaylist> userFollowPlaylists = new ArrayList<>();
+
+    @OneToMany(mappedBy = "playlist",cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own'")
     private List<EntityUserPlaylist> owner = new ArrayList<>();
 

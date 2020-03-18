@@ -13,7 +13,6 @@ import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.swp493.ivb.common.mdata.EntityMasterData;
-import com.swp493.ivb.common.track.DTOTrackFull;
 import com.swp493.ivb.common.track.DTOTrackPlaylist;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.track.RepositoryTrack;
@@ -107,13 +106,12 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public List<DTOPlaylistSimple> getPlaylists(String userId, boolean getPrivate, int offset, int limit) {
+    public Paging<DTOPlaylistSimple> getPlaylists(String userId, boolean getPrivate, int offset, int limit) {
         List<EntityPlaylist> list = getPrivate ? playlistRepo.findByUserPlaylistsUserId(userId)
-                                               : playlistRepo.findByStatusAndUserPlaylistsUserId("public", userId);
-        int total = list.size();
-        offset = offset<total && offset>=0 ? offset : 0;
-        limit = limit<total && limit>=offset ? limit : total;                                       
-        return list.subList(offset, limit).stream().map(l -> {
+                                               : playlistRepo.findByStatusAndUserPlaylistsUserId("public", userId);                     
+        Paging<DTOPlaylistSimple> paging = new Paging<>();
+        paging.setPageInfo(list.size(), limit, offset);
+        paging.setItems(list.subList(offset, limit).stream().map(l -> {
             ModelMapper mapper = new ModelMapper();
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
@@ -123,25 +121,25 @@ public class ServicePlaylistImpl implements ServicePlaylist {
                 .map(eul ->  eul.getAction())
                 .collect(Collectors.toSet()));
             return simple;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList()));
+        return paging;
     }
 
     @Override
     public Optional<DTOPlaylistFull> getPlaylistFull(String playlistId, String userId, int offset, int limit) throws Exception {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
 
-        // Return empty optional if playlist is not public and user have no permission
-        if (!hasPlaylistAccessPermission(playlistId, userId))
-            return Optional.empty();
+        if (!hasPlaylistAccessPermission(playlistId, userId)) throw new NoPermissionException();
 
         EntityUser user = userRepo.findById(userId).get();
 
         List<EntityPlaylistTrack> tracks = playlist.getPlaylistTracks();
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistFull playlistFull = mapper.map(playlist, DTOPlaylistFull.class);
+        
         playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistFull.setTracksCount(tracks.size());
-        playlistFull.setFollowersCount(playlist.getUserPlaylists().size());
+        playlistFull.setFollowersCount(playlist.getUserFollowPlaylists().size());
         playlistFull.setRelation(user.getUserPlaylists().parallelStream()
             .filter(eul -> eul.getPlaylist().getId().equals(playlistId))
             .map(eul -> eul.getAction())
@@ -150,16 +148,11 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         int total = tracks.size();
-        if(offset>=total || offset<0) offset = 0;
-        if(limit>=total || limit<offset)  limit = offset;
-        paging.setTotal(total);
-        paging.setOffset(offset);
-        paging.setLimit(limit);
+        paging.setPageInfo(total, limit, offset);
         paging.setItems(tracks.subList(paging.getOffset(), paging.getLimit()).stream().map(track -> {
             DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
             trackPlaylist.setAddedAt(track.getInsertedDate());
-            DTOTrackFull trackFull = ServiceTrackImpl.getTrackFullFromEntity(track.getTrack(), user).get();
-            trackPlaylist.setTrack(trackFull);
+            trackPlaylist.setTrack(ServiceTrackImpl.getTrackFullFromEntity(track.getTrack(), user).get());
             return trackPlaylist;
         }).collect(Collectors.toList()));
 
@@ -256,4 +249,5 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         if(!hasPlaylistAccessPermission(playlistId, userId)) throw new NoPermissionException();
         return playlistRepo.findAllTrackIdById(playlistId); 
     }
+    
 }
