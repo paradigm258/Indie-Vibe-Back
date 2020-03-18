@@ -97,7 +97,7 @@ public class ControllerPlaylist {
         }
     }
 
-    @GetMapping(value = "/{userId}/playlists")
+    @GetMapping(value = "/library/{userId}/playlists")
     public ResponseEntity<?> getUserPlaylistSimple(
         @RequestAttribute("user") EntityUser user, 
         @PathVariable String userId,

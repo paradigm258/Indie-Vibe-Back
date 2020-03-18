@@ -25,19 +25,7 @@ public class ControllerUser {
     @Autowired
     private ServiceUser userService;
 
-    @GetMapping("/me/simple")
-    public ResponseEntity<?> getSimpleMe(@RequestAttribute(name = "user") EntityUser me) {
-        try {
-            Optional<DTOUserPublic> simple = userService.getUserPublic(me.getId());
-            return simple.map(user -> Payload.successResponse(user))
-                        .orElse(ResponseEntity.notFound().build());
-        } catch (Exception e) {
-            log.error("Error getting user profile", e);
-            return Payload.internalError();
-        }
-    }
-
-    @GetMapping("/users/{id}")
+    @GetMapping("/library/{id}/profile")
     public ResponseEntity<?> getSimple(@PathVariable String id) {
         try {
             Optional<DTOUserPublic> simple = userService.getUserPublic(id);
@@ -49,7 +37,7 @@ public class ControllerUser {
         }
     }
 
-    @PostMapping(value="users/{userId}")
+    @PostMapping(value="/users/{userId}")
     public ResponseEntity<?> actionUser(@PathVariable String userId,@RequestAttribute EntityUser user,@RequestParam String action) {
         try {
             switch (action) {
