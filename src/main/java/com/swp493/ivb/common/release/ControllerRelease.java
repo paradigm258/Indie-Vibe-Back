@@ -33,7 +33,7 @@ public class ControllerRelease {
     @Autowired
     private ServiceRelease releaseService;
 
-    @PostMapping(value = "/artist/releases")
+    @PostMapping(value = "/releases")
     public ResponseEntity<?> uploadNewRelease(@RequestAttribute EntityUser user,
             @RequestParam(name = "info", required = true) String info,
             @RequestParam(name = "thumbnail", required = true) MultipartFile thumbnail,
@@ -65,7 +65,7 @@ public class ControllerRelease {
         }
     }
 
-    @DeleteMapping(value = "/artist/releases/{id}")
+    @DeleteMapping(value = "/releases/{id}")
     public ResponseEntity<?> uploadNewRelease(
             @RequestAttribute EntityUser user,
             @PathVariable(required = true) String id) {
@@ -111,7 +111,7 @@ public class ControllerRelease {
         }
     }
     
-    @GetMapping(value = "/releases/full/{releaseId}")
+    @GetMapping(value = "/releases/full/{id}")
     public ResponseEntity<?> getReleaseFull(
         @PathVariable(required = true) String id,
         @RequestAttribute EntityUser user,
