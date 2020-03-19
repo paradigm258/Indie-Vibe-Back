@@ -24,9 +24,11 @@ public class Paging<T> {
 
     public void setPageInfo(int total, int limit, int offset){
         this.total = total;
+        this.offset = offset;
+        this.limit = limit;
         if(offset>=total || offset<0) this.offset = 0;
         if(limit<offset)  this.limit = offset+5;
-        if(limit>=total)  this.limit = total-1;
+        if(limit>=total)  this.limit = total;
     }
 
     public List<T> getItems() {

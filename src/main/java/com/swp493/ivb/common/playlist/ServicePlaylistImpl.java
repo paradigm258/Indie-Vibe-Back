@@ -111,7 +111,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
                                                : playlistRepo.findByStatusAndUserPlaylistsUserId("public", userId);                     
         Paging<DTOPlaylistSimple> paging = new Paging<>();
         paging.setPageInfo(list.size(), limit, offset);
-        if(list.size()>0)paging.setItems(list.subList(offset, limit).stream().map(l -> {
+        if(list.size()>0)paging.setItems(list.subList(paging.getOffset(), paging.getLimit()).stream().map(l -> {
             ModelMapper mapper = new ModelMapper();
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
