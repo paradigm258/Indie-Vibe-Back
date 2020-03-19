@@ -20,9 +20,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
-import com.swp493.ivb.common.playlist.EntityPlaylistTrack;
+import com.swp493.ivb.common.relationship.EntityPlaylistTrack;
+import com.swp493.ivb.common.relationship.EntityUserTrack;
 import com.swp493.ivb.common.release.EntityRelease;
-import com.swp493.ivb.common.user.EntityUserTrack;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;

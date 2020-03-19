@@ -30,11 +30,15 @@ import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.artist.RepositoryArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
+import com.swp493.ivb.common.relationship.EntityUserRelease;
+import com.swp493.ivb.common.relationship.EntityUserTrack;
+import com.swp493.ivb.common.relationship.RepositoryUserRelease;
+import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.track.DTOTrackSimple;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.track.RepositoryTrack;
-import com.swp493.ivb.common.user.EntityUserRelease;
-import com.swp493.ivb.common.user.EntityUserTrack;
+import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
 
@@ -42,6 +46,8 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -61,6 +67,16 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Autowired
     private RepositoryArtist artistRepo;
+
+    @Autowired
+    private RepositoryUser userRepo;
+
+    @Autowired
+    private RepositoryUserRelease userReleaseRepo;
+
+    @Autowired
+    private RepositoryUserTrack userTrackRepo;
+    
 
     @Autowired
     private AmazonS3 s3;
@@ -230,7 +246,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
         return artist.map(a -> {
             ModelMapper mapper = new ModelMapper();
             List<DTOReleaseSimple> list = a.getOwnReleases().stream().map(r -> {
-                return mapper.map(r, DTOReleaseSimple.class);
+                DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
+                releaseSimple.setRelation(userReleaseRepo.getRelation(artistId, r.getId()));
+                return releaseSimple;
             }).collect(Collectors.toList());
             return list;
         });
@@ -261,12 +279,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
             DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
-            releaseSimple.setRelation(
-                r.getReleaseUsers().stream()
-                .filter(eul -> eul.getUser().getId().equals(userId))
-                .map(eul-> eul.getAction())
-                .collect(Collectors.toSet())
-            );
+            releaseSimple.setRelation(userReleaseRepo.getRelation(userId, releaseId));
             r.getArtist().ifPresent(a ->releaseSimple.setArtist(mapper.map(a, DTOArtistSimple.class)));
             return releaseSimple;
         });
@@ -292,27 +305,23 @@ public class ServiceReleaseImpl implements ServiceRelease {
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
             DTOReleaseFull releaseFull = mapper.map(r, DTOReleaseFull.class);
-            releaseFull.setRelation(
-                r.getReleaseUsers().stream()
-                .filter(eul -> eul.getUser().getId().equals(userId))
-                .map(eul-> eul.getAction())
-                .collect(Collectors.toSet())
-            );
+            releaseFull.setRelation(userReleaseRepo.getRelation(userId, releaseId));
             r.getArtist().ifPresent(a ->releaseFull.setArtist(mapper.map(a, DTOArtistSimple.class)));
 
             Paging<DTOTrackSimple> paging = new Paging<>();
-            List<EntityTrack> tracks = r.getTracks();
-            paging.setPageInfo(tracks.size(), limit, offset);
-            if(tracks.size()>0)paging.setItems(tracks.subList(offset, limit).parallelStream().map(t ->{
+            paging.setPageInfo(trackRepo.countByReleaseId(releaseId), limit, offset);
+            Pageable pageable = paging.getPageable();
+            paging.setItems(trackRepo.findAllByReleaseId(releaseId, pageable).parallelStream().map(t ->{
                 DTOTrackSimple trackSimple = mapper.map(t, DTOTrackSimple.class);
                 trackSimple.setArtists(t.getArtist().stream().map(at->{
-                    return mapper.map(at.getUser(), DTOArtistSimple.class);
+                    EntityUser artist = at.getUser();
+                    DTOArtistSimple DTOArtist =  mapper.map(at.getUser(), DTOArtistSimple.class);
+                    Set<String> relation = new HashSet<>();
+                    if(userRepo.isFollowing(userId, artist.getId())) relation.add("following");
+                    DTOArtist.setRelation(relation);
+                    return DTOArtist;
                 }).collect(Collectors.toSet()));
-                trackSimple.setRelation(t.getTrackUsers().stream()
-                    .filter(ut -> ut.getUser().getId().equals(userId))
-                    .map(ut -> ut.getAction())
-                    .collect(Collectors.toSet())
-                );
+                trackSimple.setRelation(userTrackRepo.getRelation(userId, t.getId()));
                 return trackSimple;
             }).collect(Collectors.toList()));
             return releaseFull;

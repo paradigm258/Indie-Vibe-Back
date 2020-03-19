@@ -11,8 +11,9 @@ import org.springframework.stereotype.Repository;
 public interface RepositoryTrack extends JpaRepository<EntityTrack, String> {
 
     Optional<EntityTrack> findById(String id);
+    int countByReleaseId(String releaseId);
     boolean existsByIdAndTrackUsersUserIdAndTrackUsersAction(String trackId, String userId, String action);
-    List<EntityTrack> findAllByTrackPlaylistsPlaylistId(String playlistId, Pageable page);
     boolean existsByIdAndStatus(String id, String status);
+    List<EntityTrack> findAllByReleaseId(String releaseId, Pageable pageable);
     List<EntityTrack> findAllByReleaseId(String releaseId);
 }

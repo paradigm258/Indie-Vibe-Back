@@ -25,9 +25,9 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
+import com.swp493.ivb.common.relationship.EntityUserRelease;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.user.EntityUser;
-import com.swp493.ivb.common.user.EntityUserRelease;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

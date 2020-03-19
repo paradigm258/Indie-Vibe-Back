@@ -1,5 +1,6 @@
-package com.swp493.ivb.common.user;
+package com.swp493.ivb.common.relationship;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import javax.persistence.Entity;
@@ -9,7 +10,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
-import com.swp493.ivb.common.playlist.EntityPlaylist;
+import com.swp493.ivb.common.track.EntityTrack;
+import com.swp493.ivb.common.user.EntityUser;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -17,26 +19,27 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * EntityUserPlaylist
- */
 @Entity
 @Table(name = "user_object")
 @NoArgsConstructor
 @Getter
 @Setter
-public class EntityUserPlaylist {
+public class EntityUserTrack implements Serializable {
+
+    /**
+     *
+     */
+    private static final long serialVersionUID = 908389835504174960L;
 
     @Id
     @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
     @GeneratedValue(generator = "id")
-    String id;
-
-    @ManyToOne
-    @JoinColumn(name = "playlist_id")
-    private EntityPlaylist playlist;
-
+    private String id;
     
+    @ManyToOne
+    @JoinColumn(name = "track_id")
+    private EntityTrack track;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private EntityUser user;
@@ -46,16 +49,16 @@ public class EntityUserPlaylist {
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        if (!(obj instanceof EntityUserPlaylist)) return false;
+        if (!(obj instanceof EntityUserTrack)) return false;
         
-        EntityUserPlaylist that = (EntityUserPlaylist) obj;
-        return Objects.equals(playlist.getId(), that.playlist.getId()) &&
+        EntityUserTrack that = (EntityUserTrack) obj;
+        return Objects.equals(track.getId(), that.track.getId()) &&
                 Objects.equals(user.getId(), that.user.getId()) &&
                 Objects.equals(action, that.action);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(playlist.getId(), user.getId(), action);
+        return Objects.hash(track.getId(), user.getId(), action);
     }
 }
