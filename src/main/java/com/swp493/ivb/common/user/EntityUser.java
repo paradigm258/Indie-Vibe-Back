@@ -22,6 +22,9 @@ import javax.validation.constraints.NotBlank;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.playlist.EntityPlaylist;
+import com.swp493.ivb.common.relationship.EntityUserPlaylist;
+import com.swp493.ivb.common.relationship.EntityUserRelease;
+import com.swp493.ivb.common.relationship.EntityUserTrack;
 import com.swp493.ivb.common.track.EntityTrack;
 
 import org.hibernate.annotations.DiscriminatorFormula;
@@ -84,9 +87,9 @@ public class EntityUser {
     @ManyToMany
     @JoinTable(name = "user_follow_user",joinColumns = @JoinColumn(name = "follower_id"), 
     inverseJoinColumns = @JoinColumn(name = "followed_id"))
-    private Set<EntityUser> followedUsers;
+    private Set<EntityUser> followingUsers;
 
-    @ManyToMany(mappedBy = "followedUsers")
+    @ManyToMany(mappedBy = "followingUsers")
     private Set<EntityUser> followerUsers;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -14,4 +14,6 @@ public interface ServiceTrack {
     public Optional<List<DTOTrackSimple>> getUserFavorites(String userId);
 
     public Optional<DTOTrackFull> getTrackById(String id,String userId);
+
+    public Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, String userId);
 }

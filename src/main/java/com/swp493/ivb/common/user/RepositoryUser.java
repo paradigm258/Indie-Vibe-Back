@@ -18,6 +18,9 @@ public interface RepositoryUser extends JpaRepository<EntityUser, String> {
 
     public Boolean existsByFbId(String fbId);
 
+    @Query(value = "SELECT CASE WHEN(COUNT(*)>0) then true else false FROM user_follow_user WHERE followed_id = :followed and follower_id = :follower", nativeQuery = true)
+    public boolean isFollowing(String follower, String followed);
+
     @Query(value = "SELECT COUNT(follower_id) FROM user_follow_user WHERE followed_id=:userId", nativeQuery = true)
     public int countFollowers(@Param("userId") String userId);
 

@@ -18,8 +18,9 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 
 import com.swp493.ivb.common.mdata.EntityMasterData;
+import com.swp493.ivb.common.relationship.EntityPlaylistTrack;
+import com.swp493.ivb.common.relationship.EntityUserPlaylist;
 import com.swp493.ivb.common.track.EntityTrack;
-import com.swp493.ivb.common.user.EntityUserPlaylist;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Where;

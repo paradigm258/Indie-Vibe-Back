@@ -96,7 +96,7 @@ public class ServiceUserImpl implements ServiceUser {
     public void followUser(String followerId, String followedId) {
         EntityUser follower = userRepository.findById(followerId).get();
         EntityUser followed = userRepository.findById(followedId).get();
-        follower.getFollowedUsers().add(followed);
+        follower.getFollowingUsers().add(followed);
         userRepository.flush();
     }
 
@@ -104,7 +104,7 @@ public class ServiceUserImpl implements ServiceUser {
     public void unfolloweUser(String followerId, String followedId) {
         EntityUser follower = userRepository.findById(followerId).get();
         EntityUser followed = userRepository.findById(followedId).get();
-        follower.getFollowedUsers().remove(followed);
+        follower.getFollowingUsers().remove(followed);
         userRepository.flush();
     }
 }

@@ -8,12 +8,15 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.exceptions.InvalidTokenException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -25,6 +28,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private TokenStore tokenStore;
 
+    @Autowired
+    private ServiceUserSecurityImpl userSecurityImpl;
+
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Override
@@ -34,9 +40,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             if (!StringUtils.isEmpty(jwt)) {
                 OAuth2AccessToken accessToken = tokenStore.readAccessToken(jwt);
-                OAuth2Authentication authentication = tokenStore.readAuthentication(jwt);
+                //OAuth2Authentication authentication = tokenStore.readAuthentication(jwt);
                 if (accessToken != null && !accessToken.isExpired()) {
-                    IndieUserPrincipal userDetails = (IndieUserPrincipal) authentication.getPrincipal();
+                    IndieUserPrincipal userDetails = (IndieUserPrincipal) userSecurityImpl
+                            .loadUserByUsername((String) accessToken.getAdditionalInformation().get("sub"));
                     UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
                             null, userDetails.getAuthorities());
                     userAuth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -44,6 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     ((ServletRequest) request).setAttribute("user", userDetails.getUser());
                 }
             }
+        } catch(InvalidTokenException e){
+            logger.info(e.getMessage());
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);
         }

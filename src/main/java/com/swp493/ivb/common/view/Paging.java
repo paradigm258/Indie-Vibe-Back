@@ -2,6 +2,14 @@ package com.swp493.ivb.common.view;
 
 import java.util.List;
 
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class Paging<T> {
 
     private List<T> items;
@@ -11,6 +19,10 @@ public class Paging<T> {
     private Integer limit;
 
     private Integer total;
+
+    private int index;
+    
+    private int size = 5;
 
     public Paging() {
     }
@@ -27,8 +39,11 @@ public class Paging<T> {
         this.offset = offset;
         this.limit = limit;
         if(offset>=total || offset<0) this.offset = 0;
-        if(limit<offset)  this.limit = offset+5;
-        if(limit>=total)  this.limit = total;
+        if(limit< 0)  this.limit = 1;
+    }
+
+    public Pageable getPageable(){
+        return PageRequest.of(offset/limit, limit);
     }
 
     public List<T> getItems() {

@@ -36,6 +36,7 @@ import org.springframework.security.oauth2.provider.token.DefaultUserAuthenticat
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -97,7 +98,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 
 	@Bean
 	public TokenStore TokenStore() {
-		return new InMemoryTokenStore();
+		return new JwtTokenStore(accessTokenConverter());
 	}
 
 	@Bean

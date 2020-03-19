@@ -13,10 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.swp493.ivb.common.artist.DTOArtistSimple;
+import com.swp493.ivb.common.relationship.EntityUserRelease;
+import com.swp493.ivb.common.relationship.EntityUserTrack;
+import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.user.EntityUser;
-import com.swp493.ivb.common.user.EntityUserRelease;
-import com.swp493.ivb.common.user.EntityUserTrack;
 import com.swp493.ivb.common.user.RepositoryUser;
 
 @Service
@@ -27,6 +28,9 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Autowired
     private RepositoryUser userRepo;
+
+    @Autowired
+    private RepositoryUserTrack userTrackRepo;
 
     @Override
     public Optional<DTOTrackStreamInfo> getTrackStreamInfo(String id, int bitrate, String userId) {
@@ -54,9 +58,9 @@ public class ServiceTrackImpl implements ServiceTrack {
             default:
                 return Optional.empty();
         }
-        EntityUser user = userRepo.findById(userId).get();
+        
         return trackEntity.map(track -> {
-            DTOTrackFull info = getTrackFullFromEntity(track, user).map(t -> t).orElse(null);
+            DTOTrackFull info = getTrackFullFromEntity(track, userId).map(t -> t).orElse(null);
             DTOTrackStreamInfo trackStreamInfo = mapper.map(track, DTOTrackStreamInfo.class);
             trackStreamInfo.setInfo(info);
             return trackStreamInfo;
@@ -114,27 +118,15 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Override
     public Optional<DTOTrackFull> getTrackById(String id, String userId) {
-        Optional<EntityTrack> track = trackRepo.findById(id);
-        if (track.isPresent()) {
-            Optional<EntityUser> user = userRepo.findById(userId);
-            return getTrackFullFromEntity(track.get(), user.get());
-        }
-
-        return Optional.empty();
+        return getTrackFullFromEntity(trackRepo.findById(id).get(),userId);
     }
 
-    public static Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, EntityUser user) {
+    public Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, String userId) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
         res.setDuration(track.getDuration320());
-        res.setRelation(track.getTrackUsers().stream().map(eut -> {
-            if (eut.getUser().equals(user)) {
-                return eut.getAction();
-            } else {
-                return "";
-            }
-        }).collect(Collectors.toSet()));
+        res.setRelation(userTrackRepo.getRelation(userId,track.getId()));
 
         // set artists who own or featured the track
         Set<EntityUserTrack> trackArtists = track.getArtist();
