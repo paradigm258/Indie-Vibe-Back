@@ -111,7 +111,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
                                                : playlistRepo.findByStatusAndUserPlaylistsUserId("public", userId);                     
         Paging<DTOPlaylistSimple> paging = new Paging<>();
         paging.setPageInfo(list.size(), limit, offset);
-        paging.setItems(list.subList(offset, limit).stream().map(l -> {
+        if(list.size()>0)paging.setItems(list.subList(offset, limit).stream().map(l -> {
             ModelMapper mapper = new ModelMapper();
             DTOPlaylistSimple simple = mapper.map(l, DTOPlaylistSimple.class);
             simple.setOwner(mapper.map(l.getOwner().get(0).getUser(), DTOUserPublic.class));
@@ -140,7 +140,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistFull.setTracksCount(tracks.size());
         playlistFull.setFollowersCount(playlist.getUserFollowPlaylists().size());
-        playlistFull.setRelation(user.getUserPlaylists().parallelStream()
+        playlistFull.setRelation(playlist.getUserPlaylists().parallelStream()
             .filter(eul -> eul.getPlaylist().getId().equals(playlistId))
             .map(eul -> eul.getAction())
             .collect(Collectors.toSet())
@@ -149,7 +149,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         int total = tracks.size();
         paging.setPageInfo(total, limit, offset);
-        paging.setItems(tracks.subList(paging.getOffset(), paging.getLimit()).stream().map(track -> {
+        if(total>0)paging.setItems(tracks.subList(paging.getOffset(), paging.getLimit()).stream().map(track -> {
             DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
             trackPlaylist.setAddedAt(track.getInsertedDate());
             trackPlaylist.setTrack(ServiceTrackImpl.getTrackFullFromEntity(track.getTrack(), user).get());

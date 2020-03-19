@@ -303,7 +303,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
             Paging<DTOTrackSimple> paging = new Paging<>();
             List<EntityTrack> tracks = r.getTracks();
             paging.setPageInfo(tracks.size(), limit, offset);
-            paging.setItems(tracks.subList(offset, limit).parallelStream().map(t ->{
+            if(tracks.size()>0)paging.setItems(tracks.subList(offset, limit).parallelStream().map(t ->{
                 DTOTrackSimple trackSimple = mapper.map(t, DTOTrackSimple.class);
                 trackSimple.setArtists(t.getArtist().stream().map(at->{
                     return mapper.map(at.getUser(), DTOArtistSimple.class);
