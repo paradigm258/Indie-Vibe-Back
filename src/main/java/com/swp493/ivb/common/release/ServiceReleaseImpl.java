@@ -123,7 +123,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 track.setFileSize320(0);
                 track.setMp3128("mp3128");
                 track.setMp3320("mp3320");
-                track.setMp3Offset(0);
 
                 EntityUserTrack artistTrack = new EntityUserTrack();
                 artistTrack.setUser(artist);
@@ -171,7 +170,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 writeInputToOutput(trackContent128.getInputStream(), new FileOutputStream(file));
                 Mp3File mp3128 = new Mp3File(file);
                 track.setDuration128(mp3128.getLengthInMilliseconds());
-                track.setMp3Offset(mp3128.getStartOffset());
                 ObjectMetadata metadata128 = new ObjectMetadata();
                 metadata128.setContentLength(track.getFileSize128());
                 String key = track.getId() + "/128";

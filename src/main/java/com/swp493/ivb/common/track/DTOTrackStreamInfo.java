@@ -9,12 +9,6 @@ import lombok.Setter;
 @Setter
 public class DTOTrackStreamInfo {
 
-    private int duration;
-
-    private int fileSize;
-
-    private int mp3Offset;
-
     private DTOTrackFull info;
 
     private String url;

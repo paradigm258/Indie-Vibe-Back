@@ -63,10 +63,6 @@ public class EntityTrack {
     @Column(name = "file_size_320")
     private long fileSize320;
 
-    @NotNull
-    @Column(name = "mp3_offset")
-    private int mp3Offset;
-
     @NotBlank
     private String status;
 
@@ -79,6 +75,7 @@ public class EntityTrack {
     @NotBlank
     @Column(name = "mp3_320")
     private String mp3320;
+
 
 
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
