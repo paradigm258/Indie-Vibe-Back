@@ -62,11 +62,16 @@ public class ControllerTrack {
         @RequestAttribute("user") EntityUser user,
         @PathVariable int bitrate,
         @PathVariable(required = true) String id) {
-        Optional<DTOTrackStreamInfo> track = trackService.getTrackStreamInfo(id, bitrate,user.getId());
-
-        return track
-                .map(t -> Payload.successResponse(t))
-                .orElse(ResponseEntity.notFound().build());
+        try {
+            DTOTrackStreamInfo track = trackService.getTrackStreamInfo(id, bitrate,user.getId());
+            return Payload.successResponse(track);
+        } catch(NoSuchElementException e){
+            return Payload.failureResponse("Invalid Id");
+        } catch (Exception e) {
+            log.error("Error getting stream info", e);
+            return Payload.internalError();
+        }
+        
     }
 
     @GetMapping(value = "/tracks/test/{id}")

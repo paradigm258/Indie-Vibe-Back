@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface ServiceRelease {
 
     Optional<String> uploadRelease(String artistId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
-            MultipartFile[] audioFiles);
+            MultipartFile[] audioFiles) throws Exception;
 
     Optional<String> deleteRelease(String releaseId, String artistId);
 

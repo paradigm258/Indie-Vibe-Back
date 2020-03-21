@@ -48,20 +48,15 @@ public class EntityTrack {
     private String title;
 
     @NotNull
-    @Column(name = "duration_128")
-    private long duration128;
-
-    @NotNull
-    @Column(name = "duration_320")
-    private long duration320;
+    private Long duration;
 
     @NotNull
     @Column(name = "file_size_128")
-    private long fileSize128;
+    private Long fileSize128;
 
     @NotNull
     @Column(name = "file_size_320")
-    private long fileSize320;
+    private Long fileSize320;
 
     @NotBlank
     private String status;
@@ -76,8 +71,6 @@ public class EntityTrack {
     @Column(name = "mp3_320")
     private String mp3320;
 
-
-
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own' or action = 'featured'")
     private Set<EntityUserTrack> artist = new HashSet<>();
@@ -86,7 +79,7 @@ public class EntityTrack {
     // for getting track's genres
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinTable(name = "object_genre", joinColumns = @JoinColumn(name = "track_id"), inverseJoinColumns = @JoinColumn(name = "genre_id"))
-    private List<EntityMasterData> genres;
+    private Set<EntityMasterData> genres;
 
     // for getting track's release
     @OneToOne

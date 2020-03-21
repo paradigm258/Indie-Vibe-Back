@@ -82,7 +82,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Override
     public Optional<String> uploadRelease(String artistId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
-            MultipartFile[] audioFiles) throws NoSuchElementException {
+            MultipartFile[] audioFiles) throws Exception {
 
         List<DTOTrackReleaseUpload> tracksInfo = info.getTracks();
         List<String> uploadKeyList = new LinkedList<>();
@@ -114,12 +114,11 @@ public class ServiceReleaseImpl implements ServiceRelease {
                     EntityMasterData genre = masterDataRepo.findByIdAndType(genreId, "genre").get();
                     releaseGenres.add(genre);
                     return genre;
-                }).collect(Collectors.toList()));
+                }).collect(Collectors.toSet()));
 
-                track.setDuration128(0);
-                track.setDuration320(0);
-                track.setFileSize128(0);
-                track.setFileSize320(0);
+                track.setDuration(0L);
+                track.setFileSize128(0L);
+                track.setFileSize320(0L);
                 track.setMp3128("mp3128");
                 track.setMp3320("mp3320");
 
@@ -168,7 +167,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
                 writeInputToOutput(trackContent128.getInputStream(), new FileOutputStream(file));
                 Mp3File mp3128 = new Mp3File(file);
-                track.setDuration128(mp3128.getLengthInMilliseconds());
+                track.setDuration(mp3128.getLengthInMilliseconds());
                 ObjectMetadata metadata128 = new ObjectMetadata();
                 metadata128.setContentLength(track.getFileSize128());
                 String key = track.getId() + "/128";
@@ -178,7 +177,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
                 writeInputToOutput(trackContent320.getInputStream(), new FileOutputStream(file));
                 Mp3File mp3320 = new Mp3File(file);
-                track.setDuration320(mp3320.getLengthInMilliseconds());
+                track.setDuration(mp3320.getLengthInMilliseconds());
 
                 ObjectMetadata metadata320 = new ObjectMetadata();
                 metadata320.setContentLength(track.getFileSize320());

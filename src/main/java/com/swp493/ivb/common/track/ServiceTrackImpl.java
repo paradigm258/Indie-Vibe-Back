@@ -5,13 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
-import org.modelmapper.PropertyMap;
-import org.modelmapper.TypeMap;
-import org.modelmapper.convention.MatchingStrategies;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.swp493.ivb.common.artist.DTOArtistSimple;
 import com.swp493.ivb.common.relationship.EntityUserRelease;
 import com.swp493.ivb.common.relationship.EntityUserTrack;
@@ -19,6 +12,11 @@ import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
+
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class ServiceTrackImpl implements ServiceTrack {
@@ -33,34 +31,25 @@ public class ServiceTrackImpl implements ServiceTrack {
     private RepositoryUserTrack userTrackRepo;
 
     @Override
-    public Optional<DTOTrackStreamInfo> getTrackStreamInfo(String id, int bitrate, String userId) {
-        Optional<EntityTrack> trackEntity = trackRepo.findById(id);
+    public DTOTrackStreamInfo getTrackStreamInfo(String id, int bitrate, String userId) throws Exception {
+        EntityTrack track = trackRepo.findById(id).get();
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        TypeMap<EntityTrack, DTOTrackStreamInfo> typeMap = mapper.createTypeMap(EntityTrack.class,
-                DTOTrackStreamInfo.class);
-
+        DTOTrackFull info = getTrackFullFromEntity(track, userId).map(t -> t).orElse(null);
+        DTOTrackStreamInfo trackStreamInfo = mapper.map(track, DTOTrackStreamInfo.class);
+        trackStreamInfo.setInfo(info);
         switch (bitrate) {
             case 128:
-                typeMap.addMappings(m -> {
-                    m.map(src -> src.getMp3128(), DTOTrackStreamInfo::setUrl);
-                });
+                trackStreamInfo.setUrl(track.getMp3128());
                 break;
             case 320:
-                typeMap.addMappings(m -> {
-                    m.map(src -> src.getMp3320(), DTOTrackStreamInfo::setUrl);
-                });
+                trackStreamInfo.setUrl(track.getMp3320());
                 break;
             default:
-                return Optional.empty();
+                break;
         }
         
-        return trackEntity.map(track -> {
-            DTOTrackFull info = getTrackFullFromEntity(track, userId).map(t -> t).orElse(null);
-            DTOTrackStreamInfo trackStreamInfo = mapper.map(track, DTOTrackStreamInfo.class);
-            trackStreamInfo.setInfo(info);
-            return trackStreamInfo;
-        });
+        return trackStreamInfo;
     }
 
     @Override
@@ -101,13 +90,9 @@ public class ServiceTrackImpl implements ServiceTrack {
         return userRepo.findById(userId).map(user -> {
             return user.getUserFavoriteTracks().stream().map(track -> {
                 ModelMapper mapper = new ModelMapper();
-                mapper.addMappings(new PropertyMap<EntityTrack, DTOTrackSimple>() {
-                    @Override
-                    protected void configure() {
-                        map().setDuration(track.getTrack().getDuration320());
-                    }
-                });
-                return mapper.map(track.getTrack(), DTOTrackSimple.class);
+                DTOTrackSimple trackSimple = mapper.map(track.getTrack(), DTOTrackSimple.class);
+                trackSimple.setDuration(track.getTrack().getDuration());
+                return trackSimple;
             }).collect(Collectors.toList());
         });
     }
@@ -121,7 +106,7 @@ public class ServiceTrackImpl implements ServiceTrack {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
-        res.setDuration(track.getDuration320());
+        res.setDuration(track.getDuration());
         res.setRelation(userTrackRepo.getRelation(userId,track.getId()));
 
         // set artists who own or featured the track
