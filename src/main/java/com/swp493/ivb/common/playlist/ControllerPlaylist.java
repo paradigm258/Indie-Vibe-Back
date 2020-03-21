@@ -40,6 +40,9 @@ public class ControllerPlaylist {
                 FieldError error = result.getFieldError();
                 return Payload.failureResponse(error.getField() + " is invalid" + error.getCode());
             }
+            if(playlistInfo.getThumbnail().isEmpty()){
+                return Payload.failureResponse("Thumbnail is empty");
+            }
             return Payload.successResponse(playlistService.createPlaylist(playlistInfo, user.getId()));
         } catch (Exception e) {
             log.error("Error create playlist", e);

@@ -94,12 +94,15 @@ public class EntityUser {
     private Set<EntityUser> followerUsers;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "release_id is not null")
     private Set<EntityUserRelease> releaseUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "track_id is not null")
     private Set<EntityUserTrack> trackUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "playlist_id is not null")
     private Set<EntityUserPlaylist> userPlaylists = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

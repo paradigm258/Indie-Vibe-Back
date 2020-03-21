@@ -72,17 +72,17 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         try {
             ObjectMetadata metadata = new ObjectMetadata();
             MultipartFile thumbnail = playlistInfo.getThumbnail();
-            if(!thumbnail.isEmpty()){
-                s3.putObject(
+            
+            s3.putObject(
                 new PutObjectRequest(
                     AWSConfig.BUCKET_NAME, 
                     playlistId, 
                     thumbnail.getInputStream(), 
                     metadata)
                     .withCannedAcl(CannedAccessControlList.PublicRead)
-                );
-                playlist.setThumbnail(AWSConfig.BUCKET_URL + playlistId);
-            }
+            );
+            playlist.setThumbnail(AWSConfig.BUCKET_URL + playlistId);
+            
 
             EntityUserPlaylist eup = new EntityUserPlaylist();
             eup.setAction("own");
@@ -105,8 +105,10 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     public boolean deletePlaylist(String playlistId, String userId) throws Exception {
         try {
             if (playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own")) {
+                EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
                 playlistRepo.deleteById(playlistId);
-                //s3.deleteObject(AWSConfig.BUCKET_NAME, playlistId);
+                if(playlist.getThumbnail() != null && !playlist.getThumbnail().isEmpty())
+                s3.deleteObject(AWSConfig.BUCKET_NAME, playlist.getThumbnail());
                 return true;
             } else {
                 return false;
