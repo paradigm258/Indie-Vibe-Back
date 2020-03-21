@@ -63,9 +63,8 @@ public class ServiceTrackImpl implements ServiceTrack {
     }
 
     private boolean actionTrack(String userId, String trackId, String action) {
-        EntityUser user = userRepo.findById(userId).orElse(null);
-        EntityTrack track = trackRepo.findById(trackId).orElse(null);
-        if (user != null && track != null) {
+        EntityUser user = userRepo.findById(userId).get();
+        EntityTrack track = trackRepo.findById(trackId).get();
             switch (action) {
                 case "unfavorite":
                     if (user.unfavoriteTracks(track)) {
@@ -81,8 +80,6 @@ public class ServiceTrackImpl implements ServiceTrack {
                     break;
             }
             return true;
-        }
-        return false;
     }
 
     @Override

@@ -106,7 +106,7 @@ public class EntityUser {
     private Set<EntityUserPlaylist> userPlaylists = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Where(clause = "action = 'favorite'")
+    @Where(clause = "action = 'favorite' and track_id is not null")
     private Set<EntityUserTrack> userFavoriteTracks = new HashSet<>();
 
     public boolean favoriteTracks(EntityTrack track) {
