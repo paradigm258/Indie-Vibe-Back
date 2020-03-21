@@ -73,7 +73,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             ObjectMetadata metadata = new ObjectMetadata();
             MultipartFile thumbnail = playlistInfo.getThumbnail();
 
-            if (thumbnail != null) {
+            if (thumbnail != null && !thumbnail.isEmpty()) {
                 s3.putObject(
                     new PutObjectRequest(
                         AWSConfig.BUCKET_NAME, 
@@ -96,6 +96,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         } catch (Exception e) {
             if (playlistId != null && !playlistId.isEmpty()) {
                 playlistRepo.delete(playlist);
+                if(playlist.getThumbnail() != null && !playlist.getThumbnail().isEmpty())
+                s3.deleteObject(AWSConfig.BUCKET_NAME, playlist.getThumbnail());
             }
             log.error("Error create playlist", e);
             throw e;
