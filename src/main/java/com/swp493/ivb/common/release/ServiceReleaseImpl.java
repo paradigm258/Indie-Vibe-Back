@@ -351,13 +351,13 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
                     release.setStatus("public");
                     success = true;
-                }
+                } else throw new NoPermissionException();
                 break;
             case "make-private":
                 if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
                     release.setStatus("private");
                     success = true;
-                }
+                } else throw new NoPermissionException();
                 break;
             default:
                 break;

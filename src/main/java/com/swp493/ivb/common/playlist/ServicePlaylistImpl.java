@@ -236,13 +236,13 @@ public class ServicePlaylistImpl implements ServicePlaylist {
                 if(userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId, playlistId, "own")){
                     playlist.setStatus("public");
                     success = true;
-                }
+                } else throw new NoPermissionException();
                 break;
             case "make-private":
                 if(userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId, playlistId, "own")){
                     playlist.setStatus("private");
                     success = true;
-                }
+                } else throw new NoPermissionException();
                 break;
             default:
                 break;
@@ -257,12 +257,12 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     private boolean hasPlaylistAccessPermission(String playlistId, String userId) {
         return  playlistRepo.existsByIdAndStatus(playlistId,"public")
-            ||  userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(playlistId, userId, "own");   
+            ||  userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId,playlistId,"own");   
     }
 
     private boolean hasTrackAccessPermission(String trackId, String userId){
         return  trackRepo.existsByIdAndStatus(trackId,"public")
-            ||  trackRepo.existsByIdAndTrackUsersUserIdAndTrackUsersAction(trackId,userId,"own");
+            ||  trackRepo.existsByIdAndTrackUsersUserIdAndTrackUsersAction(userId,trackId,"own");
     }
 
     @Override
