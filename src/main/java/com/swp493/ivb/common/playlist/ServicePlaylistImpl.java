@@ -30,7 +30,6 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -73,7 +72,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         try {
             ObjectMetadata metadata = new ObjectMetadata();
             MultipartFile thumbnail = playlistInfo.getThumbnail();
-            if(thumbnail != null){
+            if(!thumbnail.isEmpty()){
                 s3.putObject(
                 new PutObjectRequest(
                     AWSConfig.BUCKET_NAME, 
@@ -107,7 +106,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         try {
             if (playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own")) {
                 playlistRepo.deleteById(playlistId);
-                s3.deleteObject(AWSConfig.BUCKET_NAME, playlistId);
+                //s3.deleteObject(AWSConfig.BUCKET_NAME, playlistId);
                 return true;
             } else {
                 return false;
@@ -186,12 +185,12 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId){
+    public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId) throws Exception {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityTrack track = trackRepo.findById(trackId).get();
 
-        if( !hasPlaylistAccessPermission(playlistId, userId) &&
-            !hasTrackAccessPermission(trackId, userId)) return false;
+        if( !hasPlaylistAccessPermission(playlistId, userId) ||
+            !hasTrackAccessPermission(trackId, userId)) throw new NoPermissionException();
         boolean success = false;
         switch (action) {
             case "add":
@@ -210,7 +209,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
                 break;
         }
         if(success){
-            playlistRepo.flush();
+            playlistRepo.save(playlist);
             return true;
         }
         return false;
@@ -221,8 +220,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityUser user = userRepo.findById(userId).get();
 
-        if(!hasPlaylistAccessPermission(playlistId, userId))
-        return false;
+        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new NoPermissionException();
+        
         boolean success = false;
         switch (action) {
             case "favorite":

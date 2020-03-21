@@ -8,8 +8,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +26,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private TokenStore tokenStore;
 
-    @Autowired
-    private ServiceUserSecurityImpl userSecurityImpl;
-
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     @Override
@@ -40,10 +35,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
             if (!StringUtils.isEmpty(jwt)) {
                 OAuth2AccessToken accessToken = tokenStore.readAccessToken(jwt);
-                //OAuth2Authentication authentication = tokenStore.readAuthentication(jwt);
+                OAuth2Authentication authentication = tokenStore.readAuthentication(jwt);
                 if (accessToken != null && !accessToken.isExpired()) {
-                    IndieUserPrincipal userDetails = (IndieUserPrincipal) userSecurityImpl
-                            .loadUserByUsername((String) accessToken.getAdditionalInformation().get("sub"));
+                    IndieUserPrincipal userDetails = (IndieUserPrincipal) authentication.getPrincipal();
                     UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
                             null, userDetails.getAuthorities());
                     userAuth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

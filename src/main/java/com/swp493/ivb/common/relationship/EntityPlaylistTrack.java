@@ -27,7 +27,7 @@ import lombok.Setter;
 public class EntityPlaylistTrack{
 
     @EmbeddedId
-    KeyPlaylistTrack id;
+    KeyPlaylistTrack id = new KeyPlaylistTrack();
     
     @ManyToOne
     @MapsId("playlistId")

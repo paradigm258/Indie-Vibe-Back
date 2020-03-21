@@ -119,12 +119,13 @@ public class ControllerPlaylist {
         @RequestParam String trackId,
         @RequestAttribute EntityUser user) {
         try {
-            if(playlistService.actionPlaylistTrack(playlistId, trackId, "add", user.getId())){
+            if(playlistService.actionPlaylistTrack(trackId, playlistId, "add", user.getId())){
                 return Payload.successResponse("Added track to playlist");
             }else{
                 return Payload.failureResponse("Can't add track to playlist");
             }
         }catch(NoSuchElementException e){
+            log.error("Invalid id", e);
             return Payload.failureResponse("Invalid id");
         } catch (Exception e) {
             log.error("Error get add track to playlist", e);
