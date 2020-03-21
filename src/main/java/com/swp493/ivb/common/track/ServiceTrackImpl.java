@@ -44,15 +44,11 @@ public class ServiceTrackImpl implements ServiceTrack {
             case 128:
                 typeMap.addMappings(m -> {
                     m.map(src -> src.getMp3128(), DTOTrackStreamInfo::setUrl);
-                    m.map(src -> src.getDuration128(), DTOTrackStreamInfo::setDuration);
-                    m.map(src -> src.getFileSize128(), DTOTrackStreamInfo::setFileSize);
                 });
                 break;
             case 320:
                 typeMap.addMappings(m -> {
                     m.map(src -> src.getMp3320(), DTOTrackStreamInfo::setUrl);
-                    m.map(src -> src.getDuration320(), DTOTrackStreamInfo::setDuration);
-                    m.map(src -> src.getFileSize320(), DTOTrackStreamInfo::setFileSize);
                 });
                 break;
             default:
