@@ -72,17 +72,18 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         try {
             ObjectMetadata metadata = new ObjectMetadata();
             MultipartFile thumbnail = playlistInfo.getThumbnail();
-            
-            s3.putObject(
-                new PutObjectRequest(
-                    AWSConfig.BUCKET_NAME, 
-                    playlistId, 
-                    thumbnail.getInputStream(), 
-                    metadata)
-                    .withCannedAcl(CannedAccessControlList.PublicRead)
-            );
-            playlist.setThumbnail(AWSConfig.BUCKET_URL + playlistId);
-            
+
+            if (thumbnail != null) {
+                s3.putObject(
+                    new PutObjectRequest(
+                        AWSConfig.BUCKET_NAME, 
+                        playlistId, 
+                        thumbnail.getInputStream(), 
+                        metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead)
+                );
+                playlist.setThumbnail(AWSConfig.BUCKET_URL + playlistId);
+            }
 
             EntityUserPlaylist eup = new EntityUserPlaylist();
             eup.setAction("own");

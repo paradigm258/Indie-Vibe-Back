@@ -17,10 +17,8 @@ public class DTOPlaylistCreate {
 
     @NotBlank
     private String title;
-    
+
     private String description;
 
-    @NotNull
     private MultipartFile thumbnail;
-    
 }
