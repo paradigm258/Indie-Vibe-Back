@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
  */
 public interface RepositoryUserRelease extends JpaRepository<EntityUserRelease,String>{
 
+    boolean existsByUserIdAndReleaseIdAndAction(String userId, String releaseId, String action);
     @Query(value = "SELECT action from user_object where user_id = ?1 and release_id = ?2",nativeQuery = true)
     Set<String> getRelation(String userId, String releaseId);
 }

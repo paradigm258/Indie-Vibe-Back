@@ -185,7 +185,6 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-
     public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId) throws Exception {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityTrack track = trackRepo.findById(trackId).get();
@@ -231,11 +230,23 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             case "unfavorite":
                 success = user.unfavoritePlaylist(playlist);
                 break;
+            case "make-public":
+                if(userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId, playlistId, "own")){
+                    playlist.setStatus("public");
+                    success = true;
+                }
+                break;
+            case "make-private":
+                if(userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId, playlistId, "own")){
+                    playlist.setStatus("private");
+                    success = true;
+                }
+                break;
             default:
                 break;
         }
         if(success){
-            userRepo.flush();
+            playlistRepo.flush();
             return true;
         }
         return false;

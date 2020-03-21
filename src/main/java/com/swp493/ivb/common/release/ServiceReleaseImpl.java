@@ -301,6 +301,13 @@ public class ServiceReleaseImpl implements ServiceRelease {
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
             DTOReleaseFull releaseFull = mapper.map(r, DTOReleaseFull.class);
+            
+            DTOArtistSimple artistSimple =  mapper.map(r.getArtist().get(), DTOArtistSimple.class);
+            Set<String> rla = new HashSet<>();
+            if(userRepo.existsByIdAndFollowerUsersId(r.getArtist().get().getId(), userId)) rla.add("following");
+            artistSimple.setRelation(rla);
+                    
+            releaseFull.setArtist(artistSimple);
             releaseFull.setRelation(userReleaseRepo.getRelation(userId, releaseId));
             r.getArtist().ifPresent(a ->releaseFull.setArtist(mapper.map(a, DTOArtistSimple.class)));
 
@@ -313,14 +320,52 @@ public class ServiceReleaseImpl implements ServiceRelease {
                     EntityUser artist = at.getUser();
                     DTOArtistSimple DTOArtist =  mapper.map(at.getUser(), DTOArtistSimple.class);
                     Set<String> relation = new HashSet<>();
-                    if(userRepo.isFollowing(userId, artist.getId())) relation.add("following");
+                    if(userRepo.existsByIdAndFollowerUsersId(artist.getId(), userId)) relation.add("following");
                     DTOArtist.setRelation(relation);
                     return DTOArtist;
                 }).collect(Collectors.toSet()));
                 trackSimple.setRelation(userTrackRepo.getRelation(userId, t.getId()));
                 return trackSimple;
             }).collect(Collectors.toList()));
+            releaseFull.setTracks(paging);
             return releaseFull;
         });
+    }
+
+    @Override
+    public boolean actionRelease(String releaseId, String userId, String action) throws Exception {
+        EntityRelease release = releaseRepo.findById(releaseId).get();
+        EntityUser user = userRepo.findById(userId).get();
+
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new NoPermissionException();
+        
+        boolean success = false;
+        switch (action) {
+            case "favorite":
+                success = user.favoriteRelease(release);
+                break;
+            case "unfavorite":
+                success = user.unfavoriteRelease(release);
+                break;
+            case "make-public":
+                if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
+                    release.setStatus("public");
+                    success = true;
+                }
+                break;
+            case "make-private":
+                if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
+                    release.setStatus("private");
+                    success = true;
+                }
+                break;
+            default:
+                break;
+        }
+        if(success){
+            releaseRepo.flush();
+            return true;
+        }
+        return false;
     }
 }

@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+
 @RestController
 public class ControllerRelease {
 
@@ -127,4 +128,24 @@ public class ControllerRelease {
             return Payload.internalError();
         }
     }
+
+    @PostMapping(value="/releases/{releaseId}")
+    public ResponseEntity<?> actionRelease(
+        @PathVariable String releaseId, 
+        @RequestAttribute EntityUser user,
+        @RequestParam String action) {
+            try{
+                if(releaseService.actionRelease(releaseId, user.getId(), action)){
+                    return Payload.successResponse("Release successfully "+action);
+                }else{
+                    return Payload.failureResponse("Failed to "+action+" release");
+                }
+            }catch(NoSuchElementException e){
+                return Payload.failureResponse("Invalid id");
+            }catch(Exception e){
+                log.error("Error set favorite for playlist", e);
+                return Payload.internalError();
+            }
+    }
+    
 }

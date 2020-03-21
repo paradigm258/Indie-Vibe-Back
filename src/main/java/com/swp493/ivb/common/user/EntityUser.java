@@ -25,6 +25,7 @@ import com.swp493.ivb.common.playlist.EntityPlaylist;
 import com.swp493.ivb.common.relationship.EntityUserPlaylist;
 import com.swp493.ivb.common.relationship.EntityUserRelease;
 import com.swp493.ivb.common.relationship.EntityUserTrack;
+import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.track.EntityTrack;
 
 import org.hibernate.annotations.DiscriminatorFormula;
@@ -145,5 +146,23 @@ public class EntityUser {
         return true;
     }
 
-    
+    public boolean favoriteRelease(EntityRelease release){
+        EntityUserRelease userRelease = new EntityUserRelease();
+        userRelease.setAction("favorite");
+        userRelease.setRelease(release);
+        userRelease.setUser(this);
+        if(releaseUsers.contains(userRelease)) return false;
+        releaseUsers.add(userRelease);
+        return true;
+    }
+
+    public boolean unfavoriteRelease(EntityRelease release){
+        EntityUserRelease userRelease = new EntityUserRelease();
+        userRelease.setAction("favorite");
+        userRelease.setRelease(release);
+        userRelease.setUser(this);
+        if(!releaseUsers.contains(userRelease)) return false;
+        releaseUsers.remove(userRelease);
+        return true;
+    }
 }

@@ -19,4 +19,6 @@ public interface ServiceRelease {
     List<String> streamRelease(String releaseId, String userId) throws Exception;
 
     Optional<DTOReleaseFull> getReleaseFull(String releaseId, String userId, int offset, int limit);
+
+    boolean actionRelease(String releaseId, String userId, String action) throws Exception;
 }
