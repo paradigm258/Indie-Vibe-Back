@@ -12,10 +12,12 @@ import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
+import com.swp493.ivb.common.view.Paging;
 
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -35,7 +37,7 @@ public class ServiceTrackImpl implements ServiceTrack {
         EntityTrack track = trackRepo.findById(id).get();
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        DTOTrackFull info = getTrackFullFromEntity(track, userId).map(t -> t).orElse(null);
+        DTOTrackFull info = getTrackFullFromEntity(track, userId);
         DTOTrackStreamInfo trackStreamInfo = mapper.map(track, DTOTrackStreamInfo.class);
         trackStreamInfo.setInfo(info);
         switch (bitrate) {
@@ -83,23 +85,28 @@ public class ServiceTrackImpl implements ServiceTrack {
     }
 
     @Override
-    public Optional<List<DTOTrackSimple>> getUserFavorites(String userId) {
-        return userRepo.findById(userId).map(user -> {
-            return user.getUserFavoriteTracks().stream().map(track -> {
-                ModelMapper mapper = new ModelMapper();
-                DTOTrackSimple trackSimple = mapper.map(track.getTrack(), DTOTrackSimple.class);
-                trackSimple.setDuration(track.getTrack().getDuration());
-                return trackSimple;
-            }).collect(Collectors.toList());
-        });
+    public Paging<DTOTrackFull> getTracks(String userId, String viewerId, int offset, int limit, String type) {
+        Paging<DTOTrackFull> paging = new Paging<>();
+
+        paging.setPageInfo(0, limit, offset);
+        Pageable pageable = paging.asPageable();
+        List<EntityUserTrack> list = userId.equals(viewerId)?userTrackRepo.findAllByUserIdAndTrackNotNullAndAction(userId, type, pageable)
+                                                            :userTrackRepo.findAllByUserIdAndTrackStatusAndAction(userId, "public", type, pageable);
+        paging.setTotal(list.size());
+
+        paging.setItems(list.stream().map(ut ->{
+            return getTrackFullFromEntity(ut.getTrack(), userId);
+        }).collect(Collectors.toList()));
+
+        return paging;
     }
 
     @Override
-    public Optional<DTOTrackFull> getTrackById(String id, String userId) {
+    public DTOTrackFull getTrackById(String id, String userId) {
         return getTrackFullFromEntity(trackRepo.findById(id).get(),userId);
     }
 
-    public Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, String userId) {
+    public DTOTrackFull getTrackFullFromEntity(EntityTrack track, String userId) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
@@ -119,7 +126,7 @@ public class ServiceTrackImpl implements ServiceTrack {
             return resRelease;
         }).orElse(null));
 
-        return Optional.of(res);
+        return res;
     }
 
 }

@@ -20,10 +20,6 @@ public class Paging<T> {
 
     private Integer total;
 
-    private int index;
-    
-    private int size = 5;
-
     public Paging() {
     }
 
@@ -42,7 +38,7 @@ public class Paging<T> {
         if(limit< 0)  this.limit = 1;
     }
 
-    public Pageable getPageable(){
+    public Pageable asPageable(){
         return PageRequest.of(offset/limit, limit);
     }
 

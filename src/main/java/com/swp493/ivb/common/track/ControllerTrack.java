@@ -1,13 +1,9 @@
 package com.swp493.ivb.common.track;
 
-import java.util.Optional;
-
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,16 +54,4 @@ public class ControllerTrack {
 
     }
 
-    @GetMapping(value = "/tracks/test/{id}")
-    @CrossOrigin(origins = "*")
-    ResponseEntity<Payload<DTOTrackFull>> trackTest(@RequestAttribute(name = "user") EntityUser user,
-            @PathVariable String id) {
-        Optional<DTOTrackFull> track = trackService.getTrackById(id, user.getId());
-
-        return track
-                .map(t -> ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
-                        .body(new Payload<DTOTrackFull>().success(t)))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(new Payload<DTOTrackFull>().error("Track not found")));
-    }
 }

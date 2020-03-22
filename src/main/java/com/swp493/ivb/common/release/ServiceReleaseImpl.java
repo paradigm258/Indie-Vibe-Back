@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import com.mpatric.mp3agic.Mp3File;
 import com.swp493.ivb.common.artist.DTOArtistSimple;
 import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.artist.RepositoryArtist;
+import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.common.relationship.EntityUserRelease;
@@ -74,6 +76,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Autowired
     private RepositoryUserTrack userTrackRepo;
+
+    @Autowired
+    private ServiceArtist artistService;
     
 
     @Autowired
@@ -291,7 +296,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     private boolean hasReleaseAccessPermission(String releaseId, String userId){
         return  releaseRepo.existsByIdAndStatus(releaseId, "public")
-            ||  releaseRepo.existsByIdAndReleaseUsersUserIdAndReleaseUsersAction(releaseId, userId, "own");
+            ||  userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own");
     }
 
     @Override
@@ -312,7 +317,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
             Paging<DTOTrackSimple> paging = new Paging<>();
             paging.setPageInfo(trackRepo.countByReleaseId(releaseId), limit, offset);
-            Pageable pageable = paging.getPageable();
+            Pageable pageable = paging.asPageable();
             paging.setItems(trackRepo.findAllByReleaseId(releaseId, pageable).parallelStream().map(t ->{
                 DTOTrackSimple trackSimple = mapper.map(t, DTOTrackSimple.class);
                 trackSimple.setArtists(t.getArtist().stream().map(at->{
@@ -367,4 +372,36 @@ public class ServiceReleaseImpl implements ServiceRelease {
         }
         return false;
     }
+
+    public DTOReleaseSimple getReleaseSimple(EntityRelease release, String userId){
+        if(!hasReleaseAccessPermission(release.getId(), userId)) throw new AccessDeniedException(release.getId());
+
+        ModelMapper mapper = new ModelMapper();
+        DTOReleaseSimple releaseSimple = mapper.map(release, DTOReleaseSimple.class);
+
+        releaseSimple.setArtist(artistService.getArtist(userId, release.getArtist().get().getId()));
+        releaseSimple.setRelation(userReleaseRepo.getRelation(userId, release.getId()));
+
+        return releaseSimple;
+    }
+
+    @Override
+    public Paging<DTOReleaseSimple> getReleases(String userId, String viewerId, int offset, int limit, String type) {
+                             
+        Paging<DTOReleaseSimple> paging = new Paging<>();
+
+        paging.setPageInfo(0, limit, offset);
+        Pageable pageable = paging.asPageable();
+        List<EntityUserRelease> list = userId.equals(viewerId)   ? userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, type, pageable)
+                                                    : userReleaseRepo.findByReleaseStatusAndUserIdAndAction("public", userId, type, pageable);
+        paging.setTotal(list.size());
+        List<DTOReleaseSimple> items = new ArrayList<>();
+        for (EntityUserRelease entityUserRelease : list) {
+            items.add(getReleaseSimple(entityUserRelease.getRelease(), viewerId));
+        }
+        paging.setItems(items);
+        return paging;
+    }
+
+    
 }

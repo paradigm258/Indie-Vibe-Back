@@ -127,18 +127,18 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public Paging<DTOPlaylistSimple> getPlaylists(String userId, boolean getPrivate, int offset, int limit) {
+    public Paging<DTOPlaylistSimple> getPlaylists(String userId, String viewerId, int offset, int limit, String type) {
                              
         Paging<DTOPlaylistSimple> paging = new Paging<>();
 
-        paging.setPageInfo(userPlaylistRepo.countByUserIdAndPlaylistNotNull(userId), limit, offset);
-        Pageable pageable = paging.getPageable();
-        List<EntityUserPlaylist> list = getPrivate  ? userPlaylistRepo.findByUserIdAndPlaylistNotNull(userId, pageable)
-                                                    : userPlaylistRepo.findByPlaylistStatusAndUserId("public", userId, pageable);
-        
+        paging.setPageInfo(0, limit, offset);
+        Pageable pageable = paging.asPageable();
+        List<EntityUserPlaylist> list = userId.equals(viewerId)  ? userPlaylistRepo.findByUserIdAndPlaylistNotNullAndAction(userId, type, pageable)
+                                                    : userPlaylistRepo.findByPlaylistStatusAndUserIdAndAction("public", userId, type, pageable);
+        paging.setTotal(list.size());
         List<DTOPlaylistSimple> items = new ArrayList<>();
         for (EntityUserPlaylist entityUserPlaylist : list) {
-            items.add(getPlaylistSimple(entityUserPlaylist.getPlaylist(), userId));
+            items.add(getPlaylistSimple(entityUserPlaylist.getPlaylist(), viewerId));
         }
         paging.setItems(items);
         return paging;
@@ -160,13 +160,13 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         paging.setPageInfo(playlistFull.getTracksCount(), limit, offset);
-        Pageable pageable = paging.getPageable();
+        Pageable pageable = paging.asPageable();
         
         paging.setItems(
             playlistTrackRepo.findByPlaylistId(playlist.getId(), pageable).stream().map(track -> {
                 DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
                 trackPlaylist.setAddedAt(track.getInsertedDate());
-                trackPlaylist.setTrack(trackService.getTrackFullFromEntity(track.getTrack(), userId).get());
+                trackPlaylist.setTrack(trackService.getTrackFullFromEntity(track.getTrack(), userId));
                 return trackPlaylist;
             }).collect(Collectors.toList())
         );

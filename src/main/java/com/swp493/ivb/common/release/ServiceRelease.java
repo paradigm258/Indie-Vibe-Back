@@ -3,6 +3,8 @@ package com.swp493.ivb.common.release;
 import java.util.List;
 import java.util.Optional;
 
+import com.swp493.ivb.common.view.Paging;
+
 import org.springframework.web.multipart.MultipartFile;
 
 public interface ServiceRelease {
@@ -21,4 +23,6 @@ public interface ServiceRelease {
     Optional<DTOReleaseFull> getReleaseFull(String releaseId, String userId, int offset, int limit);
 
     boolean actionRelease(String releaseId, String userId, String action);
+
+    Paging<DTOReleaseSimple> getReleases(String userId, String viewerId, int offset, int limit, String type);
 }

@@ -28,13 +28,11 @@ public class ControllerPlaylist {
     @PostMapping(value = "/playlists")
     public ResponseEntity<?> createPlaylist(@RequestAttribute("user") EntityUser user,
             @Valid DTOPlaylistCreate playlistInfo, BindingResult result) throws IOException {
-        
-            if (result.hasErrors()) {
-                FieldError error = result.getFieldError();
-                return Payload.failureResponse(error.getField() + " is invalid" + error.getCode());
-            }
-            return Payload.successResponse(playlistService.createPlaylist(playlistInfo, user.getId()));
-        
+        if (result.hasErrors()) {
+            FieldError error = result.getFieldError();
+            return Payload.failureResponse(error.getField() + " is invalid" + error.getCode());
+        }
+        return Payload.successResponse(playlistService.createPlaylist(playlistInfo, user.getId()));
     }
 
     @DeleteMapping(value = "/playlists/{id}")
@@ -43,85 +41,63 @@ public class ControllerPlaylist {
             return Payload.successResponse(id);
         else
             return Payload.failureResponse("No permission");
-        
+
     }
 
     @GetMapping(value = "/playlists/full/{id}")
-    public ResponseEntity<?> getPlaylistFull(
-            @RequestAttribute("user") EntityUser user, @PathVariable String id,
-            @RequestParam(defaultValue = "0") int offset,
-            @RequestParam(defaultValue = "20") int limit) {
-        
-            return Payload.successResponse(playlistService.getPlaylistFull(id, user.getId(), offset, limit));
-        
+    public ResponseEntity<?> getPlaylistFull(@RequestAttribute("user") EntityUser user, @PathVariable String id,
+            @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "20") int limit) {
+
+        return Payload.successResponse(playlistService.getPlaylistFull(id, user.getId(), offset, limit));
+
     }
 
     @GetMapping(value = "/playlists/simple/{id}")
-    public ResponseEntity<?> getPlaylistSimple(
-        @PathVariable("id") String playlistId,
-        @RequestAttribute("user") EntityUser user) throws Exception {
-        
+    public ResponseEntity<?> getPlaylistSimple(@PathVariable("id") String playlistId,
+            @RequestAttribute("user") EntityUser user) throws Exception {
+
         return Payload.successResponse(playlistService.getPlaylistSimple(playlistId, user.getId()));
     }
 
-    @GetMapping(value = "/library/{userId}/playlists")
-    public ResponseEntity<?> getUserPlaylistSimple(
-        @RequestAttribute("user") EntityUser user, 
-        @PathVariable String userId,
-        @RequestParam(defaultValue = "0") int offset,
-        @RequestParam(defaultValue = "20")int limit){
-        
-            return Payload.successResponse(playlistService.getPlaylists(userId,false,offset,limit));
-        
-    }
-    
-    @PostMapping(value="/playlists/{playlistId}/track")
-    public ResponseEntity<?> addTrack(
-        @PathVariable String playlistId, 
-        @RequestParam String trackId,
-        @RequestAttribute EntityUser user) {
-        
-            if(playlistService.actionPlaylistTrack(trackId, playlistId, "add", user.getId())){
-                return Payload.successResponse("Added track to playlist");
-            }else{
-                return Payload.failureResponse("Can't add track to playlist");
-            }
-        
+    @PostMapping(value = "/playlists/{playlistId}/track")
+    public ResponseEntity<?> addTrack(@PathVariable String playlistId, @RequestParam String trackId,
+            @RequestAttribute EntityUser user) {
+
+        if (playlistService.actionPlaylistTrack(trackId, playlistId, "add", user.getId())) {
+            return Payload.successResponse("Added track to playlist");
+        } else {
+            return Payload.failureResponse("Can't add track to playlist");
+        }
+
     }
 
-    @DeleteMapping(value="/playlists/{playlistId}/track")
-    public ResponseEntity<?> removeTrack(
-        @PathVariable String playlistId, 
-        @RequestParam String trackId,
-        @RequestAttribute EntityUser user) {
-        
-            if(playlistService.actionPlaylistTrack(trackId, playlistId,"remove", user.getId())){
-                return Payload.successResponse("Track removed");
-            }else{
-                return Payload.failureResponse("Failed to remove track");
-            }
-        
+    @DeleteMapping(value = "/playlists/{playlistId}/track")
+    public ResponseEntity<?> removeTrack(@PathVariable String playlistId, @RequestParam String trackId,
+            @RequestAttribute EntityUser user) {
+
+        if (playlistService.actionPlaylistTrack(trackId, playlistId, "remove", user.getId())) {
+            return Payload.successResponse("Track removed");
+        } else {
+            return Payload.failureResponse("Failed to remove track");
+        }
+
     }
 
-    @PostMapping(value="/playlists/{id}")   
-    public ResponseEntity<?> actionPlaylist(
-        @RequestAttribute("user") EntityUser user, 
-        @PathVariable String id,
-        @RequestParam String action) {
-        
-            if(playlistService.actionPlaylist(id, user.getId(), action)){
-                return Payload.successResponse("Playlist successfully "+action);
-            }else{
-                return Payload.failureResponse("Failed to "+action+" playlist");
-            }
-        
+    @PostMapping(value = "/playlists/{id}")
+    public ResponseEntity<?> actionPlaylist(@RequestAttribute("user") EntityUser user, @PathVariable String id,
+            @RequestParam String action) {
+
+        if (playlistService.actionPlaylist(id, user.getId(), action)) {
+            return Payload.successResponse("Playlist successfully " + action);
+        } else {
+            return Payload.failureResponse("Failed to " + action + " playlist");
+        }
+
     }
-    
-    @GetMapping(value="/stream/playlist/{playlistId}")
-    public ResponseEntity<?> streamPlaylist(
-        @PathVariable String playlistId,
-        @RequestAttribute EntityUser user) {
+
+    @GetMapping(value = "/stream/playlist/{playlistId}")
+    public ResponseEntity<?> streamPlaylist(@PathVariable String playlistId, @RequestAttribute EntityUser user) {
         return Payload.successResponse(playlistService.playlistStream(playlistId, user.getId()));
     }
-    
+
 }

@@ -14,8 +14,8 @@ public interface RepositoryUserPlaylist extends JpaRepository<EntityUserPlaylist
     boolean existsByUserIdAndPlaylistIdAndAction(String userId, String playlistId, String action);
     int countByPlaylistIdAndAction(String playlistId, String action);
     int countByUserIdAndPlaylistNotNull(String userId);
-    List<EntityUserPlaylist> findByPlaylistStatusAndUserId(String status, String userId, Pageable page);
-    List<EntityUserPlaylist> findByUserIdAndPlaylistNotNull(String userId, Pageable page);
+    List<EntityUserPlaylist> findByPlaylistStatusAndUserIdAndAction(String status, String userId, String action, Pageable page);
+    List<EntityUserPlaylist> findByUserIdAndPlaylistNotNullAndAction(String userId,String type, Pageable page);
     @Query(value = "SELECT action FROM user_object WHERE user_id = ?1 and playlist_id = ?2",nativeQuery = true)
     Set<String> getRelation(String userId, String playlistId);
 }

@@ -22,8 +22,8 @@ public class ServiceLibraryImpl implements ServiceLibrary {
     ServicePlaylist playlistService;
 
     @Override
-    public Map<String,Object> getGeneral(String userId, String profileId) throws Exception {
-        List<DTOPlaylistSimple> playlists = playlistService.getPlaylists(userId, true, 0, 20).getItems();
+    public Map<String,Object> getGeneral(String userId, String profileId) {
+        List<DTOPlaylistSimple> playlists = playlistService.getPlaylists(profileId, userId, 0, 20, "own").getItems();
         List<DTOArtistFull> artists = userService.getFollowing(userId, 0, 20);
         Map<String,Object> result = new HashMap<>();
         result.put("playlists", playlists);

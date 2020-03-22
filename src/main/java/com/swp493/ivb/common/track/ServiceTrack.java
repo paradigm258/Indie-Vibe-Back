@@ -1,7 +1,6 @@
 package com.swp493.ivb.common.track;
 
-import java.util.List;
-import java.util.Optional;
+import com.swp493.ivb.common.view.Paging;
 
 public interface ServiceTrack {
 
@@ -11,9 +10,9 @@ public interface ServiceTrack {
 
     public boolean unfavoriteTrack(String userId, String trackId);
 
-    public Optional<List<DTOTrackSimple>> getUserFavorites(String userId);
+    public Paging<DTOTrackFull> getTracks(String userId, String viewerId, int offset, int limit, String type);
 
-    public Optional<DTOTrackFull> getTrackById(String id,String userId);
+    public DTOTrackFull getTrackById(String id,String userId);
 
-    public Optional<DTOTrackFull> getTrackFullFromEntity(EntityTrack track, String userId);
+    public DTOTrackFull getTrackFullFromEntity(EntityTrack track, String userId);
 }
