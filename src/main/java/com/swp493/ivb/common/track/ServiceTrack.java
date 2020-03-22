@@ -15,4 +15,6 @@ public interface ServiceTrack {
     public DTOTrackFull getTrackById(String id,String userId);
 
     public DTOTrackFull getTrackFullFromEntity(EntityTrack track, String userId);
+
+    public boolean hasTrackAccessPermission(String trackId, String userId);
 }

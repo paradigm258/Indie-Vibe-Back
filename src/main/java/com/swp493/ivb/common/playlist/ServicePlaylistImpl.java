@@ -152,7 +152,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistFull playlistFull = mapper.map(playlist, DTOPlaylistFull.class);
         
-        playlistFull.setOwner(userService.getUserPublic(playlist.getOwner().get(0).getId(), userId));
+        playlistFull.setOwner(userService.getUserPublic(playlist.getOwner().get(0).getUser().getId(), userId));
         
         playlistFull.setFollowersCount(userPlaylistRepo.countByPlaylistIdAndAction(playlist.getId(),"favorite"));
         playlistFull.setRelation(userPlaylistRepo.getRelation(userId, playlist.getId()));

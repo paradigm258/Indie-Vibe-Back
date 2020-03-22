@@ -18,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -103,6 +104,7 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Override
     public DTOTrackFull getTrackById(String id, String userId) {
+        if(!hasTrackAccessPermission(id,userId)) throw new AccessDeniedException(id);
         return getTrackFullFromEntity(trackRepo.findById(id).get(),userId);
     }
 
@@ -110,7 +112,6 @@ public class ServiceTrackImpl implements ServiceTrack {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
-        res.setDuration(track.getDuration());
         res.setRelation(userTrackRepo.getRelation(userId,track.getId()));
 
         // set artists who own or featured the track
@@ -127,6 +128,12 @@ public class ServiceTrackImpl implements ServiceTrack {
         }).orElse(null));
 
         return res;
+    }
+
+    @Override
+    public boolean hasTrackAccessPermission(String trackId, String userId){
+        return  trackRepo.existsByIdAndStatus(trackId,"public")
+            ||  userTrackRepo.existsByTrackIdAndUserIdAndAction(trackId,userId,"own");
     }
 
 }

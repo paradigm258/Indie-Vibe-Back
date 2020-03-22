@@ -25,12 +25,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler({ NoSuchElementException.class })
     public ResponseEntity<?> handleNoSuchElementException(Exception ex, WebRequest request) {
+        log.info(ex.getMessage());
         return Payload.failureResponse("Invalid id");
     }
 
     @ExceptionHandler({ Exception.class })
     public ResponseEntity<?> handleGeneralException(Exception ex, WebRequest request) {
-        log.error("Internal", ex);
+        log.error("Internal error", ex);
         return Payload.internalError();
     }
 

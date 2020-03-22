@@ -61,7 +61,7 @@ public class EntityPlaylist {
     private List<EntityUserPlaylist> userFollowPlaylists = new ArrayList<>();
 
     @OneToMany(mappedBy = "playlist",cascade = CascadeType.ALL, orphanRemoval = true)
-    @Where(clause = "action = 'own'")
+    @Where(clause = "action = 'own' and playlist_id is not null")
     private List<EntityUserPlaylist> owner = new ArrayList<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)

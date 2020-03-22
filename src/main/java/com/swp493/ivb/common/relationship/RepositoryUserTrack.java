@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
  */
 public interface RepositoryUserTrack extends JpaRepository<EntityUserTrack,String>{
 
+    boolean existsByTrackIdAndUserIdAndAction(String trackId, String userId, String action);
     List<EntityUserTrack> findAllByUserIdAndTrackNotNullAndAction(String userId, String action, Pageable pageable);
     List<EntityUserTrack> findAllByUserIdAndTrackStatusAndAction(String userId, String status, String action, Pageable pageable);
     @Query(value = "SELECT action FROM user_object where user_id=?1 and track_id=?2", nativeQuery = true)
