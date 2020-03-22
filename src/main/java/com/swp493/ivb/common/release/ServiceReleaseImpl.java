@@ -17,8 +17,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.naming.NoPermissionException;
-
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -47,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -82,7 +81,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Override
     public Optional<String> uploadRelease(String artistId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
-            MultipartFile[] audioFiles) throws Exception {
+            MultipartFile[] audioFiles) {
 
         List<DTOTrackReleaseUpload> tracksInfo = info.getTracks();
         List<String> uploadKeyList = new LinkedList<>();
@@ -282,8 +281,8 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     @Override
-    public List<String> streamRelease(String releaseId, String userId) throws Exception {
-        if(!hasReleaseAccessPermission(releaseId, userId)) throw new NoPermissionException();
+    public List<String> streamRelease(String releaseId, String userId) {
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new AccessDeniedException(releaseId);
         return trackRepo.findAllByReleaseId(releaseId).stream()
                     .map(t -> t.getId())
                     .collect(Collectors.toList()
@@ -333,11 +332,11 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     @Override
-    public boolean actionRelease(String releaseId, String userId, String action) throws Exception {
+    public boolean actionRelease(String releaseId, String userId, String action) {
         EntityRelease release = releaseRepo.findById(releaseId).get();
         EntityUser user = userRepo.findById(userId).get();
 
-        if(!hasReleaseAccessPermission(releaseId, userId)) throw new NoPermissionException();
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new AccessDeniedException(releaseId);
         
         boolean success = false;
         switch (action) {
@@ -351,13 +350,13 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
                     release.setStatus("public");
                     success = true;
-                } else throw new NoPermissionException();
+                } else throw new AccessDeniedException(releaseId);
                 break;
             case "make-private":
                 if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
                     release.setStatus("private");
                     success = true;
-                } else throw new NoPermissionException();
+                } else throw new AccessDeniedException(releaseId);
                 break;
             default:
                 break;

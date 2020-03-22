@@ -1,5 +1,7 @@
 package com.swp493.ivb.features.library;
 
-public interface ServiceLibrary {
+import java.util.Map;
 
+public interface ServiceLibrary {
+    Map<String,Object> getGeneral(String userId,String profileId) throws Exception;
 }

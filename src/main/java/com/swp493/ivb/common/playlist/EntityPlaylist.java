@@ -81,7 +81,6 @@ public class EntityPlaylist {
         EntityPlaylistTrack playlistTrack = new EntityPlaylistTrack();
         playlistTrack.setPlaylist(this);
         playlistTrack.setTrack(track);
-        playlistTrack.setInsertedDate(new Date());
         if(!playlistTracks.contains(playlistTrack)) return false;
         playlistTracks.remove(playlistTrack);
         return true;

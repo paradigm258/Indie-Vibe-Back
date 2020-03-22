@@ -1,12 +1,11 @@
 package com.swp493.ivb.common.playlist;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.naming.NoPermissionException;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -23,6 +22,7 @@ import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
+import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
 
@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,6 +42,9 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     @Autowired
     private ServiceTrack trackService;
+
+    @Autowired
+    private ServiceUser userService;
 
     @Autowired
     private RepositoryPlaylist playlistRepo;
@@ -61,7 +65,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     private AmazonS3 s3;
 
     @Override
-    public String createPlaylist(DTOPlaylistCreate playlistInfo, String userId) throws Exception {
+    public String createPlaylist(DTOPlaylistCreate playlistInfo, String userId) throws IOException {
         EntityPlaylist playlist = new EntityPlaylist();
         playlist.setTitle(playlistInfo.getTitle());
         playlist.setDescription(playlistInfo.getDescription());
@@ -93,7 +97,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             playlist.getUserPlaylists().add(eup);
             playlistRepo.flush();
             return playlistId;
-        } catch (Exception e) {
+        } catch (IOException e) {
             if (playlistId != null && !playlistId.isEmpty()) {
                 playlistRepo.delete(playlist);
                 if(playlist.getThumbnail() != null && !playlist.getThumbnail().isEmpty())
@@ -105,7 +109,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public boolean deletePlaylist(String playlistId, String userId) throws Exception {
+    public boolean deletePlaylist(String playlistId, String userId){
         try {
             if (playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own")) {
                 EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
@@ -129,41 +133,37 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
         paging.setPageInfo(userPlaylistRepo.countByUserIdAndPlaylistNotNull(userId), limit, offset);
         Pageable pageable = paging.getPageable();
-        List<EntityUserPlaylist> list = getPrivate ?  userPlaylistRepo.findByUserIdAndPlaylistNotNull(userId, pageable)
+        List<EntityUserPlaylist> list = getPrivate  ? userPlaylistRepo.findByUserIdAndPlaylistNotNull(userId, pageable)
                                                     : userPlaylistRepo.findByPlaylistStatusAndUserId("public", userId, pageable);
-        paging.setItems(list.stream().map(l -> {
-            ModelMapper mapper = new ModelMapper();
-            EntityPlaylist playlist = l.getPlaylist();
-            DTOPlaylistSimple simple = mapper.map(playlist, DTOPlaylistSimple.class);
-            simple.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
-            simple.setTracksCount(playlistTrackRepo.countByPlaylistId(playlist.getId()));
-            simple.setRelation(userPlaylistRepo.getRelation(userId,playlist.getId()));
-            return simple;
-        }).collect(Collectors.toList()));
+        
+        List<DTOPlaylistSimple> items = new ArrayList<>();
+        for (EntityUserPlaylist entityUserPlaylist : list) {
+            items.add(getPlaylistSimple(entityUserPlaylist.getPlaylist(), userId));
+        }
+        paging.setItems(items);
         return paging;
     }
 
     @Override
-    public Optional<DTOPlaylistFull> getPlaylistFull(String playlistId, String userId, int offset, int limit) throws Exception {
-        EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
-
-        if (!hasPlaylistAccessPermission(playlistId, userId)) throw new NoPermissionException();
+    public DTOPlaylistFull getPlaylistFull(EntityPlaylist playlist, String userId, int offset, int limit) {
+        
+        if (!hasPlaylistAccessPermission(playlist.getId(), userId)) throw new AccessDeniedException(playlist.getId());
 
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistFull playlistFull = mapper.map(playlist, DTOPlaylistFull.class);
         
-        playlistFull.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
+        playlistFull.setOwner(userService.getUserPublic(playlist.getOwner().get(0).getId(), userId));
         
-        playlistFull.setFollowersCount(userPlaylistRepo.countByPlaylistIdAndAction(playlistId,"favorite"));
-        playlistFull.setRelation(userPlaylistRepo.getRelation(userId, playlistId));
-        playlistFull.setTracksCount(playlistTrackRepo.countByPlaylistId(playlistId));
+        playlistFull.setFollowersCount(userPlaylistRepo.countByPlaylistIdAndAction(playlist.getId(),"favorite"));
+        playlistFull.setRelation(userPlaylistRepo.getRelation(userId, playlist.getId()));
+        playlistFull.setTracksCount(playlistTrackRepo.countByPlaylistId(playlist.getId()));
 
         Paging<DTOTrackPlaylist> paging = new Paging<>();
         paging.setPageInfo(playlistFull.getTracksCount(), limit, offset);
         Pageable pageable = paging.getPageable();
         
         paging.setItems(
-            playlistTrackRepo.findByPlaylistId(playlistId, pageable).stream().map(track -> {
+            playlistTrackRepo.findByPlaylistId(playlist.getId(), pageable).stream().map(track -> {
                 DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
                 trackPlaylist.setAddedAt(track.getInsertedDate());
                 trackPlaylist.setTrack(trackService.getTrackFullFromEntity(track.getTrack(), userId).get());
@@ -172,30 +172,40 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         );
 
         playlistFull.setTracks(paging);
-        return Optional.of(playlistFull);
+        return playlistFull;
     }
 
     @Override
-    public Optional<DTOPlaylistSimple> getPlaylistSimple(String playlistId, String userId) throws Exception {
+    public DTOPlaylistFull getPlaylistFull(String playlistId, String userId, int offset, int limit) {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
+        return getPlaylistFull(playlist, userId, offset, limit);
+    }
 
-        if(!hasPlaylistAccessPermission(playlistId, userId)) return Optional.empty();
+    @Override
+    public DTOPlaylistSimple getPlaylistSimple(String playlistId, String userId)  {
+        EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
+        return getPlaylistSimple(playlist, userId);
+    }
+
+    @Override
+    public DTOPlaylistSimple getPlaylistSimple(EntityPlaylist playlist, String userId) {
+        if(!hasPlaylistAccessPermission(playlist.getId(), userId)) throw new AccessDeniedException(playlist.getId());
 
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistSimple.class);
         playlistSimple.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistSimple.setTracksCount(playlist.getPlaylistTracks().size());
-        playlistSimple.setRelation(userPlaylistRepo.getRelation(userId, playlistId));
-        return Optional.of(playlistSimple);
+        playlistSimple.setRelation(userPlaylistRepo.getRelation(userId, playlist.getId()));
+        return playlistSimple;
     }
 
     @Override
-    public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId) throws Exception {
+    public boolean actionPlaylistTrack(String trackId, String playlistId, String action, String userId) {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityTrack track = trackRepo.findById(trackId).get();
 
-        if( !hasPlaylistAccessPermission(playlistId, userId) ||
-            !hasTrackAccessPermission(trackId, userId)) throw new NoPermissionException();
+        if( !hasPlaylistAccessPermission(playlistId, userId)) throw new AccessDeniedException(playlistId);
+        if( !hasTrackAccessPermission(trackId, userId)) throw new AccessDeniedException(trackId);
         boolean success = false;
         switch (action) {
             case "add":
@@ -221,11 +231,11 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public boolean actionPlaylist(String playlistId, String userId, String action) throws Exception {
+    public boolean actionPlaylist(String playlistId, String userId, String action) {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityUser user = userRepo.findById(userId).get();
 
-        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new NoPermissionException();
+        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new AccessDeniedException(playlistId);
         
         boolean success = false;
         switch (action) {
@@ -260,7 +270,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     private boolean hasPlaylistAccessPermission(String playlistId, String userId) {
         return  playlistRepo.existsByIdAndStatus(playlistId,"public")
-            ||  userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(playlistId, userId, "own");   
+            ||  userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId , playlistId, "own");   
     }
 
     private boolean hasTrackAccessPermission(String trackId, String userId){
@@ -269,8 +279,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public List<String> playlistStream(String playlistId, String userId) throws Exception{
-        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new NoPermissionException();
+    public List<String> playlistStream(String playlistId, String userId){
+        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new AccessDeniedException(playlistId);
         return playlistRepo.findAllTrackIdById(playlistId); 
     }
     

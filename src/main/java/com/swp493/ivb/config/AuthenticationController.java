@@ -20,9 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
@@ -77,54 +75,31 @@ public class AuthenticationController {
 
     @PostMapping(value = "/token")
     public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String bearerToken) {
-        try {
-            if (bearerToken.isEmpty() || !bearerToken.startsWith("Bearer "))
-                return ResponseEntity.badRequest().body("Bad credentials");
-            String refreshTokenValue = bearerToken.substring(7, bearerToken.length());
-            TokenRequest tokenRequest = new TokenRequest(null, "web", null, null);
-            OAuth2AccessToken accessToken = tokenServices.refreshAccessToken(refreshTokenValue, tokenRequest);
-            return ResponseEntity.ok().body(accessToken);
-        } catch (AuthenticationException e) {
-            logger.error("/token", e);
-            return Payload.failureResponse("Bad credentials");
-        } catch (Exception e) {
-            logger.error("/token", e);
-            return Payload.internalError();
-        }
+        if (bearerToken.isEmpty() || !bearerToken.startsWith("Bearer "))
+            return ResponseEntity.badRequest().body("Bad credentials");
+        String refreshTokenValue = bearerToken.substring(7, bearerToken.length());
+        TokenRequest tokenRequest = new TokenRequest(null, "web", null, null);
+        OAuth2AccessToken accessToken = tokenServices.refreshAccessToken(refreshTokenValue, tokenRequest);
+        return ResponseEntity.ok().body(accessToken);
     }
 
     @PostMapping(value = "/login")
     public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
         UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(email, password);
-        try {
-            Authentication authentication = manager.authenticate(principal);
-            return TokenResponse(authentication);
-        } catch (AuthenticationException e) {
-            return Payload.failureResponse("Bad credentials");
-        } catch (Exception e) {
-            logger.error("Error login user", e);
-            return Payload.internalError();
-        }
-
+        Authentication authentication = manager.authenticate(principal);
+        return TokenResponse(authentication);
     }
 
     @RequestMapping(value = "/login/facebook")
     public ResponseEntity<?> loginFb(String userFbId, String userFbToken) {
-        try {
-            UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
+        UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
 
-            if (checkFbToken(userFbId, userFbToken) == true) {
-                UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
-                        null, userDetails.getAuthorities());
-                return TokenResponse(userAuth);
-            } else {
-                return Payload.failureResponse("Token invalid");
-            }
-        } catch (UsernameNotFoundException ex) {
-            return Payload.failureResponse("Not connected");
-        } catch (Exception e) {
-            logger.error("Location: /login/facebook", e);
-            return Payload.internalError();
+        if (checkFbToken(userFbId, userFbToken) == true) {
+            UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails, null,
+                    userDetails.getAuthorities());
+            return TokenResponse(userAuth);
+        } else {
+            return Payload.failureResponse("Token invalid");
         }
     }
 
@@ -134,7 +109,7 @@ public class AuthenticationController {
                 null);
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
         OAuth2AccessToken accessToken = tokenStore.getAccessToken(oAuth2Authentication);
-        if(accessToken != null){
+        if (accessToken != null) {
             tokenServices.revokeToken(accessToken.getValue());
         }
         accessToken = tokenServices.createAccessToken(oAuth2Authentication);
@@ -143,40 +118,29 @@ public class AuthenticationController {
 
     @PostMapping(value = "/register")
     public ResponseEntity<?> register(@Valid DTORegisterForm registerForm, BindingResult result) {
-        try {
-            if (result.hasErrors()) {
-                FieldError error = result.getFieldError();
-                return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
-            }
-            if (!registerForm.getPassword().equals(registerForm.getCfPassword())) {
-                return Payload.failureResponse("Password not match");
-            }
-            if (userService.existsByEmail(registerForm.getEmail())) {
-                return Payload.failureResponse("Email already exists");
-            }
-            userService.register(registerForm);
-            return Payload.successResponse("Your account has been created.");
-        } catch (Exception e) {
-            logger.error("Location: /register", e);
-            return Payload.internalError();
+        if (result.hasErrors()) {
+            FieldError error = result.getFieldError();
+            return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
         }
-
+        if (!registerForm.getPassword().equals(registerForm.getCfPassword())) {
+            return Payload.failureResponse("Password not match");
+        }
+        if (userService.existsByEmail(registerForm.getEmail())) {
+            return Payload.failureResponse("Email already exists");
+        }
+        userService.register(registerForm);
+        return Payload.successResponse("Your account has been created.");
     }
 
     @PostMapping(value = "/logout")
     public ResponseEntity<?> logout(@RequestHeader(value = "Authorization") String bearerToken) {
-        try {
-            String tokenValue = bearerToken.substring(7, bearerToken.length());
-            OAuth2AccessToken token = tokenStore.readAccessToken(tokenValue);
-            if (token != null) {
-                tokenStore.removeAccessToken(token);
-                return Payload.successResponse("Logout success");
-            }
-            return Payload.failureResponse("No token");
-        } catch (Exception e) {
-            logger.error("Location: /logout", e);
-            return Payload.internalError();
+        String tokenValue = bearerToken.substring(7, bearerToken.length());
+        OAuth2AccessToken token = tokenStore.readAccessToken(tokenValue);
+        if (token != null) {
+            tokenStore.removeAccessToken(token);
+            return Payload.successResponse("Logout success");
         }
+        return Payload.failureResponse("No token");
     }
 
     private boolean checkFbToken(String userFbId, String userFbToken) {
@@ -197,22 +161,18 @@ public class AuthenticationController {
 
     @PostMapping(value = "/register/facebook")
     public ResponseEntity<?> registerFb(@Valid DTORegisterFormFb fbForm, BindingResult result) {
-        try {
-            if (result.hasErrors()) {
-                FieldError error = result.getFieldError();
-                return  Payload.failureResponse(error.getDefaultMessage() + " is invalid");
-            }
-            if (userService.existsByFbId(fbForm.getFbId())) {
-                return Payload.failureResponse("FbId already registered");
-            }
-            if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
-                userService.register(fbForm);
-                return Payload.successResponse("Your accout has been created");
-            } else {
-                return Payload.failureResponse("Token invalid");
-            }
-        } catch (Exception e) {
-            return Payload.internalError();
+        if (result.hasErrors()) {
+            FieldError error = result.getFieldError();
+            return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
+        }
+        if (userService.existsByFbId(fbForm.getFbId())) {
+            return Payload.failureResponse("FbId already registered");
+        }
+        if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
+            userService.register(fbForm);
+            return Payload.successResponse("Your accout has been created");
+        } else {
+            return Payload.failureResponse("Token invalid");
         }
     }
 }

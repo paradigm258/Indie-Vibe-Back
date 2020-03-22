@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface ServiceTrack {
 
-    public DTOTrackStreamInfo getTrackStreamInfo(String id, int bitrate, String userId) throws Exception;
+    public DTOTrackStreamInfo getTrackStreamInfo(String id, int bitrate, String userId);
 
     public boolean favoriteTrack(String userId, String trackId);
 

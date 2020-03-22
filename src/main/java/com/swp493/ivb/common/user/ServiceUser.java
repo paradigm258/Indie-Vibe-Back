@@ -1,27 +1,28 @@
 package com.swp493.ivb.common.user;
 
-import java.util.Optional;
+import java.util.List;
 
+import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
 
 public interface ServiceUser {
 
-    int countFollowers(String userId) throws Exception;
+    int countFollowers(String userId);
 
-    Optional<DTOUserPublic> getUserPublic(String id) throws Exception;
+    DTOUserPublic getUserPublic(String userId, String viewerId);
 
-    void register(DTORegisterForm userForm) throws Exception;
+    List<DTOArtistFull> getFollowing(String userId, int offset, int limit);
 
-    void register(DTORegisterFormFb fbForm) throws Exception;
+    void register(DTORegisterForm userForm);
 
-    boolean existsByEmail(String email) throws Exception;
+    void register(DTORegisterFormFb fbForm);
 
-    boolean existsByFbId(String fbId) throws Exception;
+    boolean existsByEmail(String email);
 
-    Optional<EntityUser> findByFbId(String fbId) throws Exception;
+    boolean existsByFbId(String fbId);
     
     void followUser(String followerId, String followedId);
 
-    void unfolloweUser(String followerId, String followedId);
+    void unfollowUser(String followerId, String followedId);
 }

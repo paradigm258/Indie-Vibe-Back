@@ -1,10 +1,10 @@
 package com.swp493.ivb.common.track;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.view.Payload;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,13 +17,10 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.swp493.ivb.common.user.EntityUser;
-import com.swp493.ivb.common.view.Payload;
-
 @RestController
 public class ControllerTrack {
 
-    private static final Logger log = LoggerFactory.getLogger(ControllerTrack.class);
+    
 
     @Autowired
     private ServiceTrack trackService;
@@ -31,9 +28,9 @@ public class ControllerTrack {
     @PostMapping(value = "/tracks/{trackId}")
     public ResponseEntity<?> favoriteAction(@PathVariable String trackId, @RequestParam String action,
             @RequestAttribute EntityUser user) {
-        try {
-            boolean success = false;
-            switch (action) {
+
+        boolean success = false;
+        switch (action) {
             case "favorite":
                 success = trackService.favoriteTrack(user.getId(), trackId);
                 break;
@@ -42,49 +39,34 @@ public class ControllerTrack {
                 break;
             default:
                 break;
-            }
-            if (success) {
-                return Payload.successResponse("successfully " + action + " track");
-            } else {
-                return Payload.failureResponse("failed to " + action);
-            }
-        }catch(NoSuchElementException e) {
-            return Payload.failureResponse("Invalid Id");
-        }catch (Exception e) {
-            log.error("Error favorite track", e);
-            return Payload.internalError();
         }
+        if (success) {
+            return Payload.successResponse("successfully " + action + " track");
+        } else {
+            return Payload.failureResponse("failed to " + action);
+        }
+
     }
 
     @GetMapping(value = "/stream/info/{bitrate}/{id}")
     @CrossOrigin(origins = "*")
-    public ResponseEntity<?> getTrack(
-        @RequestAttribute("user") EntityUser user,
-        @PathVariable int bitrate,
-        @PathVariable(required = true) String id) {
-        try {
-            DTOTrackStreamInfo track = trackService.getTrackStreamInfo(id, bitrate,user.getId());
-            return Payload.successResponse(track);
-        } catch(NoSuchElementException e){
-            return Payload.failureResponse("Invalid Id");
-        } catch (Exception e) {
-            log.error("Error getting stream info", e);
-            return Payload.internalError();
-        }
-        
+    public ResponseEntity<?> getTrack(@RequestAttribute("user") EntityUser user, @PathVariable int bitrate,
+            @PathVariable(required = true) String id) {
+
+        DTOTrackStreamInfo track = trackService.getTrackStreamInfo(id, bitrate, user.getId());
+        return Payload.successResponse(track);
+
     }
 
     @GetMapping(value = "/tracks/test/{id}")
     @CrossOrigin(origins = "*")
-    ResponseEntity<Payload<DTOTrackFull>> trackTest(
-            @RequestAttribute(name = "user") EntityUser user,
+    ResponseEntity<Payload<DTOTrackFull>> trackTest(@RequestAttribute(name = "user") EntityUser user,
             @PathVariable String id) {
-        Optional<DTOTrackFull> track = trackService.getTrackById(id,user.getId());
-        
-        return track.map(t -> ResponseEntity
-                .status(HttpStatus.OK)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(new Payload<DTOTrackFull>().success(t)))
+        Optional<DTOTrackFull> track = trackService.getTrackById(id, user.getId());
+
+        return track
+                .map(t -> ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON)
+                        .body(new Payload<DTOTrackFull>().success(t)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new Payload<DTOTrackFull>().error("Track not found")));
     }

@@ -31,7 +31,7 @@ public class ServiceTrackImpl implements ServiceTrack {
     private RepositoryUserTrack userTrackRepo;
 
     @Override
-    public DTOTrackStreamInfo getTrackStreamInfo(String id, int bitrate, String userId) throws Exception {
+    public DTOTrackStreamInfo getTrackStreamInfo(String id, int bitrate, String userId) {
         EntityTrack track = trackRepo.findById(id).get();
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);

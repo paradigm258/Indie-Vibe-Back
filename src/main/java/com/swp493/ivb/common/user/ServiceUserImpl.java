@@ -1,7 +1,12 @@
 package com.swp493.ivb.common.user;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import com.swp493.ivb.common.artist.DTOArtistFull;
+import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
@@ -21,20 +26,23 @@ public class ServiceUserImpl implements ServiceUser {
     RepositoryUser userRepository;
 
     @Autowired
+    ServiceArtist artistService;
+
+    @Autowired
     RepositoryMasterData masterDataRepo;
 
     @Autowired
     PasswordEncoder encoder;
 
-    public boolean existsByEmail(String email) throws Exception{
+    public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
 
-    public boolean existsByFbId(String fbId) throws Exception{
+    public boolean existsByFbId(String fbId) {
         return userRepository.existsByFbId(fbId);
     }
 
-    public void register(EntityUser user) throws Exception{
+    public void register(EntityUser user) throws Exception {
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
@@ -42,24 +50,26 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public int countFollowers(String userId) throws Exception{
+    public int countFollowers(String userId) {
         return userRepository.countFollowers(userId);
     }
 
     @Override
-    public Optional<DTOUserPublic> getUserPublic(String id) throws Exception{
-        Optional<EntityUser> userEntity = userRepository.findById(id);
-
-        return userEntity.map(user -> {
-            ModelMapper mapper = new ModelMapper();
-            DTOUserPublic result = mapper.map(user, DTOUserPublic.class);
-            result.setFollowersCount(userRepository.countFollowers(id));
-            return result;
-        });
+    public DTOUserPublic getUserPublic(String userId, String viewerId) {
+        EntityUser user = userRepository.findById(userId).get();
+        ModelMapper mapper = new ModelMapper();
+        DTOUserPublic result = mapper.map(user, DTOUserPublic.class);
+        result.setFollowersCount(userRepository.countFollowers(userId));
+        if (userRepository.existsByIdAndFollowerUsersId(userId, viewerId)) {
+            Set<String> relation = new HashSet<>();
+            relation.add("following");
+            result.setRelation(relation);
+        }
+        return result;
     }
 
     @Override
-    public void register(DTORegisterForm userForm) throws Exception{
+    public void register(DTORegisterForm userForm) {
         EntityUser user = new EntityUser();
         user.setDisplayName(userForm.getDisplayName());
         user.setEmail(userForm.getEmail());
@@ -69,12 +79,7 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public Optional<EntityUser> findByFbId(String fbId) throws Exception{
-        return userRepository.findByFbId(fbId);
-    }
-
-    @Override
-    public void register(DTORegisterFormFb fbForm) throws Exception {
+    public void register(DTORegisterFormFb fbForm) {
         EntityUser user = new EntityUser();
         user.setDisplayName(fbForm.getDisplayName());
         user.setEmail(fbForm.getEmail());
@@ -84,11 +89,11 @@ public class ServiceUserImpl implements ServiceUser {
         userRepository.save(user);
     }
 
-    private EntityUser userDefault(EntityUser user){
+    private EntityUser userDefault(EntityUser user) {
         user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").orElse(null));
         user.setUserCountry(masterDataRepo.findById("c-vnm").orElse(null));
         user.setUserPlan(masterDataRepo.findById("p-free").orElse(null));
-        
+
         return user;
     }
 
@@ -101,10 +106,24 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public void unfolloweUser(String followerId, String followedId) {
+    public void unfollowUser(String followerId, String followedId) {
         EntityUser follower = userRepository.findById(followerId).get();
         EntityUser followed = userRepository.findById(followedId).get();
         follower.getFollowingUsers().remove(followed);
         userRepository.flush();
     }
+
+    @Override
+    public List<DTOArtistFull> getFollowing(String userId, int offset, int limit) {
+        EntityUser user = userRepository.findById(userId).get();
+        Set<EntityUser> following = user.getFollowingUsers();
+        List<DTOArtistFull> result = new ArrayList<>();
+        for (EntityUser entityUser : following) {
+            DTOArtistFull artistFull = artistService.getArtist(userId, entityUser.getId());
+            result.add(artistFull);
+        }
+        return result;
+    }
+
+    
 }
