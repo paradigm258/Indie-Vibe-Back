@@ -60,7 +60,7 @@ public class ControllerLibrary {
         return Payload.successResponse(releaseService.getReleases(userId, user.getId(), offset, limit, type));
     }
     
-    @GetMapping(value="/library/{userId}/track/{type:own|favorite}")
+    @GetMapping(value="/library/{userId}/tracks/{type:own|favorite}")
     public ResponseEntity<?> getUserTracks(@RequestAttribute EntityUser user, 
         @PathVariable String userId, 
         @PathVariable String type,
