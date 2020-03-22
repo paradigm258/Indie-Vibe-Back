@@ -41,7 +41,6 @@ public class ControllerTrack {
         } else {
             return Payload.failureResponse("failed to " + action);
         }
-
     }
 
     @GetMapping(value = "/stream/info/{bitrate}/{id}")
@@ -51,7 +50,12 @@ public class ControllerTrack {
 
         DTOTrackStreamInfo track = trackService.getTrackStreamInfo(id, bitrate, user.getId());
         return Payload.successResponse(track);
-
     }
+
+    @GetMapping(value="/stream/favorite")
+    public ResponseEntity<?> streamFavorite(@RequestAttribute EntityUser user) {
+        return Payload.successResponse(trackService.streamFavorite(user.getId()));
+    }
+    
 
 }

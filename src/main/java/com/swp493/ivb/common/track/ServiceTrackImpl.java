@@ -136,4 +136,9 @@ public class ServiceTrackImpl implements ServiceTrack {
             ||  userTrackRepo.existsByTrackIdAndUserIdAndAction(trackId,userId,"own");
     }
 
+    @Override
+    public List<String> streamFavorite(String userId) {
+        return trackRepo.getFavIdList(userId);
+    }
+
 }
