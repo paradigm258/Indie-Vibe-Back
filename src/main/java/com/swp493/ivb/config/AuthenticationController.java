@@ -18,9 +18,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
@@ -86,21 +88,31 @@ public class AuthenticationController {
     @PostMapping(value = "/login")
     public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
         UsernamePasswordAuthenticationToken principal = new UsernamePasswordAuthenticationToken(email, password);
-        Authentication authentication = manager.authenticate(principal);
-        return TokenResponse(authentication);
+        try {
+            Authentication authentication = manager.authenticate(principal);
+            return TokenResponse(authentication);
+        } catch (BadCredentialsException e) {
+            return Payload.failureResponse("Bad creadential");
+        }
+        
     }
 
     @RequestMapping(value = "/login/facebook")
     public ResponseEntity<?> loginFb(String userFbId, String userFbToken) {
-        UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
+        try {
+            UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
 
-        if (checkFbToken(userFbId, userFbToken) == true) {
-            UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails, null,
-                    userDetails.getAuthorities());
-            return TokenResponse(userAuth);
-        } else {
-            return Payload.failureResponse("Token invalid");
+            if (checkFbToken(userFbId, userFbToken) == true) {
+                UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails, null,
+                        userDetails.getAuthorities());
+                return TokenResponse(userAuth);
+            } else {
+                return Payload.failureResponse("Token invalid");
+            }
+        } catch (UsernameNotFoundException e) {
+            return Payload.failureResponse("Facebook account not connected");
         }
+        
     }
 
     private ResponseEntity<?> TokenResponse(Authentication authentication) {
