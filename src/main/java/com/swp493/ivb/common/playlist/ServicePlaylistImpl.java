@@ -185,7 +185,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistSimple.class);
         playlistSimple.setOwner(mapper.map(playlist.getOwner().get(0).getUser(), DTOUserPublic.class));
         playlistSimple.setTracksCount(playlist.getPlaylistTracks().size());
-        playlistSimple.setRelation(userPlaylistRepo.getRelation(playlistId, userId));
+        playlistSimple.setRelation(userPlaylistRepo.getRelation(userId, playlistId));
         return Optional.of(playlistSimple);
     }
 
