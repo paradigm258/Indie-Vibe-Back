@@ -135,11 +135,11 @@ public class ControllerPlaylist {
 
     @DeleteMapping(value="/playlists/{playlistId}/track")
     public ResponseEntity<?> removeTrack(
-        @RequestParam String playlistId, 
+        @PathVariable String playlistId, 
         @RequestParam String trackId,
         @RequestAttribute EntityUser user) {
         try {
-            if(playlistService.actionPlaylistTrack(playlistId, trackId,"remove", user.getId())){
+            if(playlistService.actionPlaylistTrack(trackId, playlistId,"remove", user.getId())){
                 return Payload.successResponse("Track removed");
             }else{
                 return Payload.failureResponse("Failed to remove track");
