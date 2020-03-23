@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.artist;
 
 public interface ServiceArtist {
-    DTOArtistFull getArtist(String userId, String artistId);
+    DTOArtistFull getArtistFull(String userId, String artistId);
+    DTOArtistSimple getArtistSimple(String userId, String artistId);
 }
 

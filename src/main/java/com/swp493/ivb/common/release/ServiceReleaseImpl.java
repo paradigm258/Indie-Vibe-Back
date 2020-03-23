@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -280,7 +279,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         return release.map(r -> {
             DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
             releaseSimple.setRelation(userReleaseRepo.getRelation(userId, releaseId));
-            r.getArtist().ifPresent(a ->releaseSimple.setArtist(mapper.map(a, DTOArtistSimple.class)));
+            r.getArtist().ifPresent(a ->releaseSimple.setArtist(artistService.getArtistSimple(userId, a.getId())));
             return releaseSimple;
         });
     }
@@ -313,7 +312,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
                     
             releaseFull.setArtist(artistSimple);
             releaseFull.setRelation(userReleaseRepo.getRelation(userId, releaseId));
-            r.getArtist().ifPresent(a ->releaseFull.setArtist(mapper.map(a, DTOArtistSimple.class)));
+            r.getArtist().ifPresent(a ->releaseFull.setArtist(artistService.getArtistSimple(userId, a.getId())));
 
             Paging<DTOTrackSimple> paging = new Paging<>();
             paging.setPageInfo(trackRepo.countByReleaseId(releaseId), limit, offset);
@@ -379,7 +378,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         ModelMapper mapper = new ModelMapper();
         DTOReleaseSimple releaseSimple = mapper.map(release, DTOReleaseSimple.class);
 
-        releaseSimple.setArtist(artistService.getArtist(userId, release.getArtist().get().getId()));
+        releaseSimple.setArtist(artistService.getArtistSimple(userId, release.getArtist().get().getId()));
         releaseSimple.setRelation(userReleaseRepo.getRelation(userId, release.getId()));
 
         return releaseSimple;
@@ -388,18 +387,19 @@ public class ServiceReleaseImpl implements ServiceRelease {
     @Override
     public Paging<DTOReleaseSimple> getReleases(String userId, String viewerId, int offset, int limit, String type) {
                              
-        Paging<DTOReleaseSimple> paging = new Paging<>();
+        boolean privateView = userId.equals(viewerId);
+        
+        int total = privateView ? userReleaseRepo.countByUserIdAndReleaseNotNullAndAction(userId, type)
+                                : userReleaseRepo.countByUserIdAndReleaseStatusAndAction(userId, "public", type);
 
-        paging.setPageInfo(0, limit, offset);
+        Paging<DTOReleaseSimple> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
         Pageable pageable = paging.asPageable();
-        List<EntityUserRelease> list = userId.equals(viewerId)   ? userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, type, pageable)
+
+        List<EntityUserRelease> list = privateView  ? userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, type, pageable)
                                                     : userReleaseRepo.findByReleaseStatusAndUserIdAndAction("public", userId, type, pageable);
-        paging.setTotal(list.size());
-        List<DTOReleaseSimple> items = new ArrayList<>();
-        for (EntityUserRelease entityUserRelease : list) {
-            items.add(getReleaseSimple(entityUserRelease.getRelease(), viewerId));
-        }
-        paging.setItems(items);
+        
+        paging.setItems(list.parallelStream().map(ur -> getReleaseSimple(ur.getRelease(),userId)).collect(Collectors.toList()));
         return paging;
     }
 

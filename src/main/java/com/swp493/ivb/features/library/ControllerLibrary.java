@@ -38,7 +38,7 @@ public class ControllerLibrary {
         return Payload.successResponse(playlistService.getPlaylists(user.getId(), user.getId(), offset, limit, type));
     }
 
-    @GetMapping(value = "/library/{userId}/playlists/{type:own|favorite")
+    @GetMapping(value = "/library/{userId}/playlists/{type:own|favorite}")
     public ResponseEntity<?> getUserPlaylistSimple(
             @PathVariable String type,
             @RequestAttribute("user") EntityUser user,
