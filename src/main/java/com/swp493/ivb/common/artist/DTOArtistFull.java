@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.artist;
 
+import com.swp493.ivb.common.user.DTOUserPublic;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -7,9 +9,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class DTOArtistFull extends DTOArtistSimple {
+public class DTOArtistFull extends DTOUserPublic {
 
     private String biography;
 
-    private int followersCount;
+    private String type = "artist";
 }
