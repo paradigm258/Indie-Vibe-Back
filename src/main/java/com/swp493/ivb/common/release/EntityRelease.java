@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -21,19 +20,19 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.Where;
-
 import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.relationship.EntityUserRelease;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.user.EntityUser;
 
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Where;
+
 import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode.Include;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.EqualsAndHashCode.Include;
 
 @Entity
 @Table(name = "audio_release")
@@ -84,9 +83,7 @@ public class EntityRelease {
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EntityUserRelease> releaseUsers = new HashSet<>();
 
-    public Optional<EntityUser> getArtist() {
-        return artistRelease.stream().map(releaseUsers ->{
-            return releaseUsers.getUser();
-        }).findFirst();
+    public EntityUser getArtist() {
+        return artistRelease.get(0).getUser();
     }
 }

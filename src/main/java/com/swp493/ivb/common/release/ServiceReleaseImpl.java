@@ -214,7 +214,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
     public Optional<String> deleteRelease(String releaseId, String artistId) {
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
-            if (!r.getArtist().isPresent() || !r.getArtist().get().getId().equals(artistId))
+            if (!r.getArtist().getId().equals(artistId))
                 return "";
             releaseRepo.delete(r);
             try {
@@ -279,7 +279,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         return release.map(r -> {
             DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
             releaseSimple.setRelation(userReleaseRepo.getRelation(userId, releaseId));
-            r.getArtist().ifPresent(a ->releaseSimple.setArtist(artistService.getArtistSimple(userId, a.getId())));
+            releaseSimple.setArtist(artistService.getArtistSimple(userId, r.getArtist().getId()));
             return releaseSimple;
         });
     }
@@ -305,28 +305,18 @@ public class ServiceReleaseImpl implements ServiceRelease {
         return release.map(r -> {
             DTOReleaseFull releaseFull = mapper.map(r, DTOReleaseFull.class);
             
-            DTOArtistSimple artistSimple =  mapper.map(r.getArtist().get(), DTOArtistSimple.class);
-            Set<String> rla = new HashSet<>();
-            if(userRepo.existsByIdAndFollowerUsersId(r.getArtist().get().getId(), userId)) rla.add("following");
-            artistSimple.setRelation(rla);
+            DTOArtistSimple artistSimple =  artistService.getArtistSimple(userId, r.getArtist().getId());
                     
             releaseFull.setArtist(artistSimple);
             releaseFull.setRelation(userReleaseRepo.getRelation(userId, releaseId));
-            r.getArtist().ifPresent(a ->releaseFull.setArtist(artistService.getArtistSimple(userId, a.getId())));
+            releaseFull.setArtist(artistService.getArtistSimple(userId, r.getArtist().getId()));
 
             Paging<DTOTrackSimple> paging = new Paging<>();
             paging.setPageInfo(trackRepo.countByReleaseId(releaseId), limit, offset);
             Pageable pageable = paging.asPageable();
             paging.setItems(trackRepo.findAllByReleaseId(releaseId, pageable).parallelStream().map(t ->{
                 DTOTrackSimple trackSimple = mapper.map(t, DTOTrackSimple.class);
-                trackSimple.setArtists(t.getArtist().stream().map(at->{
-                    EntityUser artist = at.getUser();
-                    DTOArtistSimple DTOArtist =  mapper.map(at.getUser(), DTOArtistSimple.class);
-                    Set<String> relation = new HashSet<>();
-                    if(userRepo.existsByIdAndFollowerUsersId(artist.getId(), userId)) relation.add("following");
-                    DTOArtist.setRelation(relation);
-                    return DTOArtist;
-                }).collect(Collectors.toSet()));
+                trackSimple.setArtists(t.getArtist().stream().map(at->artistService.getArtistSimple(userId, at.getUser().getId())).collect(Collectors.toSet()));
                 trackSimple.setRelation(userTrackRepo.getRelation(userId, t.getId()));
                 return trackSimple;
             }).collect(Collectors.toList()));
@@ -372,13 +362,16 @@ public class ServiceReleaseImpl implements ServiceRelease {
         return false;
     }
 
-    public DTOReleaseSimple getReleaseSimple(EntityRelease release, String userId){
-        if(!hasReleaseAccessPermission(release.getId(), userId)) throw new AccessDeniedException(release.getId());
+    public DTOReleaseSimple getReleaseSimple(String releaseId, String userId){
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new AccessDeniedException(releaseId);
+        return getReleaseSimple(releaseRepo.findById(releaseId).get(), userId);
+    }
 
+    public DTOReleaseSimple getReleaseSimple(EntityRelease release, String userId){
         ModelMapper mapper = new ModelMapper();
         DTOReleaseSimple releaseSimple = mapper.map(release, DTOReleaseSimple.class);
 
-        releaseSimple.setArtist(artistService.getArtistSimple(userId, release.getArtist().get().getId()));
+        releaseSimple.setArtist(artistService.getArtistSimple(userId, release.getArtist().getId()));
         releaseSimple.setRelation(userReleaseRepo.getRelation(userId, release.getId()));
 
         return releaseSimple;

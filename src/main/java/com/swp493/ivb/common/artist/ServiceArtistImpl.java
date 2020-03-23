@@ -34,6 +34,6 @@ public class ServiceArtistImpl implements ServiceArtist {
         DTOUserPublic userPublic = userService.getUserPublic(artistId, userId);
         DTOArtistSimple artistSimple = mapper.map(artist, DTOArtistSimple.class);
         artistSimple.setRelation(userPublic.getRelation());
-        return null;
+        return artistSimple;
     }
 }

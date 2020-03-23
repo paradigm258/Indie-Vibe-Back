@@ -1,7 +1,6 @@
 package com.swp493.ivb.common.user;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -61,9 +60,7 @@ public class ServiceUserImpl implements ServiceUser {
         DTOUserPublic result = mapper.map(user, DTOUserPublic.class);
         result.setFollowersCount(userRepository.countFollowers(userId));
         if (userRepository.existsByIdAndFollowerUsersId(userId, viewerId)) {
-            Set<String> relation = new HashSet<>();
-            relation.add("following");
-            result.setRelation(relation);
+            result.getRelation().add("favorite");
         }
         return result;
     }
@@ -119,7 +116,7 @@ public class ServiceUserImpl implements ServiceUser {
         Set<EntityUser> following = user.getFollowingUsers();
         List<DTOArtistFull> result = new ArrayList<>();
         for (EntityUser entityUser : following) {
-            DTOArtistFull artistFull = artistService.getArtist(userId, entityUser.getId());
+            DTOArtistFull artistFull = artistService.getArtistFull(userId, entityUser.getId());
             result.add(artistFull);
         }
         return result;

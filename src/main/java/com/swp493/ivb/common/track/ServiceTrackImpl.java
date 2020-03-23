@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.swp493.ivb.common.artist.DTOArtistSimple;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.relationship.EntityUserRelease;
 import com.swp493.ivb.common.relationship.EntityUserTrack;
@@ -121,14 +120,14 @@ public class ServiceTrackImpl implements ServiceTrack {
 
         // set artists who own or featured the track
         Set<EntityUserTrack> trackArtists = track.getArtist();
-        res.setArtists(trackArtists.stream().map(ut -> mapper.map(ut.getUser(), DTOArtistSimple.class))
+        res.setArtists(trackArtists.stream().map(ut -> artistService.getArtistSimple(userId, ut.getUser().getId()))
                 .collect(Collectors.toSet()));
 
         // set artist who own the release (that the track belongs to)
         Optional<EntityUserRelease> releaseOwner = Optional.of(track.getRelease().getArtistRelease().get(0));
         res.setRelease(releaseOwner.map(ro -> {
             DTOReleaseSimple resRelease = mapper.map(ro.getRelease(), DTOReleaseSimple.class);
-            resRelease.setArtist(artistService.getArtistSimple(userId, ro.getRelease().getArtist().get().getId()));
+            resRelease.setArtist(artistService.getArtistSimple(userId, ro.getRelease().getArtist().getId()));
             return resRelease;
         }).orElse(null));
 

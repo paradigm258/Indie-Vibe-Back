@@ -26,8 +26,7 @@ public class ControllerUser {
     }
 
     @PostMapping(value="/users/{userId}")
-    public ResponseEntity<?> actionUser(@PathVariable String userId,@RequestAttribute EntityUser user,@RequestParam String action) {
-        
+    public ResponseEntity<?> actionUser(@PathVariable String userId,@RequestAttribute EntityUser user,@RequestParam String action) {       
             switch (action) {
                 case "follow":
                     userService.followUser(user.getId(), userId);
