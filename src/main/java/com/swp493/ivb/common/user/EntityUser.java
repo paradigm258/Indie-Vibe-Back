@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.user;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -46,13 +47,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode
 public class EntityUser {
 
     @Id
     @GenericGenerator(name = "id", strategy = "com.swp493.ivb.util.IndieIdentifierGenerator")
     @GeneratedValue(generator = "id")
-    @Include
+    
     private String id;
 
     @NotBlank
@@ -167,5 +167,19 @@ public class EntityUser {
         if(!releaseUsers.contains(userRelease)) return false;
         releaseUsers.remove(userRelease);
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof EntityUser)) return false;
+        
+        EntityUser that = (EntityUser) obj;
+        return Objects.equals(id, that.getId());
     }
 }
