@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.swp493.ivb.common.artist.DTOArtistSimple;
+import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.relationship.EntityUserRelease;
 import com.swp493.ivb.common.relationship.EntityUserTrack;
 import com.swp493.ivb.common.relationship.RepositoryUserTrack;
@@ -32,6 +33,9 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Autowired
     private RepositoryUserTrack userTrackRepo;
+
+    @Autowired
+    private ServiceArtist artistService;
 
     @Override
     public DTOTrackStreamInfo getTrackStreamInfo(String id, int bitrate, String userId) {
@@ -87,17 +91,18 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Override
     public Paging<DTOTrackFull> getTracks(String userId, String viewerId, int offset, int limit, String type) {
+        boolean privateView = userId.equals(viewerId);
+
+        int total = privateView ? userTrackRepo.countByUserIdAndTrackNotNullAndAction(userId, type)
+                                : userTrackRepo.countByUserIdAndTrackStatusAndAction(userId, "public", type);
+
         Paging<DTOTrackFull> paging = new Paging<>();
-
-        paging.setPageInfo(0, limit, offset);
+        paging.setPageInfo(total, limit, offset);
         Pageable pageable = paging.asPageable();
-        List<EntityUserTrack> list = userId.equals(viewerId)?userTrackRepo.findAllByUserIdAndTrackNotNullAndAction(userId, type, pageable)
-                                                            :userTrackRepo.findAllByUserIdAndTrackStatusAndAction(userId, "public", type, pageable);
-        paging.setTotal(list.size());
-
-        paging.setItems(list.stream().map(ut ->{
-            return getTrackFullFromEntity(ut.getTrack(), userId);
-        }).collect(Collectors.toList()));
+        List<EntityUserTrack> list = privateView    ? userTrackRepo.findAllByUserIdAndTrackNotNullAndAction(userId, type, pageable)
+                                                    : userTrackRepo.findAllByUserIdAndTrackStatusAndAction(userId, "public", type, pageable);
+        
+        paging.setItems(list.stream().map(ut ->getTrackFullFromEntity(ut.getTrack(), userId)).collect(Collectors.toList()));
 
         return paging;
     }
@@ -123,7 +128,7 @@ public class ServiceTrackImpl implements ServiceTrack {
         Optional<EntityUserRelease> releaseOwner = Optional.of(track.getRelease().getArtistRelease().get(0));
         res.setRelease(releaseOwner.map(ro -> {
             DTOReleaseSimple resRelease = mapper.map(ro.getRelease(), DTOReleaseSimple.class);
-            resRelease.setArtist(mapper.map(ro.getUser(), DTOArtistSimple.class));
+            resRelease.setArtist(artistService.getArtistSimple(userId, ro.getRelease().getArtist().get().getId()));
             return resRelease;
         }).orElse(null));
 

@@ -12,6 +12,8 @@ import org.springframework.data.jpa.repository.Query;
  */
 public interface RepositoryUserTrack extends JpaRepository<EntityUserTrack,String>{
 
+    int countByUserIdAndTrackStatusAndAction(String userId, String status, String action);
+    int countByUserIdAndTrackNotNullAndAction(String userId, String action);
     boolean existsByTrackIdAndUserIdAndAction(String trackId, String userId, String action);
     List<EntityUserTrack> findAllByUserIdAndTrackNotNullAndAction(String userId, String action, Pageable pageable);
     List<EntityUserTrack> findAllByUserIdAndTrackStatusAndAction(String userId, String status, String action, Pageable pageable);

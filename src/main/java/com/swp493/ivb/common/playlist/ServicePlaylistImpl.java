@@ -1,7 +1,6 @@
 package com.swp493.ivb.common.playlist;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -130,17 +129,15 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     public Paging<DTOPlaylistSimple> getPlaylists(String userId, String viewerId, int offset, int limit, String type) {
                              
         Paging<DTOPlaylistSimple> paging = new Paging<>();
-
-        paging.setPageInfo(0, limit, offset);
+        boolean privateView = userId.equals(viewerId);
+        int total = privateView ? userPlaylistRepo.countByUserIdAndPlaylistNotNullAndAction(userId,type) 
+                                : userPlaylistRepo.countByUserIdAndPlaylistStatusAndAction(userId, "public", type);
+        paging.setPageInfo(total, limit, offset);
         Pageable pageable = paging.asPageable();
-        List<EntityUserPlaylist> list = userId.equals(viewerId)  ? userPlaylistRepo.findByUserIdAndPlaylistNotNullAndAction(userId, type, pageable)
+        List<EntityUserPlaylist> list = privateView ? userPlaylistRepo.findByUserIdAndPlaylistNotNullAndAction(userId, type, pageable)
                                                     : userPlaylistRepo.findByPlaylistStatusAndUserIdAndAction("public", userId, type, pageable);
-        paging.setTotal(list.size());
-        List<DTOPlaylistSimple> items = new ArrayList<>();
-        for (EntityUserPlaylist entityUserPlaylist : list) {
-            items.add(getPlaylistSimple(entityUserPlaylist.getPlaylist(), viewerId));
-        }
-        paging.setItems(items);
+        
+        paging.setItems(list.parallelStream().map(pl -> getPlaylistSimple(pl.getPlaylist(), userId)).collect(Collectors.toList()));
         return paging;
     }
 

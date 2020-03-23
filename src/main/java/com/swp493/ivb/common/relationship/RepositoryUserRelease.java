@@ -12,7 +12,8 @@ import org.springframework.data.jpa.repository.Query;
  */
 public interface RepositoryUserRelease extends JpaRepository<EntityUserRelease,String>{
 
-    int countByUserIdAndReleaseNotNull(String userId);
+    int countByUserIdAndReleaseNotNullAndAction(String userId, String action);
+    int countByUserIdAndReleaseStatusAndAction(String userId, String status, String action);
     List<EntityUserRelease> findByUserIdAndReleaseNotNullAndAction(String userId, String action, Pageable pageable);
     
     boolean existsByUserIdAndReleaseIdAndAction(String userId, String releaseId, String action);
