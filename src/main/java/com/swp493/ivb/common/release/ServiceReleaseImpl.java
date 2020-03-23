@@ -314,7 +314,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
             Paging<DTOTrackSimple> paging = new Paging<>();
             paging.setPageInfo(trackRepo.countByReleaseId(releaseId), limit, offset);
             Pageable pageable = paging.asPageable();
-            paging.setItems(trackRepo.findAllByReleaseId(releaseId, pageable).parallelStream().map(t ->{
+            paging.setItems(trackRepo.findAllByReleaseId(releaseId, pageable).stream().map(t ->{
                 DTOTrackSimple trackSimple = mapper.map(t, DTOTrackSimple.class);
                 trackSimple.setArtists(t.getArtist().stream().map(at->artistService.getArtistSimple(userId, at.getUser().getId())).collect(Collectors.toSet()));
                 trackSimple.setRelation(userTrackRepo.getRelation(userId, t.getId()));
@@ -392,7 +392,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         List<EntityUserRelease> list = privateView  ? userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, type, pageable)
                                                     : userReleaseRepo.findByReleaseStatusAndUserIdAndAction("public", userId, type, pageable);
         
-        paging.setItems(list.parallelStream().map(ur -> getReleaseSimple(ur.getRelease(),userId)).collect(Collectors.toList()));
+        paging.setItems(list.stream().map(ur -> getReleaseSimple(ur.getRelease(),userId)).collect(Collectors.toList()));
         return paging;
     }
 
