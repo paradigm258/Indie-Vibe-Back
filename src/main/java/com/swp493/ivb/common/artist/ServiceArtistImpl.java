@@ -19,12 +19,14 @@ public class ServiceArtistImpl implements ServiceArtist {
     @Override
     public DTOArtistFull getArtistFull(String userId, String artistId) {
         ModelMapper mapper = new ModelMapper();
-        EntityArtist artist = artistRepo.findById(artistId).get();
         DTOUserPublic userPublic = userService.getUserPublic(artistId, userId);
-        DTOArtistFull artistFull = mapper.map(artist, DTOArtistFull.class);
-        artistFull.setRelation(userPublic.getRelation());
-        artistFull.setFollowersCount(userPublic.getFollowersCount());
-        return artistFull;
+        return artistRepo.findById(artistId).map(artist ->{
+            DTOArtistFull artistFull = mapper.map(artist, DTOArtistFull.class);
+            artistFull.setRelation(userPublic.getRelation());
+            artistFull.setFollowersCount(userPublic.getFollowersCount());
+            return artistFull;
+        }).orElse(mapper.map(userPublic, DTOArtistFull.class));
+        
     }
 
     @Override
