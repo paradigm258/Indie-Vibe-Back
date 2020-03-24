@@ -28,10 +28,10 @@ public class ControllerUser {
     @PostMapping(value="/users/{userId}")
     public ResponseEntity<?> actionUser(@PathVariable String userId,@RequestAttribute EntityUser user,@RequestParam String action) {       
             switch (action) {
-                case "follow":
+                case "favorite":
                     userService.followUser(user.getId(), userId);
                     break;
-                case "unfollow":
+                case "unfavorite":
                     userService.unfollowUser(user.getId(), userId);
                     break;
                 default:
