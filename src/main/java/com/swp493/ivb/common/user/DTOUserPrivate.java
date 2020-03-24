@@ -7,7 +7,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class DTOUserPrivate {
+public class DTOUserPrivate extends DTOUserPublic {
 
     private String email;
 
