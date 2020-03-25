@@ -11,6 +11,7 @@ import com.swp493.ivb.common.relationship.EntityUserTrack;
 import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.user.IOnlyId;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
 
@@ -143,6 +144,16 @@ public class ServiceTrackImpl implements ServiceTrack {
     @Override
     public List<String> streamFavorite(String userId) {
         return trackRepo.getFavIdList(userId);
+    }
+
+    @Override
+    public Paging<DTOTrackFull> findTrack(String userId, String key, int offset, int limit) {
+        int total = trackRepo.countByTitleIgnoreCaseContainingAndStatus(key,"public");
+        Paging<DTOTrackFull> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = trackRepo.findByTitleIgnoreCaseContainingAndStatus(key,"public", paging.asPageable());
+        paging.setItems(list.stream().map(t -> getTrackById(t.getId(), userId)).collect(Collectors.toList()));
+        return paging;
     }
 
 }

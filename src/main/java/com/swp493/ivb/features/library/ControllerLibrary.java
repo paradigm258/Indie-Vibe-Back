@@ -1,9 +1,11 @@
 package com.swp493.ivb.features.library;
 
+import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.playlist.ServicePlaylist;
 import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Payload;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,12 @@ public class ControllerLibrary {
 
     @Autowired
     ServiceRelease releaseService;
+
+    @Autowired 
+    ServiceArtist artistService;
+
+    @Autowired
+    ServiceUser userService;
 
     @GetMapping(value = "/library/playlists/{type:own|favorite}")
     public ResponseEntity<?> getMyPlaylist(
@@ -69,4 +77,27 @@ public class ControllerLibrary {
         return Payload.successResponse(trackService.getTracks(userId, user.getId(), offset, limit, type));
     }
     
+    @GetMapping(value="/library/{userId}/artists")
+    public ResponseEntity<?>  getUserAtrists(@RequestAttribute EntityUser user, 
+    @PathVariable String userId, 
+    @RequestParam(defaultValue = "0") int offset, 
+    @RequestParam(defaultValue = "20") int limit) {
+        return Payload.successResponse(artistService.getArtists(userId, user.getId(), offset, limit));
+    }
+    
+    @GetMapping(value="/library/{userId}/followings")
+    public ResponseEntity<?> getFollowings(@RequestAttribute EntityUser user, 
+    @PathVariable String userId, 
+    @RequestParam(defaultValue = "0") int offset, 
+    @RequestParam(defaultValue = "20") int limit) {
+        return Payload.successResponse(userService.getFollowings(userId, user.getId(), offset, limit));
+    }
+    
+    @GetMapping(value="/library/{userId}/followers")
+    public ResponseEntity<?> getFollowers(@RequestAttribute EntityUser user, 
+    @PathVariable String userId, 
+    @RequestParam(defaultValue = "0") int offset, 
+    @RequestParam(defaultValue = "20") int limit) {
+        return Payload.successResponse(userService.getFollowers(userId, user.getId(), offset, limit));
+    }
 }

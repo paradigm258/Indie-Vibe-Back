@@ -25,4 +25,6 @@ public interface ServiceRelease {
     boolean actionRelease(String releaseId, String userId, String action);
 
     Paging<DTOReleaseSimple> getReleases(String userId, String viewerId, int offset, int limit, String type);
+
+    Paging<DTOReleaseSimple> findRelease(String key, String userId, int offset, int limit);
 }

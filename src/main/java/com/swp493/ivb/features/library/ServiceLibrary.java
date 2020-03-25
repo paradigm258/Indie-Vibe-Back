@@ -4,4 +4,5 @@ import java.util.Map;
 
 public interface ServiceLibrary {
     Map<String,Object> getGeneral(String userId,String profileId);
+    
 }

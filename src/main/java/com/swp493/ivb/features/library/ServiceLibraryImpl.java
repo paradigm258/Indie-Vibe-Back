@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
+import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.playlist.DTOPlaylistSimple;
 import com.swp493.ivb.common.playlist.ServicePlaylist;
 import com.swp493.ivb.common.user.ServiceUser;
@@ -19,12 +20,15 @@ public class ServiceLibraryImpl implements ServiceLibrary {
     ServiceUser userService;
 
     @Autowired
+    ServiceArtist artistService;
+
+    @Autowired
     ServicePlaylist playlistService;
 
     @Override
     public Map<String,Object> getGeneral(String userId, String profileId) {
         List<DTOPlaylistSimple> playlists = playlistService.getPlaylists(profileId, userId, 0, 20, "own").getItems();
-        List<DTOArtistFull> artists = userService.getFollowing(userId, 0, 20);
+        List<DTOArtistFull> artists = artistService.getArtists(profileId, userId, 0, 20).getItems();
         Map<String,Object> result = new HashMap<>();
         result.put("playlists", playlists);
         result.put("artists", artists);
