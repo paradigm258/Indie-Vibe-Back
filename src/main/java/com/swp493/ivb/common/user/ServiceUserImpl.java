@@ -140,7 +140,7 @@ public class ServiceUserImpl implements ServiceUser {
         Paging<DTOUserPublic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
         List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContaining(key, paging.asPageable());
-        paging.setItems(list.stream().map(a ->getUserPublic(userId, a.getId())).collect(Collectors.toList()));
+        paging.setItems(list.stream().map(a ->getUserPublic(a.getId(),userId)).collect(Collectors.toList()));
         return paging;
     }
 
