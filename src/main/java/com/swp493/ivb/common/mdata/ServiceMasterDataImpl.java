@@ -3,6 +3,8 @@ package com.swp493.ivb.common.mdata;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.swp493.ivb.common.view.Paging;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,5 +37,16 @@ public class ServiceMasterDataImpl implements ServiceMasterData {
                 .collect(Collectors.toList());
 
         return genreList;
+    }
+
+    @Override
+    public Paging<DTOGenre> findGenre(String key, int offset, int limit) {
+        int total = masterDataRepo.countByNameIgnoreCaseContainingAndType(key, "genre");
+        Paging<DTOGenre> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        ModelMapper mapper = new ModelMapper();
+        List<EntityMasterData> list = masterDataRepo.findByNameIgnoreCaseContainingAndType(key, "genre", paging.asPageable());
+        paging.setItems(list.stream().map(genre -> mapper.map(genre, DTOGenre.class)).collect(Collectors.toList()));
+        return paging;
     }
 }

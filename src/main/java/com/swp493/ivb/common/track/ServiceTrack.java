@@ -21,4 +21,6 @@ public interface ServiceTrack {
     public boolean hasTrackAccessPermission(String trackId, String userId);
 
     public List<String> streamFavorite(String userId);
+
+    public Paging<DTOTrackFull> findTrack(String userId, String key, int offset, int limit);
 }

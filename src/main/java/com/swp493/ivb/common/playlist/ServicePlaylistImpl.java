@@ -20,6 +20,7 @@ import com.swp493.ivb.common.track.RepositoryTrack;
 import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.user.IOnlyId;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Paging;
@@ -279,6 +280,16 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     public List<String> playlistStream(String playlistId, String userId){
         if(!hasPlaylistAccessPermission(playlistId, userId)) throw new AccessDeniedException(playlistId);
         return playlistRepo.findAllTrackIdById(playlistId); 
+    }
+
+    @Override
+    public Paging<DTOPlaylistSimple> findPlaylist(String key, String userId, int offset, int limit) {
+        int total = playlistRepo.countByTitleIgnoreCaseContainingAndStatus(key,"public");
+        Paging<DTOPlaylistSimple> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = playlistRepo.findByTitleIgnoreCaseContainingAndStatus(key,"public", paging.asPageable());
+        paging.setItems(list.stream().map(t -> getPlaylistSimple(t.getId(), userId)).collect(Collectors.toList()));
+        return paging;
     }
     
 }

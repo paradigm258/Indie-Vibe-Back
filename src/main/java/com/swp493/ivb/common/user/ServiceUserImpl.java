@@ -1,12 +1,11 @@
 package com.swp493.ivb.common.user;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
+import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
 
@@ -111,15 +110,38 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public List<DTOArtistFull> getFollowing(String userId, int offset, int limit) {
-        EntityUser user = userRepository.findById(userId).get();
-        Set<EntityUser> following = user.getFollowingUsers();
-        List<DTOArtistFull> result = new ArrayList<>();
-        for (EntityUser entityUser : following) {
-            DTOArtistFull artistFull = artistService.getArtistFull(userId, entityUser.getId());
-            result.add(artistFull);
-        }
-        return result;
+    public Paging<DTOUserPublic> getFollowings(String userId, String viewerId, int offset, int limit) {
+        int total = userRepository.countFollowing(userId);
+        Paging<DTOUserPublic> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = userRepository.findAllByFollowerUsersId(userId, paging.asPageable());
+        paging.setItems(list.stream().map(u -> getUserPublic(u.getId(), viewerId)).collect(Collectors.toList()));
+        return paging;
+    }
+
+    @Override
+    public Paging<DTOUserPublic> getFollowers(String userId, String viewerId, int offset, int limit){
+        int total = userRepository.countFollowers(userId);
+        Paging<DTOUserPublic> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = userRepository.findAllByFollowingUsersId(userId, paging.asPageable());
+        paging.setItems(list.stream().map(u -> getUserPublic(u.getId(), viewerId)).collect(Collectors.toList()));
+        return paging;
+    }
+
+    @Override
+    public int countFollowing(String userId) {
+        return userRepository.countFollowing(userId);
+    }
+
+    @Override
+    public Paging<DTOUserPublic> findProfile(String key, String userId, int offset, int limit) {
+        int total = userRepository.countByDisplayNameIgnoreCaseContaining(key);
+        Paging<DTOUserPublic> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContaining(key, paging.asPageable());
+        paging.setItems(list.stream().map(a ->getUserPublic(userId, a.getId())).collect(Collectors.toList()));
+        return paging;
     }
 
     

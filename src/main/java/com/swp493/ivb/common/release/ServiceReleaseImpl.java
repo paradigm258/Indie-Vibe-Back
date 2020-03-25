@@ -37,6 +37,7 @@ import com.swp493.ivb.common.track.DTOTrackSimple;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.track.RepositoryTrack;
 import com.swp493.ivb.common.user.EntityUser;
+import com.swp493.ivb.common.user.IOnlyId;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
@@ -393,6 +394,16 @@ public class ServiceReleaseImpl implements ServiceRelease {
                                                     : userReleaseRepo.findByReleaseStatusAndUserIdAndAction("public", userId, type, pageable);
         
         paging.setItems(list.stream().map(ur -> getReleaseSimple(ur.getRelease(),userId)).collect(Collectors.toList()));
+        return paging;
+    }
+
+    @Override
+    public Paging<DTOReleaseSimple> findRelease(String key, String userId, int offset, int limit) {
+        int total = releaseRepo.countByTitleIgnoreCaseContainingAndStatus(key,"public");
+        Paging<DTOReleaseSimple> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = releaseRepo.findByTitleIgnoreCaseContainingAndStatus(key,"public", paging.asPageable());
+        paging.setItems(list.stream().map(t -> getReleaseSimple(t.getId(), userId)).collect(Collectors.toList()));
         return paging;
     }
 
