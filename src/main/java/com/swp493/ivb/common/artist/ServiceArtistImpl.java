@@ -50,7 +50,7 @@ public class ServiceArtistImpl implements ServiceArtist {
 
     @Override
     public Paging<DTOArtistFull> getArtists(String userId, String viewerId, int offset, int limit) {
-        int total = userService.countFollowing(userId);
+        int total = artistRepo.countByFollowerUsersId(userId);
         Paging<DTOArtistFull> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
         List<IOnlyId> list = artistRepo.findAllByFollowerUsersId(userId, paging.asPageable());
