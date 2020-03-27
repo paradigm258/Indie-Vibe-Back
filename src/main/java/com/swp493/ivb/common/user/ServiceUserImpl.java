@@ -11,9 +11,11 @@ import com.swp493.ivb.config.DTORegisterFormFb;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 /**
  * IndieUserService
@@ -98,6 +100,7 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Override
     public void followUser(String followerId, String followedId) {
+        if(followedId.equals(followerId)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         EntityUser follower = userRepository.findById(followerId).get();
         EntityUser followed = userRepository.findById(followedId).get();
         follower.getFollowingUsers().add(followed);
