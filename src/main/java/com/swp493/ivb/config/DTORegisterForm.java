@@ -37,7 +37,6 @@ public class DTORegisterForm {
     @NotBlank(message = "Display name")
     private String displayName;
 
-    @NotNull
     private Date dob;
 
 }
