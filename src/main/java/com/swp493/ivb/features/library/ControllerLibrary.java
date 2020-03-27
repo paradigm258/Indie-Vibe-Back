@@ -1,5 +1,7 @@
 package com.swp493.ivb.features.library;
 
+import java.util.NoSuchElementException;
+
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.playlist.ServicePlaylist;
 import com.swp493.ivb.common.release.ServiceRelease;
@@ -52,7 +54,7 @@ public class ControllerLibrary {
             @RequestAttribute("user") EntityUser user,
             @PathVariable String userId, @RequestParam(defaultValue = "0") int offset,
             @RequestParam(defaultValue = "20") int limit) {
-
+        if(!userService.existsById(userId)) throw new NoSuchElementException();
         return Payload.successResponse(playlistService.getPlaylists(userId, user.getId(), offset, limit, type));
     }
 
@@ -65,6 +67,7 @@ public class ControllerLibrary {
     public ResponseEntity<?> getReleases(@RequestAttribute EntityUser user, @PathVariable String userId, 
     @PathVariable String type,
     @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "20") int limit) {
+        if(!userService.existsById(userId)) throw new NoSuchElementException();
         return Payload.successResponse(releaseService.getReleases(userId, user.getId(), offset, limit, type));
     }
     
@@ -74,6 +77,7 @@ public class ControllerLibrary {
         @PathVariable String type,
         @RequestParam(defaultValue = "0") int offset, 
         @RequestParam(defaultValue = "20") int limit) {
+        if(!userService.existsById(userId)) throw new NoSuchElementException();
         return Payload.successResponse(trackService.getTracks(userId, user.getId(), offset, limit, type));
     }
     
@@ -82,6 +86,7 @@ public class ControllerLibrary {
     @PathVariable String userId, 
     @RequestParam(defaultValue = "0") int offset, 
     @RequestParam(defaultValue = "20") int limit) {
+        if(!userService.existsById(userId)) throw new NoSuchElementException();
         return Payload.successResponse(artistService.getArtists(userId, user.getId(), offset, limit));
     }
     
@@ -90,6 +95,7 @@ public class ControllerLibrary {
     @PathVariable String userId, 
     @RequestParam(defaultValue = "0") int offset, 
     @RequestParam(defaultValue = "20") int limit) {
+        if(!userService.existsById(userId)) throw new NoSuchElementException();
         return Payload.successResponse(userService.getFollowings(userId, user.getId(), offset, limit));
     }
     
@@ -98,6 +104,7 @@ public class ControllerLibrary {
     @PathVariable String userId, 
     @RequestParam(defaultValue = "0") int offset, 
     @RequestParam(defaultValue = "20") int limit) {
+        if(!userService.existsById(userId)) throw new NoSuchElementException();
         return Payload.successResponse(userService.getFollowers(userId, user.getId(), offset, limit));
     }
 }
