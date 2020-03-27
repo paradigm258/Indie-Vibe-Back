@@ -102,7 +102,7 @@ public class ServiceTrackImpl implements ServiceTrack {
         List<EntityUserTrack> list = privateView    ? userTrackRepo.findAllByUserIdAndTrackNotNullAndAction(userId, type, pageable)
                                                     : userTrackRepo.findAllByUserIdAndTrackStatusAndAction(userId, "public", type, pageable);
         
-        paging.setItems(list.stream().map(ut ->getTrackFullFromEntity(ut.getTrack(), userId)).collect(Collectors.toList()));
+        paging.setItems(list.stream().map(ut ->getTrackFullFromEntity(ut.getTrack(), viewerId)).collect(Collectors.toList()));
 
         return paging;
     }

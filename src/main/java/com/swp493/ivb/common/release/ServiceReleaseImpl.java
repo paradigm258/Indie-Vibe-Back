@@ -396,7 +396,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         List<EntityUserRelease> list = privateView  ? userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, type, pageable)
                                                     : userReleaseRepo.findByReleaseStatusAndUserIdAndAction("public", userId, type, pageable);
         
-        paging.setItems(list.stream().map(ur -> getReleaseSimple(ur.getRelease(),userId)).collect(Collectors.toList()));
+        paging.setItems(list.stream().map(ur -> getReleaseSimple(ur.getRelease(),viewerId)).collect(Collectors.toList()));
         return paging;
     }
 
