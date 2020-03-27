@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@DiscriminatorValue(value = "r-artist")
+@DiscriminatorValue(value = "artist")
 @NoArgsConstructor
 @Getter
 @Setter

@@ -41,8 +41,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "user")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorFormula(value = "role_id")
-@DiscriminatorValue("r-free")
+@DiscriminatorFormula(value = "case when role_id = 'r-artist' then 'artist' else 'user' end")
+@DiscriminatorValue("user")
 @NoArgsConstructor
 @Getter
 @Setter
