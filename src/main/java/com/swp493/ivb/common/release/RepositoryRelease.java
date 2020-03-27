@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.release;
 
+import java.util.Date;
 import java.util.List;
 
 import com.swp493.ivb.common.user.IOnlyId;
@@ -15,4 +16,8 @@ public interface RepositoryRelease extends JpaRepository<EntityRelease, String> 
     boolean existsByIdAndReleaseUsersUserIdAndReleaseUsersAction(String id, String userId, String action);
     List<IOnlyId> findByTitleIgnoreCaseContainingAndStatus(String key, String status, Pageable pageable);
     int countByTitleIgnoreCaseContainingAndStatus(String key, String status);
+    int countByGenresIdAndStatusAndDateAfter(String genreId, String status, Date date);
+    List<IOnlyId> findByGenresIdAndStatusAndDateAfter(String genreId, String status, Date date, Pageable pageable);
+    int countByStatusAndDateAfter(String status, Date date);
+    List<IOnlyId> findByStatusAndDateAfter(String status, Date date, Pageable pageable);
 }

@@ -17,6 +17,8 @@ public interface RepositoryPlaylist extends JpaRepository<EntityPlaylist,String>
     boolean existsByIdAndStatus(String playlistId, String status);
     List<IOnlyId> findByTitleIgnoreCaseContainingAndStatus(String key, String status, Pageable pageable);
     int countByTitleIgnoreCaseContainingAndStatus(String key, String status);
+    int countByUserPlaylistsUserUserRoleIdAndGenresIdAndStatus(String role, String genreId, String status);
+    List<IOnlyId> findByUserPlaylistsUserUserRoleIdAndGenresIdAndStatus(String role, String genreId, String status, Pageable pageable);
     @Query(value = "SELECT track_id from playlist_track where playlist_id = :playlistId",nativeQuery = true)
     List<String> findAllTrackIdById(@Param("playlistId")String playlistId);
 }

@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 /**
  * IndieUserService
@@ -70,6 +71,7 @@ public class ServiceUserImpl implements ServiceUser {
         user.setDisplayName(userForm.getDisplayName());
         user.setEmail(userForm.getEmail());
         user.setPassword(encoder.encode(userForm.getPassword()));
+        user.setDob(userForm.getDob());
         user = userDefault(user);
         userRepository.save(user);
     }
@@ -81,6 +83,7 @@ public class ServiceUserImpl implements ServiceUser {
         user.setEmail(fbForm.getEmail());
         user.setFbId(fbForm.getFbId());
         user.setThumbnail(fbForm.getThumbnail());
+        
         user = userDefault(user);
         userRepository.save(user);
     }
@@ -142,6 +145,30 @@ public class ServiceUserImpl implements ServiceUser {
         List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContaining(key, paging.asPageable());
         paging.setItems(list.stream().map(a ->getUserPublic(a.getId(),userId)).collect(Collectors.toList()));
         return paging;
+    }
+
+    @Override
+    public DTOUserPrivate getUserPrivate(String userId){
+        EntityUser user = userRepository.findById(userId).get();
+        ModelMapper mapper = new ModelMapper();
+        DTOUserPrivate result = mapper.map(user, DTOUserPrivate.class);
+        result.setFollowersCount(userRepository.countFollowers(userId));
+        
+        return result;
+    }
+
+    @Override
+    public boolean userUpdate(DTOUserUpdate update, String userId) {
+        EntityUser user = userRepository.getOne(userId);
+        if(StringUtils.hasLength(update.displayName)){
+            user.setDisplayName(update.displayName);
+        }
+        if(StringUtils.hasLength(update.getEmail())){
+            user.setEmail(update.getEmail());
+        }
+        user.setDob(update.getDob());
+        userRepository.save(user);
+        return true;
     }
 
     

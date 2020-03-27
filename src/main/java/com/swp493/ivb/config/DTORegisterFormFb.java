@@ -1,7 +1,10 @@
 package com.swp493.ivb.config;
 
+import java.util.Date;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,4 +30,7 @@ public class DTORegisterFormFb {
     
     @NotBlank(message = "Facebook token")
     private String fbToken;
+
+    @NotNull
+    private Date dob;
 }
