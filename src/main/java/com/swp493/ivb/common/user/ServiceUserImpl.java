@@ -139,10 +139,10 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Override
     public Paging<DTOUserPublic> findProfile(String key, String userId, int offset, int limit) {
-        int total = userRepository.countByDisplayNameIgnoreCaseContaining(key);
+        int total = userRepository.countByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(key,"r-artist");
         Paging<DTOUserPublic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
-        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContaining(key, paging.asPageable());
+        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(key,"r-artist", paging.asPageable());
         paging.setItems(list.stream().map(a ->getUserPublic(a.getId(),userId)).collect(Collectors.toList()));
         return paging;
     }
@@ -171,5 +171,8 @@ public class ServiceUserImpl implements ServiceUser {
         return true;
     }
 
-    
+    @Override
+    public boolean existsById(String userId) {
+        return userRepository.existsById(userId);
+    }
 }

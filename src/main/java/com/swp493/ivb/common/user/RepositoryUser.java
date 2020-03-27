@@ -33,6 +33,6 @@ public interface RepositoryUser extends JpaRepository<EntityUser, String> {
 
     public List<IOnlyId> findAllByFollowerUsersId(String followerId, Pageable pageable);
     public List<IOnlyId> findAllByFollowingUsersId(String followerId, Pageable pageable);
-    List<IOnlyId> findByDisplayNameIgnoreCaseContaining(String key, Pageable pageable);
-    int countByDisplayNameIgnoreCaseContaining(String key);
+    List<IOnlyId> findByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(String key, String role, Pageable pageable);
+    int countByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(String key, String role);
 }

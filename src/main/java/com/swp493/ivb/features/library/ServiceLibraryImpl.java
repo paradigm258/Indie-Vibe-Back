@@ -3,6 +3,7 @@ package com.swp493.ivb.features.library;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.artist.ServiceArtist;
@@ -27,6 +28,7 @@ public class ServiceLibraryImpl implements ServiceLibrary {
 
     @Override
     public Map<String,Object> getGeneral(String userId, String profileId) {
+        if(!userService.existsById(profileId)) throw new NoSuchElementException();
         List<DTOPlaylistSimple> playlists = playlistService.getPlaylists(profileId, userId, 0, 20, "own").getItems();
         List<DTOArtistFull> artists = artistService.getArtists(profileId, userId, 0, 20).getItems();
         Map<String,Object> result = new HashMap<>();

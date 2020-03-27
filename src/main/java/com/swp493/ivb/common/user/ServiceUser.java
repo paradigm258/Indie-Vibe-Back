@@ -25,6 +25,8 @@ public interface ServiceUser {
     boolean existsByEmail(String email);
 
     boolean existsByFbId(String fbId);
+
+    boolean existsById(String userId);
     
     void followUser(String followerId, String followedId);
 
