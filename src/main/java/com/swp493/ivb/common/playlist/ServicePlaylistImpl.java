@@ -138,7 +138,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         List<EntityUserPlaylist> list = privateView ? userPlaylistRepo.findByUserIdAndPlaylistNotNullAndAction(userId, type, pageable)
                                                     : userPlaylistRepo.findByPlaylistStatusAndUserIdAndAction("public", userId, type, pageable);
         
-        paging.setItems(list.stream().map(pl -> getPlaylistSimple(pl.getPlaylist(), userId)).collect(Collectors.toList()));
+        paging.setItems(list.stream().map(pl -> getPlaylistSimple(pl.getPlaylist(), viewerId)).collect(Collectors.toList()));
         return paging;
     }
 
