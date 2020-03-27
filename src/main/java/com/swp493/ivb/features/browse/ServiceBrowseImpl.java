@@ -78,7 +78,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
         int limit = 4;
         Map<String, Object> res = new HashMap<>();
         res.put("genre", masterDataService.getGenre(genreId));
-        res.put("playlists", playlistService.getGenrePlaylists(userId, genreId, offset, limit).getItems());
+        res.put("playlists", playlistService.getGenrePlaylists(genreId, userId, offset, limit).getItems());
         res.put("releases", releaseService.getReleaseGenre(genreId, userId, offset, limit).getItems());
         return res;
     }

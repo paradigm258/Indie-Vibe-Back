@@ -293,7 +293,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     }
 
     @Override
-    public Paging<DTOPlaylistSimple> getGenrePlaylists(String userId, String genreId, int offset, int limit) {
+    public Paging<DTOPlaylistSimple> getGenrePlaylists(String genreId, String userId, int offset, int limit) {
         int total = playlistRepo.countByUserPlaylistsUserUserRoleIdAndGenresIdAndStatus("r-curator", genreId, "public");
         Paging<DTOPlaylistSimple> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
