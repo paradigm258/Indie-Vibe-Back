@@ -49,4 +49,11 @@ public class ServiceMasterDataImpl implements ServiceMasterData {
         paging.setItems(list.stream().map(genre -> mapper.map(genre, DTOGenre.class)).collect(Collectors.toList()));
         return paging;
     }
+
+    @Override
+    public DTOGenre getGenre(String id) {
+        ModelMapper mapper = new ModelMapper();
+        return mapper.map(masterDataRepo.findById(id).get(), DTOGenre.class);
+       
+    }
 }

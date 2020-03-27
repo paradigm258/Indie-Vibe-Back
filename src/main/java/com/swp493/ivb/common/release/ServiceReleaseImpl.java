@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,7 +47,9 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -405,6 +408,32 @@ public class ServiceReleaseImpl implements ServiceRelease {
         List<IOnlyId> list = releaseRepo.findByTitleIgnoreCaseContainingAndStatus(key,"public", paging.asPageable());
         paging.setItems(list.stream().map(t -> getReleaseSimple(t.getId(), userId)).collect(Collectors.toList()));
         return paging;
+    }
+
+    @Override
+    public Paging<DTOReleaseSimple> getReleaseGenre(String genreId, String userId, int offset, int limit) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.WEEK_OF_YEAR, -2);
+        Date date = calendar.getTime();
+        int total = releaseRepo.countByGenresIdAndStatusAndDateAfter(genreId, "public", date);
+        Paging<DTOReleaseSimple> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        Pageable pageable = PageRequest.of(paging.getOffset()/paging.getLimit(), paging.getLimit(), Direction.ASC, "date");
+        List<IOnlyId> list = releaseRepo.findByGenresIdAndStatusAndDateAfter(genreId, "public", date, pageable);
+        paging.setItems(list.stream().map(id -> getReleaseSimple(id.getId(), userId)).collect(Collectors.toList()));
+        return paging;
+    }
+
+    @Override
+    public List<DTOReleaseSimple> getLastest(String userId) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.WEEK_OF_YEAR, -2);
+        Date date = calendar.getTime();
+        Pageable pageable = PageRequest.of(0, 5, Direction.ASC, "date");
+        List<IOnlyId> list = releaseRepo.findByStatusAndDateAfter("public", date, pageable);
+        return list.stream().map(id -> getReleaseSimple(id.getId(), userId)).collect(Collectors.toList());
     }
 
     

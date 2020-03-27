@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.user;
 
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -61,6 +62,8 @@ public class EntityUser {
 
     @NotBlank
     private String displayName;
+
+    private Date dob;
 
     private String thumbnail;
 

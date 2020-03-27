@@ -12,6 +12,8 @@ public interface ServiceUser {
 
     DTOUserPublic getUserPublic(String userId, String viewerId);
 
+    DTOUserPrivate getUserPrivate(String userId);
+
     Paging<DTOUserPublic> getFollowings(String userId, String viewerId, int offset, int limit);
 
     Paging<DTOUserPublic> getFollowers(String userId, String viewerId, int offset, int limit);
@@ -29,4 +31,6 @@ public interface ServiceUser {
     void unfollowUser(String followerId, String followedId);
 
     Paging<DTOUserPublic> findProfile(String key, String userId, int offset, int limit);
+
+    boolean userUpdate(DTOUserUpdate update, String userId);
 }
