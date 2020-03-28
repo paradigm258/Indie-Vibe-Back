@@ -1,13 +1,19 @@
 package com.swp493.ivb.common.user;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.common.view.Paging;
+import com.swp493.ivb.config.AWSConfig;
 import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
 
@@ -17,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
@@ -24,6 +31,9 @@ import org.springframework.web.server.ResponseStatusException;
  */
 @Service
 public class ServiceUserImpl implements ServiceUser {
+
+    @Autowired
+    AmazonS3 s3;
 
     @Autowired
     RepositoryUser userRepository;
@@ -102,7 +112,8 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Override
     public void followUser(String followerId, String followedId) {
-        if(followedId.equals(followerId)) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if(followedId.equals(followerId))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Can't follow yourself");
         EntityUser follower = userRepository.findById(followerId).get();
         EntityUser followed = userRepository.findById(followedId).get();
         follower.getFollowingUsers().add(followed);
@@ -158,7 +169,7 @@ public class ServiceUserImpl implements ServiceUser {
         ModelMapper mapper = new ModelMapper();
         DTOUserPrivate result = mapper.map(user, DTOUserPrivate.class);
         result.setFollowersCount(userRepository.countFollowers(userId));
-        
+
         return result;
     }
 
@@ -171,7 +182,6 @@ public class ServiceUserImpl implements ServiceUser {
         if(StringUtils.hasLength(update.getEmail())){
             user.setEmail(update.getEmail());
         }
-
         if (update.getDob() != null) {
             try {
                 user.setDob(new SimpleDateFormat("yyyy-MM-dd").parse(update.getDob()));
@@ -180,11 +190,18 @@ public class ServiceUserImpl implements ServiceUser {
             }
         }
         user.setGender(update.getGender());
-        
-        if (update.getThumbnail() != null) {
-            // check if there is a thumbnail in db
-
-            // delete and update new thumbnail
+        MultipartFile thumbnail = update.getThumbnail();
+        if (thumbnail != null) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(thumbnail.getSize());
+            String key = userId;
+            try {
+                s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                user.setThumbnail(AWSConfig.BUCKET_URL+key);
+            } catch (IOException e) {
+                throw new RuntimeException("Error getting input stream for thumbnail",e);
+            }
         }
         userRepository.save(user);
         return true;
@@ -193,5 +210,16 @@ public class ServiceUserImpl implements ServiceUser {
     @Override
     public boolean existsById(String userId) {
         return userRepository.existsById(userId);
+    }
+
+    @Override
+    public boolean passwordUpdate(String hash, String oldPassword, String newPassword, String userId) {
+        if(!encoder.matches(oldPassword, hash)) return false;
+        if(oldPassword.equals(newPassword)) 
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"New password can't be the same as old password");
+        EntityUser user = userRepository.getOne(userId);
+        user.setPassword(encoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
     }
 }

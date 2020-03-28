@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.validation.constraints.NotBlank;
 
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.user.EntityUser;
