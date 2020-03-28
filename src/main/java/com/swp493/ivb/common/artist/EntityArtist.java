@@ -21,10 +21,6 @@ import lombok.Setter;
 @Setter
 public class EntityArtist extends EntityUser{
 
-    @NotBlank
-    private String displayName;
-
-    @NotBlank
     private String biography;
 
     public List<EntityRelease> getOwnReleases(){

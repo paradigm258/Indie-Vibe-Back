@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.user;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -163,13 +165,21 @@ public class ServiceUserImpl implements ServiceUser {
     @Override
     public boolean userUpdate(DTOUserUpdate update, String userId) {
         EntityUser user = userRepository.getOne(userId);
-        if(StringUtils.hasLength(update.displayName)){
-            user.setDisplayName(update.displayName);
+        if(StringUtils.hasLength(update.getDisplayName())){
+            user.setDisplayName(update.getDisplayName());
         }
         if(StringUtils.hasLength(update.getEmail())){
             user.setEmail(update.getEmail());
         }
-        user.setDob(update.getDob());
+
+        if (update.getDob() != null) {
+            try {
+                user.setDob(new SimpleDateFormat("yyyy-MM-dd").parse(update.getDob()));
+            } catch (ParseException e) {
+                return false;
+            }
+        }
+        user.setGender(update.getGender());
         userRepository.save(user);
         return true;
     }
