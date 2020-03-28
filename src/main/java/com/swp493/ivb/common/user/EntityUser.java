@@ -63,6 +63,8 @@ public class EntityUser {
     @NotBlank
     private String displayName;
 
+    private int gender;
+
     private Date dob;
 
     private String thumbnail;
