@@ -61,7 +61,9 @@ public class EntityUser {
     private String password;
 
     @NotBlank
-    private String displayName;
+    protected String displayName;
+
+    private int gender;
 
     private Date dob;
 

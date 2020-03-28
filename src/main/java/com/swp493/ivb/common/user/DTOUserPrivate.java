@@ -13,5 +13,9 @@ public class DTOUserPrivate extends DTOUserPublic {
 
     private String fbId;
 
+    private int gender;
+
+    private String dob;
+
     private String artistStatus;
 }
