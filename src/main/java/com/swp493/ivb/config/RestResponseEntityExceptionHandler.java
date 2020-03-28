@@ -32,6 +32,13 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @ExceptionHandler({ ResponseStatusException.class})
     public ResponseEntity<?> handleResponseStatusEx(ResponseStatusException ex, WebRequest request) throws Exception{
+        
+        switch (ex.getStatus()) {
+            case BAD_REQUEST:
+                return Payload.failureResponse(ex.getMessage());
+            default:
+                break;
+        }
         return ResponseEntity.status(ex.getStatus()).build();
     }
 

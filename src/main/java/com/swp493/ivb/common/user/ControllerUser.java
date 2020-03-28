@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 
+
 @RestController
 public class ControllerUser {
 
@@ -61,6 +62,22 @@ public class ControllerUser {
     @GetMapping(value="/account")
     public ResponseEntity<?> getAccount(@RequestAttribute EntityUser user) {
         return Payload.successResponse(userService.getUserPrivate(user.getId()));
+    }
+
+    @PutMapping(value="/account/password")
+    public ResponseEntity<?> updatePassword(@RequestAttribute EntityUser user,
+        @Valid DTOUpdatePassword updatePassword, BindingResult result) {
+        if (result.hasErrors()) {
+            FieldError error = result.getFieldError();
+            return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
+        }
+        
+        if(!updatePassword.getNewPwd().equals(updatePassword.getCfNewPwd())) return Payload.failureResponse("Password not match");
+        
+        if(userService.passwordUpdate(user.getPassword(), updatePassword.getPwd(), updatePassword.getNewPwd(), user.getId()))
+            return Payload.successResponse("Password changed");
+
+        return Payload.failureResponse("Wrong password");
     }
     
 }

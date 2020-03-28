@@ -35,4 +35,6 @@ public interface ServiceUser {
     Paging<DTOUserPublic> findProfile(String key, String userId, int offset, int limit);
 
     boolean userUpdate(DTOUserUpdate update, String userId);
+
+    boolean passwordUpdate(String hash, String oldPassword, String newPassword, String userId);
 }
