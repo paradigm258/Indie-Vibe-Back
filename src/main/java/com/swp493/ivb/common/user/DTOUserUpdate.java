@@ -3,6 +3,8 @@ package com.swp493.ivb.common.user;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,4 +24,6 @@ public class DTOUserUpdate {
     private int gender;
 
     private String dob;
+
+    private MultipartFile thumbnail;
 }

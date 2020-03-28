@@ -180,6 +180,12 @@ public class ServiceUserImpl implements ServiceUser {
             }
         }
         user.setGender(update.getGender());
+        
+        if (update.getThumbnail() != null) {
+            // check if there is a thumbnail in db
+
+            // delete and update new thumbnail
+        }
         userRepository.save(user);
         return true;
     }
