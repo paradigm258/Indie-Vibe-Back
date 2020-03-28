@@ -36,5 +36,5 @@ public interface ServiceUser {
 
     boolean userUpdate(DTOUserUpdate update, String userId);
 
-    boolean passwordUpdate(String hash, String oldPassword, String newPassword, String userId);
+    boolean passwordUpdate(String oldPassword, String newPassword, String userId);
 }

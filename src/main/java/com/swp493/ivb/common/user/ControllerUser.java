@@ -74,7 +74,7 @@ public class ControllerUser {
         
         if(!updatePassword.getNewPwd().equals(updatePassword.getCfNewPwd())) return Payload.failureResponse("Password not match");
         
-        if(userService.passwordUpdate(user.getPassword(), updatePassword.getPwd(), updatePassword.getNewPwd(), user.getId()))
+        if(userService.passwordUpdate(updatePassword.getPwd(), updatePassword.getNewPwd(), user.getId()))
             return Payload.successResponse("Password changed");
 
         return Payload.failureResponse("Wrong password");

@@ -213,11 +213,12 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public boolean passwordUpdate(String hash, String oldPassword, String newPassword, String userId) {
+    public boolean passwordUpdate(String oldPassword, String newPassword, String userId) {
+        EntityUser user = userRepository.findById(userId).get();
+        String hash = user.getPassword();
         if(!encoder.matches(oldPassword, hash)) return false;
         if(oldPassword.equals(newPassword)) 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"New password can't be the same as old password");
-        EntityUser user = userRepository.getOne(userId);
         user.setPassword(encoder.encode(newPassword));
         userRepository.save(user);
         return true;
