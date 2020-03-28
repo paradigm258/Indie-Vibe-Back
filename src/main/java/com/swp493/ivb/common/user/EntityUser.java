@@ -71,6 +71,8 @@ public class EntityUser {
 
     private String fbId;
 
+    private Date planDue;
+
     @NotBlank
     private String artistStatus = "open";
 
