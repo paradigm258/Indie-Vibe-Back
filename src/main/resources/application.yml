@@ -1,24 +1,16 @@
 spring:
     datasource:
         platform: mysql
-        url: jdbc:mysql://localhost:3306/ivbase
-        username: root
-        password: 1234
+        url: jdbc:mysql://${RDS_HOSTNAME:localhost}:${RDS_PORT:3306}/ivbase
+        username: ${RDS_USERNAME:root}
+        password: ${RDS_PASSWORD:1234}
         driverClassName: com.mysql.cj.jdbc.Driver
     security:
         oauth2:
             client:
                 registration:
                     facebook:
-                        client-id: 130595185046801
-                        client-secret: add6a7389aa169d1bb87637d4ea9d378
-                        client-authentication-method: basic
-                        access-token: 130595185046801|kJZiStPIhpbIdnJLr2oAqfaghUE
-            resourceserver:
-                indie:
-                    introspection-uri: http://localhost:8080/introspect
-                    introspection-client-id: client
-                    introspection-client-secret: secret
+                        access-token: ${FB_ACCESSTOKEN}
     jpa:
         show-sql: true
     servlet:
