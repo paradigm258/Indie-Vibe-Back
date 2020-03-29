@@ -314,7 +314,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             playlist.setDescription(playlistUpdate.getDescription());
         }
         if(StringUtils.hasLength(playlistUpdate.getTitle())){
-            playlist.setDescription(playlistUpdate.getTitle());
+            playlist.setTitle(playlistUpdate.getTitle());
         }
         MultipartFile thumbnail = playlistUpdate.getThumbnail();
         if (thumbnail != null) {
