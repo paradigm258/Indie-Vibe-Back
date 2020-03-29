@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 public class ControllerPlaylist {
@@ -94,10 +96,28 @@ public class ControllerPlaylist {
         }
 
     }
+    
 
     @GetMapping(value = "/stream/playlist/{playlistId}")
     public ResponseEntity<?> streamPlaylist(@PathVariable String playlistId, @RequestAttribute EntityUser user) {
         return Payload.successResponse(playlistService.playlistStream(playlistId, user.getId()));
+    }
+
+    @PutMapping(value="/playlists/{id}")
+    public ResponseEntity<?> updatePlaylist(
+        @PathVariable String id, 
+        @RequestAttribute EntityUser user, 
+        @Valid DTOPlaylistUpdate update, 
+        BindingResult result) {
+            if(result.hasErrors()){
+                FieldError error = result.getFieldError();
+                return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
+            }
+            if(playlistService.updatePlaylist(user.getId(),id,update)){
+                return Payload.successResponse("Update successfully");
+            }else{
+                return Payload.failureResponse("Update failed");
+            }
     }
 
 }

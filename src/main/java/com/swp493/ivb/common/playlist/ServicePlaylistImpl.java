@@ -31,9 +31,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ServicePlaylistImpl implements ServicePlaylist {
@@ -300,6 +303,34 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         List<IOnlyId> list = playlistRepo.findByUserPlaylistsUserUserRoleIdAndGenresIdAndStatus("r-curator", genreId, "public", paging.asPageable());
         paging.setItems(list.stream().map(id -> getPlaylistSimple(id.getId(), userId)).collect(Collectors.toList()));
         return paging;
+    }
+
+    @Override
+    public boolean updatePlaylist(String userId, String playlistId, DTOPlaylistUpdate playlistUpdate) {
+        if(!userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId , playlistId, "own"))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        EntityPlaylist playlist = playlistRepo.getOne(playlistId);
+        if(StringUtils.hasLength(playlistUpdate.getDescription())){
+            playlist.setDescription(playlistUpdate.getDescription());
+        }
+        if(StringUtils.hasLength(playlistUpdate.getTitle())){
+            playlist.setDescription(playlistUpdate.getTitle());
+        }
+        MultipartFile thumbnail = playlistUpdate.getThumbnail();
+        if (thumbnail != null) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(thumbnail.getSize());
+            String key = playlistId;
+            try {
+                s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                playlist.setThumbnail(AWSConfig.BUCKET_URL+key);
+            } catch (IOException e) {
+                throw new RuntimeException("Error getting input stream for thumbnail",e);
+            }
+        }
+        playlistRepo.save(playlist);
+        return true;
     }
     
 }

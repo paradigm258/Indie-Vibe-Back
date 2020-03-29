@@ -53,7 +53,12 @@ public class ServiceMasterDataImpl implements ServiceMasterData {
     @Override
     public DTOGenre getGenre(String id) {
         ModelMapper mapper = new ModelMapper();
-        return mapper.map(masterDataRepo.findById(id).get(), DTOGenre.class);
+        return mapper.map(masterDataRepo.findByIdAndType(id,"genre").get(), DTOGenre.class);
        
+    }
+
+    public DTOReleaseType getReleaseType(String id){
+        ModelMapper mapper = new ModelMapper();
+        return mapper.map(masterDataRepo.findByIdAndType(id,"release").get(), DTOReleaseType.class);
     }
 }

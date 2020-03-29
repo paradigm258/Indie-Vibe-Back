@@ -20,4 +20,8 @@ public interface RepositoryRelease extends JpaRepository<EntityRelease, String> 
     List<IOnlyId> findByGenresIdAndStatusAndDateAfter(String genreId, String status, Date date, Pageable pageable);
     int countByStatusAndDateAfter(String status, Date date);
     List<IOnlyId> findByStatusAndDateAfter(String status, Date date, Pageable pageable);
+    int countByArtistReleaseUserIdAndReleaseTypeId(String artistId, String releaseType);
+    int countByArtistReleaseUserIdAndReleaseTypeIdAndStatus(String artistId, String releaseType, String status);
+    List<IOnlyId> findByArtistReleaseUserIdAndReleaseTypeId(String artistId, String releaseType, Pageable pageable);
+    List<IOnlyId> findByArtistReleaseUserIdAndReleaseTypeIdAndStatus(String artistId, String releaseType, String status, Pageable pageable);
 }

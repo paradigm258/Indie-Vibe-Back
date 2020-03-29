@@ -14,4 +14,5 @@ public interface RepositoryArtist extends JpaRepository<EntityArtist, String> {
     List<IOnlyId> findByDisplayNameIgnoreCaseContaining(String key, Pageable pageable);
     int countByDisplayNameIgnoreCaseContaining(String key);
     int countByFollowerUsersId(String userId);
+    
 }

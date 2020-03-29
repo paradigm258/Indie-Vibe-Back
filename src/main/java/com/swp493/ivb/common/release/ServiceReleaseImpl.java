@@ -436,5 +436,20 @@ public class ServiceReleaseImpl implements ServiceRelease {
         return list.stream().map(id -> getReleaseSimple(id.getId(), userId)).collect(Collectors.toList());
     }
 
+    @Override
+    public Paging<DTOReleaseSimple> getArtistReleaseByType(String artistId, String userId, String releaseType, int offset, int limit) {
+        boolean privateView = userId.equals(artistId);
+        
+        int total = privateView ? releaseRepo.countByArtistReleaseUserIdAndReleaseTypeId(artistId, releaseType)
+                                : releaseRepo.countByArtistReleaseUserIdAndReleaseTypeIdAndStatus(artistId, releaseType, "public");
+
+        Paging<DTOReleaseSimple> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = privateView ? releaseRepo.findByArtistReleaseUserIdAndReleaseTypeId(artistId, releaseType, paging.asPageable())
+                                         : releaseRepo.findByArtistReleaseUserIdAndReleaseTypeIdAndStatus(artistId, releaseType, "public", paging.asPageable());
+        paging.setItems(list.stream().map(id ->getReleaseSimple(id.getId(), userId)).collect(Collectors.toList()));
+        return paging;
+    }
+
     
 }

@@ -47,7 +47,7 @@ public class ControllerUser {
     }
     
     @PutMapping(value="/account")
-    public ResponseEntity<?> putMethodName(@RequestAttribute EntityUser user, @Valid DTOUserUpdate update, BindingResult result) {
+    public ResponseEntity<?> updateAccount(@RequestAttribute EntityUser user, @Valid DTOUserUpdate update, BindingResult result) {
         if(result.hasErrors()){
             FieldError error = result.getFieldError();
             return Payload.failureResponse(error.getDefaultMessage() + " is invalid");

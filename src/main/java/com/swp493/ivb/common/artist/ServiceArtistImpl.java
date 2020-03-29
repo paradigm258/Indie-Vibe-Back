@@ -1,8 +1,15 @@
 package com.swp493.ivb.common.artist;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.swp493.ivb.common.mdata.DTOReleaseType;
+import com.swp493.ivb.common.mdata.RepositoryMasterData;
+import com.swp493.ivb.common.mdata.ServiceMasterData;
+import com.swp493.ivb.common.release.DTOReleaseSimple;
+import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.IOnlyId;
 import com.swp493.ivb.common.user.RepositoryUser;
@@ -23,7 +30,17 @@ public class ServiceArtistImpl implements ServiceArtist {
     RepositoryUser userRepo;
 
     @Autowired
+    RepositoryMasterData masterDataRepo;
+
+    @Autowired
     ServiceUser userService;
+
+    @Autowired
+    ServiceMasterData masterDataService;
+
+    @Autowired
+    ServiceRelease releaseService;
+    
 
     @Override
     public DTOArtistFull getArtistFull(String userId, String artistId) {
@@ -41,10 +58,10 @@ public class ServiceArtistImpl implements ServiceArtist {
     public DTOArtistSimple getArtistSimple(String userId, String artistId) {
         ModelMapper mapper = new ModelMapper();
         DTOUserPublic userPublic = userService.getUserPublic(artistId, userId);
-        return artistRepo.findById(artistId).map(artist ->{
-        DTOArtistSimple artistSimple = mapper.map(artist, DTOArtistSimple.class);
-        artistSimple.setRelation(userPublic.getRelation());
-        return artistSimple;
+        return artistRepo.findById(artistId).map(artist -> {
+            DTOArtistSimple artistSimple = mapper.map(artist, DTOArtistSimple.class);
+            artistSimple.setRelation(userPublic.getRelation());
+            return artistSimple;
         }).orElse(mapper.map(userPublic, DTOArtistSimple.class));
     }
 
@@ -54,8 +71,7 @@ public class ServiceArtistImpl implements ServiceArtist {
         Paging<DTOArtistFull> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
         List<IOnlyId> list = artistRepo.findAllByFollowerUsersId(userId, paging.asPageable());
-        paging.setItems(list.stream().map(u ->getArtistFull(viewerId, u.getId())
-        ).collect(Collectors.toList()));
+        paging.setItems(list.stream().map(u -> getArtistFull(viewerId, u.getId())).collect(Collectors.toList()));
         return paging;
     }
 
@@ -65,8 +81,19 @@ public class ServiceArtistImpl implements ServiceArtist {
         Paging<DTOArtistFull> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
         List<IOnlyId> list = artistRepo.findByDisplayNameIgnoreCaseContaining(key, paging.asPageable());
-        paging.setItems(list.stream().map(a ->getArtistFull(viewerId, a.getId())).collect(Collectors.toList()));
+        paging.setItems(list.stream().map(a -> getArtistFull(viewerId, a.getId())).collect(Collectors.toList()));
         return paging;
+    }
+
+    @Override
+    public Map<String, Object> getArtistReleaseByType(String artistId, String userId, String releaseTypeId, int offset,
+            int limit) {
+        DTOReleaseType releaseType = masterDataService.getReleaseType(releaseTypeId);
+        Paging<DTOReleaseSimple> list = releaseService.getArtistReleaseByType(artistId, userId, releaseTypeId, offset, limit);
+        Map<String, Object> result = new HashMap<>();
+        result.put("releaseType", releaseType);
+        result.put("releases", list);
+        return result;
     }
 
     
