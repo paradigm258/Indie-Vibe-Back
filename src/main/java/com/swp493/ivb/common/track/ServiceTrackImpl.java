@@ -19,8 +19,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ServiceTrackImpl implements ServiceTrack {
@@ -109,7 +110,7 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Override
     public DTOTrackFull getTrackById(String id, String userId) {
-        if(!hasTrackAccessPermission(id,userId)) throw new AccessDeniedException(id);
+        if(!hasTrackAccessPermission(id,userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return getTrackFullFromEntity(trackRepo.findById(id).get(),userId);
     }
 

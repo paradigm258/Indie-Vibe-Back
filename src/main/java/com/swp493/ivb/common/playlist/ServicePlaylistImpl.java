@@ -148,7 +148,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     @Override
     public DTOPlaylistFull getPlaylistFull(EntityPlaylist playlist, String userId, int offset, int limit) {
         
-        if (!hasPlaylistAccessPermission(playlist.getId(), userId)) throw new AccessDeniedException(playlist.getId());
+        if (!hasPlaylistAccessPermission(playlist.getId(), userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistFull playlistFull = mapper.map(playlist, DTOPlaylistFull.class);
@@ -190,7 +190,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     @Override
     public DTOPlaylistSimple getPlaylistSimple(EntityPlaylist playlist, String userId) {
-        if(!hasPlaylistAccessPermission(playlist.getId(), userId)) throw new AccessDeniedException(playlist.getId());
+        if(!hasPlaylistAccessPermission(playlist.getId(), userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
 
         ModelMapper mapper = new ModelMapper();
         DTOPlaylistSimple playlistSimple = mapper.map(playlist, DTOPlaylistSimple.class);
@@ -205,8 +205,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityTrack track = trackRepo.findById(trackId).get();
 
-        if( !hasPlaylistAccessPermission(playlistId, userId)) throw new AccessDeniedException(playlistId);
-        if( !hasTrackAccessPermission(trackId, userId)) throw new AccessDeniedException(trackId);
+        if( !hasPlaylistAccessPermission(playlistId, userId)) new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if( !hasTrackAccessPermission(trackId, userId)) new ResponseStatusException(HttpStatus.FORBIDDEN);
         boolean success = false;
         switch (action) {
             case "add":
@@ -236,7 +236,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityUser user = userRepo.findById(userId).get();
 
-        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new AccessDeniedException(playlistId);
+        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         
         boolean success = false;
         switch (action) {
@@ -281,7 +281,7 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     @Override
     public List<String> playlistStream(String playlistId, String userId){
-        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new AccessDeniedException(playlistId);
+        if(!hasPlaylistAccessPermission(playlistId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return playlistRepo.findAllTrackIdById(playlistId); 
     }
 
