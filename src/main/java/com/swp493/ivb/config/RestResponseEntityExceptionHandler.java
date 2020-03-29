@@ -36,6 +36,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         switch (ex.getStatus()) {
             case BAD_REQUEST:
                 return Payload.failureResponse(ex.getMessage());
+            case FORBIDDEN:
+                return ResponseEntity.status(ex.getStatus()).body(new Payload<>().fail("Resource access not allowed"));
             default:
                 break;
         }

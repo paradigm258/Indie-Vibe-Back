@@ -19,8 +19,12 @@ public class ControllerArtist {
     ServiceArtist artistService;
 
     @GetMapping(value="/artists/{artistId}/releases/{type}")
-    public ResponseEntity<?> getArtistRelease(@RequestParam String param) {
-        return Payload.successResponse(null);
+    public ResponseEntity<?> getArtistRelease(@RequestAttribute EntityUser user, 
+    @PathVariable String artistId, 
+    @PathVariable String type,
+    @RequestParam(defaultValue = "0") int offset, 
+    @RequestParam(defaultValue = "20") int limit) {
+        return Payload.successResponse(artistService.getArtistReleaseByType(artistId, user.getId(), type, offset, limit));
     }
 
     @GetMapping(value="/artists/{artistId}")

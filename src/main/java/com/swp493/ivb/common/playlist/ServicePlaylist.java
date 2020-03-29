@@ -18,4 +18,5 @@ public interface ServicePlaylist {
     public List<String> playlistStream(String playlistId, String userId);
     public Paging<DTOPlaylistSimple> findPlaylist(String key, String userId, int offset, int limit);
     public Paging<DTOPlaylistSimple> getGenrePlaylists(String genreId, String userId, int offset, int limit);
+    public boolean updatePlaylist(String userId, String playlistId, DTOPlaylistUpdate playlistUpdate);
 }

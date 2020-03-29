@@ -50,9 +50,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ServiceReleaseImpl implements ServiceRelease {
@@ -290,7 +291,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Override
     public List<String> streamRelease(String releaseId, String userId) {
-        if(!hasReleaseAccessPermission(releaseId, userId)) throw new AccessDeniedException(releaseId);
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return trackRepo.findAllByReleaseId(releaseId).stream()
                     .map(t -> t.getId())
                     .collect(Collectors.toList()
@@ -334,7 +335,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         EntityRelease release = releaseRepo.findById(releaseId).get();
         EntityUser user = userRepo.findById(userId).get();
 
-        if(!hasReleaseAccessPermission(releaseId, userId)) throw new AccessDeniedException(releaseId);
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         
         boolean success = false;
         switch (action) {
@@ -348,13 +349,13 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
                     release.setStatus("public");
                     success = true;
-                } else throw new AccessDeniedException(releaseId);
+                } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
                 break;
             case "make-private":
                 if(userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own")){
                     release.setStatus("private");
                     success = true;
-                } else throw new AccessDeniedException(releaseId);
+                } else throw new ResponseStatusException(HttpStatus.FORBIDDEN);
                 break;
             default:
                 break;
@@ -367,7 +368,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     public DTOReleaseSimple getReleaseSimple(String releaseId, String userId){
-        if(!hasReleaseAccessPermission(releaseId, userId)) throw new AccessDeniedException(releaseId);
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         return getReleaseSimple(releaseRepo.findById(releaseId).get(), userId);
     }
 
@@ -434,6 +435,21 @@ public class ServiceReleaseImpl implements ServiceRelease {
         Pageable pageable = PageRequest.of(0, 5, Direction.ASC, "date");
         List<IOnlyId> list = releaseRepo.findByStatusAndDateAfter("public", date, pageable);
         return list.stream().map(id -> getReleaseSimple(id.getId(), userId)).collect(Collectors.toList());
+    }
+
+    @Override
+    public Paging<DTOReleaseSimple> getArtistReleaseByType(String artistId, String userId, String releaseType, int offset, int limit) {
+        boolean privateView = userId.equals(artistId);
+        
+        int total = privateView ? releaseRepo.countByArtistReleaseUserIdAndReleaseTypeId(artistId, releaseType)
+                                : releaseRepo.countByArtistReleaseUserIdAndReleaseTypeIdAndStatus(artistId, releaseType, "public");
+
+        Paging<DTOReleaseSimple> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = privateView ? releaseRepo.findByArtistReleaseUserIdAndReleaseTypeId(artistId, releaseType, paging.asPageable())
+                                         : releaseRepo.findByArtistReleaseUserIdAndReleaseTypeIdAndStatus(artistId, releaseType, "public", paging.asPageable());
+        paging.setItems(list.stream().map(id ->getReleaseSimple(id.getId(), userId)).collect(Collectors.toList()));
+        return paging;
     }
 
     

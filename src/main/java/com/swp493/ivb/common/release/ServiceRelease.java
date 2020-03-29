@@ -31,4 +31,7 @@ public interface ServiceRelease {
     Paging<DTOReleaseSimple> getReleaseGenre(String genreId, String userId, int offset, int limit);
 
     List<DTOReleaseSimple> getLastest(String userId);
+
+    Paging<DTOReleaseSimple> getArtistReleaseByType(String artistId, String userId, String releaseType, int offset, int limit);
+
 }

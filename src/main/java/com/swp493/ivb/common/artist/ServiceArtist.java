@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.artist;
 
+import java.util.Map;
+
 import com.swp493.ivb.common.view.Paging;
 
 public interface ServiceArtist {
@@ -7,5 +9,6 @@ public interface ServiceArtist {
     DTOArtistSimple getArtistSimple(String userId, String artistId);
     Paging<DTOArtistFull> getArtists(String userId, String viewerId, int offset, int limit);
     Paging<DTOArtistFull> findArtist(String key, String viewerId, int offset, int limit);
+    Map<String, Object> getArtistReleaseByType(String artistId, String userId, String releaseTypeId, int offset, int limit);
 }
 
