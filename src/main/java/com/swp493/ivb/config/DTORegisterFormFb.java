@@ -31,6 +31,5 @@ public class DTORegisterFormFb {
     @NotBlank(message = "Facebook token")
     private String fbToken;
 
-    @NotNull
     private Date dob;
 }
