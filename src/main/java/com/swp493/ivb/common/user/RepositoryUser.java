@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.user;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,4 +36,5 @@ public interface RepositoryUser extends JpaRepository<EntityUser, String> {
     public List<IOnlyId> findAllByFollowingUsersId(String followerId, Pageable pageable);
     List<IOnlyId> findByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(String key, String role, Pageable pageable);
     int countByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(String key, String role);
+    List<EntityUser> findByPlanDueLessThanEqual(Date date);
 }

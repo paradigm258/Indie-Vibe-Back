@@ -52,7 +52,7 @@ public class AuthenticationController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthenticationController.class);
 
-    @Value("${spring.security.oauth2.client.registration.facebook.access-token}")
+    @Value("${FB_ACCESSTOKEN}")
     String access_token;
 
     @Autowired

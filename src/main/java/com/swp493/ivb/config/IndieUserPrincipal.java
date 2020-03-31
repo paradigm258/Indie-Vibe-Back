@@ -34,7 +34,13 @@ public class IndieUserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(user.getUserRole().getId()));
+        String role;
+        if(user.getPlanStatus()!= null && user.getPlanStatus().equals("active")){
+            role = user.getUserRole().getId();
+        }else{
+            role = "r-free";
+        }
+        return Collections.singleton(new SimpleGrantedAuthority(role));
     }
 
     @Override

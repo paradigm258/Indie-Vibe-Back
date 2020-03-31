@@ -71,9 +71,12 @@ public class EntityUser {
 
     private String fbId;
 
+    private String billing;
+
+    private String planStatus;
+
     private Date planDue;
 
-    @NotBlank
     private String artistStatus = "open";
 
     // dùng cái này để lấy role nhá, xóa cái trên đi, dùng 1 cái thôi ko lỗi

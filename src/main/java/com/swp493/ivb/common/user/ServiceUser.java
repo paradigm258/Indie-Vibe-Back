@@ -37,4 +37,10 @@ public interface ServiceUser {
     boolean userUpdate(DTOUserUpdate update, String userId);
 
     boolean passwordUpdate(String oldPassword, String newPassword, String userId);
+
+    String purchaseMonthly(String stripeToken, String userId);
+
+    String purchaseFixed(String type, String stripeToken, String userId);
+
+    void updatePlan(); 
 }

@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 
+
 @RestController
 public class ControllerUser {
 
@@ -27,7 +28,7 @@ public class ControllerUser {
 
     @GetMapping("/library/{id}/profile")
     public ResponseEntity<?> getSimple(@PathVariable String id, @RequestAttribute EntityUser user) {   
-            return Payload.successResponse(userService.getUserPublic(id,user.getId()));
+        return Payload.successResponse(userService.getUserPublic(id,user.getId()));
     }
 
     @PostMapping(value="/users/{userId}")
@@ -78,6 +79,24 @@ public class ControllerUser {
             return Payload.successResponse("Password changed");
 
         return Payload.failureResponse("Wrong password");
+    }
+    
+    @PostMapping(value="/purchase/monthly")
+    public ResponseEntity<?> purchaseMonthly(@RequestAttribute EntityUser user, @RequestParam String stripeToken){
+        String resp = userService.purchaseMonthly(stripeToken, user.getId());
+        if(resp != null)
+            return Payload.successResponse(resp);
+        else
+            return Payload.failureResponse("Payment failed");
+    }
+
+    @PostMapping(value="/purchase/fixed/{type}")
+    public ResponseEntity<?> purchaseFixed(@RequestAttribute EntityUser user, @RequestParam String stripeToken, @PathVariable String type){
+        String resp = userService.purchaseFixed(type, stripeToken, user.getId());
+        if(resp!=null)
+            return Payload.successResponse(resp);
+        else
+            return Payload.failureResponse("Payment failed");
     }
     
 }
