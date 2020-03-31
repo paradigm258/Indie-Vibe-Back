@@ -25,7 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class BillingUtils {
 
-    private final String PLAN_MONTHLY = "";
+    private final String PLAN_MONTHLY = "plan_H0bEwXlH8JdG8l";
 
     public BillingUtils() {
         Stripe.apiKey = "${STRIPE_KEY}";
