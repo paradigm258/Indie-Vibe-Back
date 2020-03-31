@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -44,9 +45,9 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
             .authenticationEntryPoint(unauthorizedHandler)
             .and().authorizeRequests()
-            .antMatchers("/home", "/login/**","/introspect","/register/**","/token").permitAll()
+            .antMatchers("/home", "/login/**","/register/**").permitAll()
             .antMatchers("/admin/**").hasAuthority("r-admin")
-            .antMatchers("/artist/**").hasAuthority("r-artist")
+            .antMatchers(HttpMethod.POST, "/releases").hasAuthority("r-artist")
             .anyRequest().fullyAuthenticated()
             .and().logout().disable();
     }
