@@ -15,6 +15,7 @@ import com.stripe.model.Customer;
 import com.stripe.model.Subscription;
 import com.swp493.ivb.common.user.EntityUser;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
@@ -27,8 +28,11 @@ public class BillingUtils {
 
     private final String PLAN_MONTHLY = "plan_H0bEwXlH8JdG8l";
 
+    @Value(value = "${STRIPE_KEY}")
+    String key;
+
     public BillingUtils() {
-        Stripe.apiKey = "${STRIPE_KEY}";
+        Stripe.apiKey = key;
     }
 
     public Subscription createSubscription(String stripeToken, EntityUser user) throws StripeException {
