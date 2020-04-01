@@ -28,10 +28,10 @@ public class BillingUtils {
 
     private final String PLAN_MONTHLY = "plan_H0bEwXlH8JdG8l";
 
-    @Value(value = "${STRIPE_KEY}")
-    String key;
+//    @Value(value = "${STRIPE_KEY}")
+//    String key;
 
-    public BillingUtils() {
+    public BillingUtils(@Value(value = "${STRIPE_KEY}") final String key) {
         Stripe.apiKey = key;
     }
 

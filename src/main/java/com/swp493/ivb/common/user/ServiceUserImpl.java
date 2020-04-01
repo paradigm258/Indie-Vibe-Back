@@ -275,7 +275,7 @@ public class ServiceUserImpl implements ServiceUser {
     public String purchaseFixed(String type, String stripeToken, String userId) {
         EntityUser user = userRepository.findById(userId).get();
         Date plandue = user.getPlanDue();
-        if (plandue.before(new Date())) {
+        if (plandue == null || plandue.before(new Date())) {
             try {
                 Charge charge = billingUtils.createCharge(type, stripeToken, user);
                 String status = charge.getStatus();
