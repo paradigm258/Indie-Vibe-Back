@@ -32,6 +32,13 @@ public class IndieUserPrincipal implements UserDetails {
         return user;
     }
 
+    /**
+     * @param user the user to set
+     */
+    public void setUser(EntityUser user) {
+        this.user = user;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String role;
