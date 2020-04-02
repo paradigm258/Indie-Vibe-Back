@@ -43,4 +43,6 @@ public interface ServiceUser {
     String purchaseFixed(String type, String stripeToken, String userId);
 
     void updatePlan(); 
+
+    void updateUserPlan(EntityUser user);
 }

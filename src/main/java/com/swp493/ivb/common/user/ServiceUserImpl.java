@@ -252,7 +252,10 @@ public class ServiceUserImpl implements ServiceUser {
                 switch (status) {
                     case "active":
                         user.setPlanStatus("active");
+                        user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
+                        user.setPlanDue(Date
+                                .from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
                         userRepository.save(user);
                         return "Payment success";
                     case "incomplete":
@@ -283,6 +286,7 @@ public class ServiceUserImpl implements ServiceUser {
                     case "succeeded":
                         user.setBilling(charge.getId());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
+                        user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
                         user.setPlanStatus("active");
                         userRepository.save(user);
                         return "Purchase success";
@@ -331,6 +335,52 @@ public class ServiceUserImpl implements ServiceUser {
                 userRepository.save(user);
             } catch (StripeException e) {
                 log.error("Error checking billing id", e);
+            }
+        }
+
+    }
+
+    private void activatePlan(EntityUser user) {
+        user.setPlanStatus("active");
+        user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+        EntityUser userUpdate = userRepository.getOne(user.getId());
+        userUpdate.setPlanStatus("active");
+        userUpdate.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+        userRepository.save(userUpdate);
+    }
+
+    @Override
+    public void updateUserPlan(EntityUser user) {
+        if ("pending".equals(user.getPlanStatus())) {
+            String status;
+            if (user.getUserPlan().getId().equals("p-monthly")) {
+                try {
+                    status = billingUtils.checkSubscriptionStatus(user.getBilling());
+                } catch (StripeException e) {
+                    status = "pending";
+                }
+                switch (status) {
+                    case "active":
+                        activatePlan(user);
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                try {
+                    status = billingUtils.checkChargeStatus(user.getBilling());
+                } catch (StripeException e) {
+                    status = "pending";
+                }
+                switch (status) {
+                    case "succeeded":
+                        activatePlan(user);
+                        break;
+                    case "failed":
+
+                    default:
+                        break;
+                }
             }
         }
 

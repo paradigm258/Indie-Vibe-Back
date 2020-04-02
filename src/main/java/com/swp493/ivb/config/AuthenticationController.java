@@ -9,6 +9,7 @@ import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
 import com.swp493.ivb.common.view.Payload;
+import com.swp493.ivb.util.BillingUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,9 @@ public class AuthenticationController {
     @Autowired
     DefaultTokenServices tokenServices;
 
+    @Autowired
+    BillingUtils billingUtils;
+
     @GetMapping(value = "/me")
     public ResponseEntity<?> me(@RequestAttribute EntityUser user) {
         return ResponseEntity.ok().body(user.getId());
@@ -94,7 +98,7 @@ public class AuthenticationController {
         } catch (BadCredentialsException e) {
             return Payload.failureResponse("Bad creadential");
         }
-        
+
     }
 
     @RequestMapping(value = "/login/facebook")
@@ -103,8 +107,8 @@ public class AuthenticationController {
             UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
 
             if (checkFbToken(userFbId, userFbToken) == true) {
-                UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails, null,
-                        userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
+                        null, userDetails.getAuthorities());
                 return TokenResponse(userAuth);
             } else {
                 return Payload.failureResponse("Token invalid");
@@ -112,11 +116,12 @@ public class AuthenticationController {
         } catch (UsernameNotFoundException e) {
             return Payload.failureResponse("Facebook account not connected");
         }
-        
+
     }
 
     private ResponseEntity<?> TokenResponse(Authentication authentication) {
         IndieUserPrincipal user = (IndieUserPrincipal) authentication.getPrincipal();
+        userService.updateUserPlan(user.getUser());
         OAuth2Request request = new OAuth2Request(null, "web", user.getAuthorities(), true, null, null, null, null,
                 null);
         OAuth2Authentication oAuth2Authentication = new OAuth2Authentication(request, authentication);
