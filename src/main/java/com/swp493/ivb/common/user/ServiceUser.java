@@ -38,9 +38,9 @@ public interface ServiceUser {
 
     boolean passwordUpdate(String oldPassword, String newPassword, String userId);
 
-    String purchaseMonthly(String stripeToken, String userId);
+    String purchaseMonthly(String stripeToken, EntityUser authUser);
 
-    String purchaseFixed(String type, String stripeToken, String userId);
+    String purchaseFixed(String type, String stripeToken, EntityUser authUser);
 
     void updatePlan(); 
 

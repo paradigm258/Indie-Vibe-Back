@@ -241,9 +241,9 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public String purchaseMonthly(String stripeToken, String userId) {
+    public String purchaseMonthly(String stripeToken, EntityUser authUser) {
         try {
-            EntityUser user = userRepository.findById(userId).get();
+            EntityUser user = userRepository.findById(authUser.getId()).get();
             Date plandue = user.getPlanDue();
             if (plandue == null || plandue.before(new Date())) {
                 Subscription subscription = billingUtils.createSubscription(stripeToken, user);
@@ -254,8 +254,9 @@ public class ServiceUserImpl implements ServiceUser {
                         user.setPlanStatus("active");
                         user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
-                        user.setPlanDue(Date
-                                .from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                        authUser.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+                        authUser.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
+                        user.setPlanDue(Date.from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
                         userRepository.save(user);
                         return "Payment success";
                     case "incomplete":
@@ -275,8 +276,8 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public String purchaseFixed(String type, String stripeToken, String userId) {
-        EntityUser user = userRepository.findById(userId).get();
+    public String purchaseFixed(String type, String stripeToken, EntityUser authUser) {
+        EntityUser user = userRepository.findById(authUser.getId()).get();
         Date plandue = user.getPlanDue();
         if (plandue == null || plandue.before(new Date())) {
             try {
@@ -287,6 +288,8 @@ public class ServiceUserImpl implements ServiceUser {
                         user.setBilling(charge.getId());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
                         user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+                        authUser.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
+                        authUser.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
                         user.setPlanStatus("active");
                         userRepository.save(user);
                         return "Purchase success";

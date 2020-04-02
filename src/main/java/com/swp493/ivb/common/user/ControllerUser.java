@@ -83,7 +83,7 @@ public class ControllerUser {
     
     @PostMapping(value="/purchase/monthly")
     public ResponseEntity<?> purchaseMonthly(@RequestAttribute EntityUser user, @RequestParam String stripeToken){
-        String resp = userService.purchaseMonthly(stripeToken, user.getId());
+        String resp = userService.purchaseMonthly(stripeToken, user);
         if(resp != null)
             return Payload.successResponse(resp);
         else
@@ -92,8 +92,8 @@ public class ControllerUser {
 
     @PostMapping(value="/purchase/fixed/{type}")
     public ResponseEntity<?> purchaseFixed(@RequestAttribute EntityUser user, @RequestParam String stripeToken, @PathVariable String type){
-        String resp = userService.purchaseFixed(type, stripeToken, user.getId());
-        if(resp!=null)
+        String resp = userService.purchaseFixed(type, stripeToken, user);
+        if(resp != null)
             return Payload.successResponse(resp);
         else
             return Payload.failureResponse("Payment failed");
