@@ -98,4 +98,8 @@ public class BillingUtils {
     public String checkSubscriptionStatus(String subId) throws StripeException {
         return Subscription.retrieve(subId).getStatus();
     }
+
+    public String checkChargeStatus(String chargeId) throws StripeException {
+        return Charge.retrieve(chargeId).getStatus();
+    }
 }
