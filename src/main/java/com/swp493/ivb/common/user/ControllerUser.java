@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -82,8 +83,9 @@ public class ControllerUser {
     }
     
     @PostMapping(value="/purchase/monthly")
-    public ResponseEntity<?> purchaseMonthly(@RequestAttribute EntityUser user, @RequestParam String stripeToken){
-        String resp = userService.purchaseMonthly(stripeToken, user);
+    public ResponseEntity<?> purchaseMonthly(@RequestAttribute EntityUser user, @RequestParam String stripeToken, @RequestHeader("Authorization") String token){
+        token = token.substring(7);
+        String resp = userService.purchaseMonthly(stripeToken, user, token);
         if(resp != null)
             return Payload.successResponse(resp);
         else
@@ -91,8 +93,9 @@ public class ControllerUser {
     }
 
     @PostMapping(value="/purchase/fixed/{type}")
-    public ResponseEntity<?> purchaseFixed(@RequestAttribute EntityUser user, @RequestParam String stripeToken, @PathVariable String type){
-        String resp = userService.purchaseFixed(type, stripeToken, user);
+    public ResponseEntity<?> purchaseFixed(@RequestAttribute EntityUser user, @RequestParam String stripeToken, @PathVariable String type, @RequestHeader("Authorization") String token){
+        token = token.substring(7);
+        String resp = userService.purchaseFixed(type, stripeToken, user, token);
         if(resp != null)
             return Payload.successResponse(resp);
         else

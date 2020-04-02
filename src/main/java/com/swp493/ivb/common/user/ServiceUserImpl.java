@@ -22,6 +22,7 @@ import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
 import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
+import com.swp493.ivb.config.IndieUserPrincipal;
 import com.swp493.ivb.util.BillingUtils;
 
 import org.modelmapper.ModelMapper;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,6 +62,9 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Autowired
     BillingUtils billingUtils;
+
+    @Autowired
+    TokenStore tokenStore;
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
@@ -241,8 +246,9 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public String purchaseMonthly(String stripeToken, EntityUser authUser) {
+    public String purchaseMonthly(String stripeToken, EntityUser authUser, String token) {
         try {
+            IndieUserPrincipal principal = (IndieUserPrincipal) tokenStore.readAuthentication(token).getPrincipal();
             EntityUser user = userRepository.findById(authUser.getId()).get();
             Date plandue = user.getPlanDue();
             if (plandue == null || plandue.before(new Date())) {
@@ -254,15 +260,15 @@ public class ServiceUserImpl implements ServiceUser {
                         user.setPlanStatus("active");
                         user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
-                        authUser.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
-                        authUser.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
                         user.setPlanDue(Date.from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-                        userRepository.save(user);
+                        user = userRepository.save(user);
+                        principal.setUser(user);
                         return "Payment success";
                     case "incomplete":
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
                         user.setPlanStatus("pending");
-                        userRepository.save(user);
+                        user = userRepository.save(user);
+                        principal.setUser(user);
                         return "Your payment is being processed";
                     default:
                         throw new RuntimeException("Unknown payment status: " + status);
@@ -276,8 +282,9 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public String purchaseFixed(String type, String stripeToken, EntityUser authUser) {
+    public String purchaseFixed(String type, String stripeToken, EntityUser authUser, String token) {
         EntityUser user = userRepository.findById(authUser.getId()).get();
+        IndieUserPrincipal principal = (IndieUserPrincipal) tokenStore.readAuthentication(token).getPrincipal();
         Date plandue = user.getPlanDue();
         if (plandue == null || plandue.before(new Date())) {
             try {
@@ -288,22 +295,23 @@ public class ServiceUserImpl implements ServiceUser {
                         user.setBilling(charge.getId());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
                         user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
-                        authUser.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
-                        authUser.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
                         user.setPlanStatus("active");
-                        userRepository.save(user);
+                        user = userRepository.save(user);
+                        principal.setUser(user);
                         return "Purchase success";
                     case "pending":
                         user.setBilling(charge.getId());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
                         user.setPlanStatus("pending");
-                        userRepository.save(user);
+                        user = userRepository.save(user);
+                        principal.setUser(user);
                         return "Your purchase is being processed";
                     case "failed":
                         return null;
                     default:
                         throw new RuntimeException("Unknown payment status: " + status);
                 }
+
             } catch (StripeException e) {
                 throw new RuntimeException(e);
             }
@@ -335,7 +343,7 @@ public class ServiceUserImpl implements ServiceUser {
                     user.setPlanDue(null);
                     user.setPlanStatus("expired");
                 }
-                userRepository.save(user);
+                user = userRepository.save(user);
             } catch (StripeException e) {
                 log.error("Error checking billing id", e);
             }
