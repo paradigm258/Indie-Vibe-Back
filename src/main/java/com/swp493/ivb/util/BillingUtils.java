@@ -13,6 +13,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.Customer;
 import com.stripe.model.Subscription;
+import com.stripe.param.PlanListParams;
 import com.swp493.ivb.common.user.EntityUser;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +43,7 @@ public class BillingUtils {
         item1.put("plan", PLAN_MONTHLY);
         items.add(item1);
         Map<String, Object> params = new HashMap<>();
-        params.put("billing_cycle_anchor", date.atStartOfDay(ZoneId.systemDefault()).toInstant().getEpochSecond()+"");
+        params.put("billing_cycle_anchor", date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().getEpochSecond());
         params.put("customer", createCustomer(stripeToken, user));
         params.put("items", items);
         user.setPlanDue(Date.from(date.plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
