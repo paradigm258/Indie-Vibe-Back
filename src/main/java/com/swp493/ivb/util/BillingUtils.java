@@ -42,7 +42,7 @@ public class BillingUtils {
         item1.put("plan", PLAN_MONTHLY);
         items.add(item1);
         Map<String, Object> params = new HashMap<>();
-        params.put("billing_cycle_anchor", date.atStartOfDay(ZoneId.systemDefault()).toInstant().getEpochSecond());
+        params.put("billing_cycle_anchor", date.atStartOfDay(ZoneId.systemDefault()).toInstant().getEpochSecond()+"");
         params.put("customer", createCustomer(stripeToken, user));
         params.put("items", items);
         user.setPlanDue(Date.from(date.plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
