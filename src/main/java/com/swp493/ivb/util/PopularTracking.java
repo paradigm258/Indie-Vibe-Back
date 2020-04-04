@@ -43,11 +43,11 @@ public class PopularTracking {
     @Scheduled(fixedDelay = 60000)
     private void updateNewRelease(){
         Date date = Date.from(LocalDate.now().minusWeeks(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Pageable pageable = PageRequest.of(0, 5, Direction.ASC, "date");
+        Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "date");
         List<IOnlyId> list = releaseRepository.findByStatusAndDateAfter("public", date, pageable);
         this.popular.clear();
         for (IOnlyId entityRelease : list) {
-            popular.add(entityRelease.getId());
+            newRelease.add(entityRelease.getId());
         }
     }
 

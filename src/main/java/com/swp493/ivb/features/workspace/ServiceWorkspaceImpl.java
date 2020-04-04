@@ -35,7 +35,7 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace{
             up.setCount(up.getCount()+1);
             up.setTimestamp(new Date());
             return up;
-        }).orElse(newUserRecord(userId, id, type));
+        }).orElse(newUserRecord(userId, type, id));
 
         playObjectRepository.save(userPlay);
     }

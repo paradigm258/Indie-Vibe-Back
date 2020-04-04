@@ -116,7 +116,8 @@ public class ServiceBrowseImpl implements ServiceBrowse {
         Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "timestamp");
         List<ITypeAndId> list = playStatRepo.findByUserId(userId, pageable);
         return list.stream().map(item ->{
-            switch (item.getObjectType()) {
+            String type = item.getObjectType();
+            switch (type) {
                 case "release":
                     return releaseService.getSimpleRelease(item.getObjectId(), userId);
                 case "track":
