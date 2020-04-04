@@ -400,12 +400,33 @@ public class ServiceUserImpl implements ServiceUser {
     @Override
     public void updateArtist(String userId, String action) {
         EntityUser user = userRepository.getOne(userId);
-        if("approve".equals(action)){
+        if ("approve".equals(action)) {
             user.setArtistStatus("approve");
             user.setUserRole(masterDataRepo.findById("r-artist").get());
-        }else{
+        } else {
             user.setArtistStatus("open");
         }
+    }
+
+    @Override
+    public Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit) {
+        int total = userRepository.countByDisplayNameIgnoreCaseContainingAndUserRoleId(key,"r-free");
+        Paging<DTOUserPublic> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContainingAndUserRoleId(key, "r-free", paging.asPageable());
+        paging.setItems(list.stream().map(a -> getUserPublic(a.getId(), a.getId())).collect(Collectors.toList()));
+        return paging;
+    }
+
+    @Override
+    public void makeCurator(String userId) {
+        EntityUser user = userRepository.getOne(userId);
+        String roleId = user.getUserRole().getId();
+        if (roleId.equals("r-free")||roleId.equals("r-premium")) {
+            user.setUserRole(masterDataRepo.findById("r-curator").get());
+            userRepository.save(user);
+        }
+        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");
     }
 
 }
