@@ -416,6 +416,7 @@ public class ServiceUserImpl implements ServiceUser {
             user.setUserRole(masterDataRepo.findById("r-artist").get());
         } else {
             user.setArtistStatus("open");
+            userRepository.deleteBiography(userId);
             List<EntityUserRelease> releases = userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, "own", PageRequest.of(0, 1));
             releases.stream().forEach(ur ->{
                 String releaseId = ur.getRelease().getId();
