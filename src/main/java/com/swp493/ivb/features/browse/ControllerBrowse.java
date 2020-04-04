@@ -51,4 +51,10 @@ public class ControllerBrowse {
         return Payload.successResponse(browseService.getGeneral(user.getId()));
     }
 
+    @GetMapping(value="/home")
+    public ResponseEntity<?> getHome(@RequestAttribute EntityUser user) {
+        return Payload.successResponse(browseService.getHome(user.getId()));
+    }
+    
+
 }

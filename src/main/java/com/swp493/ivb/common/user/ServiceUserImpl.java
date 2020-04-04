@@ -397,4 +397,15 @@ public class ServiceUserImpl implements ServiceUser {
 
     }
 
+    @Override
+    public void updateArtist(String userId, String action) {
+        EntityUser user = userRepository.getOne(userId);
+        if("approve".equals(action)){
+            user.setArtistStatus("approve");
+            user.setUserRole(masterDataRepo.findById("r-artist").get());
+        }else{
+            user.setArtistStatus("open");
+        }
+    }
+
 }

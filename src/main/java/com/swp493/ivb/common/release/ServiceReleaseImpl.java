@@ -35,13 +35,16 @@ import com.swp493.ivb.common.relationship.EntityUserTrack;
 import com.swp493.ivb.common.relationship.RepositoryUserRelease;
 import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.track.DTOTrackSimple;
+import com.swp493.ivb.common.track.DTOTrackSimpleWithLink;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.track.RepositoryTrack;
+import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.IOnlyId;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
+import com.swp493.ivb.util.PopularTracking;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -83,7 +86,12 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Autowired
     private ServiceArtist artistService;
+
+    @Autowired
+    private ServiceTrack trackService;
     
+    @Autowired
+    private PopularTracking popularTracking;
 
     @Autowired
     private AmazonS3 s3;
@@ -428,13 +436,8 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Override
     public List<DTOReleaseSimple> getLastest(String userId) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.WEEK_OF_YEAR, -2);
-        Date date = calendar.getTime();
-        Pageable pageable = PageRequest.of(0, 5, Direction.ASC, "date");
-        List<IOnlyId> list = releaseRepo.findByStatusAndDateAfter("public", date, pageable);
-        return list.stream().map(id -> getReleaseSimple(id.getId(), userId)).collect(Collectors.toList());
+        List<String> list = popularTracking.getNewRelease();
+        return list.stream().map(release -> getReleaseSimple(release, userId)).collect(Collectors.toList());
     }
 
     @Override
@@ -450,6 +453,26 @@ public class ServiceReleaseImpl implements ServiceRelease {
                                          : releaseRepo.findByArtistReleaseUserIdAndReleaseTypeIdAndStatus(artistId, releaseType, "public", paging.asPageable());
         paging.setItems(list.stream().map(id ->getReleaseSimple(id.getId(), userId)).collect(Collectors.toList()));
         return paging;
+    }
+
+    @Override
+    public DTOReleasePending getPendingRelease(String userId, int offset, int limit) {
+        ModelMapper mapper = new ModelMapper();
+        String releaseId = releaseRepo.findFirstByArtistReleaseUserId(userId).getId();
+        int total = trackRepo.countByReleaseId(releaseId);
+        Paging<DTOTrackSimpleWithLink> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = trackRepo.findByReleaseId(releaseId, paging.asPageable());
+        paging.setItems(list.stream().map(track -> trackService.getTrackSimpleWithLink(track.getId())).collect(Collectors.toList()));
+        DTOReleasePending res = mapper.map(getSimpleRelease(releaseId, userId), DTOReleasePending.class);
+        res.setTracks(paging);
+        return res;
+    }
+
+    @Override
+    public List<DTOReleaseSimple> getPopular(String userId) {
+        List<String> list = popularTracking.getPopular();
+        return list.stream().map(release -> getReleaseSimple(release, userId)).collect(Collectors.toList());
     }
 
     

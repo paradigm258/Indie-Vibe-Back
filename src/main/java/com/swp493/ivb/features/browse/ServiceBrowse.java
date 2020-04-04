@@ -11,4 +11,7 @@ public interface ServiceBrowse {
     Map<String, Object> getGenreRelease(String userId, String genreId, int offset, int limit);
     Map<String, Object> getGenrePlaylist(String userId, String genreId, int offset, int limit);
     Map<String, Object> getGenre(String userId, String genreId);
+    Map<String, Object> getHome(String userId);
+    List<Object> getRecent(String userId);
+    List<Object> getMost(String userId);
 }

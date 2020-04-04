@@ -157,4 +157,12 @@ public class ServiceTrackImpl implements ServiceTrack {
         return paging;
     }
 
+    @Override
+    public DTOTrackSimpleWithLink getTrackSimpleWithLink(String trackId) {
+        ModelMapper mapper = new ModelMapper();
+        EntityTrack track = trackRepo.findById(trackId).get();
+        DTOTrackSimpleWithLink dto = mapper.map(track, DTOTrackSimpleWithLink.class);
+        return dto;
+    }
+
 }

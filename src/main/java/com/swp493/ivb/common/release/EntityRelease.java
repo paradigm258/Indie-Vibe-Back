@@ -62,6 +62,8 @@ public class EntityRelease {
     @NotBlank
     private String status;
 
+    private int streamCount;
+
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own'")
     private List<EntityUserRelease> artistRelease = new ArrayList<>();
