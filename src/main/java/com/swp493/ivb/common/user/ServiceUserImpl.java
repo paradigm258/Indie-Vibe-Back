@@ -407,6 +407,7 @@ public class ServiceUserImpl implements ServiceUser {
         } else {
             user.setArtistStatus("open");
         }
+        userRepository.save(user);
     }
 
     @Override
