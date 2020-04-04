@@ -19,6 +19,9 @@ import com.stripe.model.Charge;
 import com.stripe.model.Subscription;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
+import com.swp493.ivb.common.relationship.EntityUserRelease;
+import com.swp493.ivb.common.relationship.RepositoryUserRelease;
+import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
 import com.swp493.ivb.config.DTORegisterForm;
@@ -30,6 +33,7 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -57,6 +61,12 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Autowired
     RepositoryMasterData masterDataRepo;
+
+    @Autowired
+    RepositoryUserRelease userReleaseRepo;
+
+    @Autowired
+    ServiceRelease releaseService;
 
     @Autowired
     PasswordEncoder encoder;
@@ -406,6 +416,11 @@ public class ServiceUserImpl implements ServiceUser {
             user.setUserRole(masterDataRepo.findById("r-artist").get());
         } else {
             user.setArtistStatus("open");
+            List<EntityUserRelease> releases = userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, "own", PageRequest.of(0, 1));
+            releases.stream().forEach(ur ->{
+                String releaseId = ur.getRelease().getId();
+                releaseService.deleteRelease(releaseId, userId);
+            });
         }
         userRepository.save(user);
     }
