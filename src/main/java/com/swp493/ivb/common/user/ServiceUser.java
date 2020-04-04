@@ -45,4 +45,6 @@ public interface ServiceUser {
     void updatePlan(); 
 
     void updateUserPlan(EntityUser user);
+
+    void updateArtist(String userId, String action);
 }

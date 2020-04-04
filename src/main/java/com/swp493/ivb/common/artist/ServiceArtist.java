@@ -10,5 +10,6 @@ public interface ServiceArtist {
     Paging<DTOArtistFull> getArtists(String userId, String viewerId, int offset, int limit);
     Paging<DTOArtistFull> findArtist(String key, String viewerId, int offset, int limit);
     Map<String, Object> getArtistReleaseByType(String artistId, String userId, String releaseTypeId, int offset, int limit);
+    Paging<DTOArtistFull> getArtistsRequestProfile(String adminId, int offset, int limit);
 }
 

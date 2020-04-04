@@ -34,4 +34,8 @@ public interface ServiceRelease {
 
     Paging<DTOReleaseSimple> getArtistReleaseByType(String artistId, String userId, String releaseType, int offset, int limit);
 
+    DTOReleasePending getPendingRelease(String userId, int offset, int limit);
+
+    List<DTOReleaseSimple> getPopular(String userId);
+
 }

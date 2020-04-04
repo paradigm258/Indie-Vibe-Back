@@ -96,5 +96,15 @@ public class ServiceArtistImpl implements ServiceArtist {
         return result;
     }
 
+    @Override
+    public Paging<DTOArtistFull> getArtistsRequestProfile(String adminId, int offset, int limit) {
+        int total = userRepo.countByArtistStatus("pending");
+        Paging<DTOArtistFull> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        List<IOnlyId> list = userRepo.findByArtistStatus("pending", paging.asPageable());
+        paging.setItems(list.stream().map(user -> getArtistFull(adminId, user.getId())).collect(Collectors.toList()));
+        return paging;
+    }
+
     
 }

@@ -23,4 +23,7 @@ public interface ServiceTrack {
     public List<String> streamFavorite(String userId);
 
     public Paging<DTOTrackFull> findTrack(String userId, String key, int offset, int limit);
+
+    public DTOTrackSimpleWithLink getTrackSimpleWithLink(String trackId);
+
 }

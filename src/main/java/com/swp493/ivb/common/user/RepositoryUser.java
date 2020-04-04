@@ -37,4 +37,6 @@ public interface RepositoryUser extends JpaRepository<EntityUser, String> {
     List<IOnlyId> findByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(String key, String role, Pageable pageable);
     int countByDisplayNameIgnoreCaseContainingAndUserRoleIdIsNot(String key, String role);
     List<EntityUser> findByPlanDueLessThanEqual(Date date);
+    int countByArtistStatus(String status);
+    List<IOnlyId> findByArtistStatus(String status, Pageable pageable);
 }

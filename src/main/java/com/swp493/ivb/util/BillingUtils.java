@@ -1,5 +1,6 @@
 package com.swp493.ivb.util;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -36,18 +37,17 @@ public class BillingUtils {
     }
 
     public Subscription createSubscription(String stripeToken, EntityUser user) throws StripeException {
-        LocalDate date = LocalDate.now();
+        Instant due = LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
         List<Object> items = new ArrayList<>();
         Map<String, Object> item1 = new HashMap<>();
         item1.put("plan", PLAN_MONTHLY);
         items.add(item1);
         Map<String, Object> params = new HashMap<>();
-        params.put("billing_cycle_anchor", date.plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant().getEpochSecond());
+        params.put("billing_cycle_anchor", due.getEpochSecond());
         params.put("customer", createCustomer(stripeToken, user));
         params.put("items", items);
-        user.setPlanDue(Date.from(date.plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+        user.setPlanDue(Date.from(due));
         return Subscription.create(params);
-
     }
 
     public String createCustomer(String stripeToken, EntityUser user) throws StripeException {

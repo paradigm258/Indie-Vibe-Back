@@ -5,14 +5,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.DTOGenre;
 import com.swp493.ivb.common.mdata.ServiceMasterData;
 import com.swp493.ivb.common.playlist.DTOPlaylistSimple;
 import com.swp493.ivb.common.playlist.ServicePlaylist;
 import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.release.ServiceRelease;
+import com.swp493.ivb.common.track.ServiceTrack;
+import com.swp493.ivb.features.workspace.ITypeAndId;
+import com.swp493.ivb.features.workspace.RepositoryPlayObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,10 +29,19 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     ServiceRelease releaseService;
 
     @Autowired
+    ServiceTrack trackService;
+
+    @Autowired
     ServiceMasterData masterDataService;
 
     @Autowired
     ServicePlaylist playlistService;
+
+    @Autowired
+    ServiceArtist artistService;
+
+    @Autowired
+    RepositoryPlayObject playStatRepo;
 
     @Override
     public Map<String, Object> getGeneral(String userId) {
@@ -81,6 +97,54 @@ public class ServiceBrowseImpl implements ServiceBrowse {
         res.put("playlists", playlistService.getGenrePlaylists(genreId, userId, offset, limit).getItems());
         res.put("releases", releaseService.getReleaseGenre(genreId, userId, offset, limit).getItems());
         return res;
+    }
+
+    @Override
+    public Map<String, Object> getHome(String userId) {
+        Map<String, Object> res = new HashMap<>();
+        res.put("myPlaylist", playlistService.getPlaylists(userId, userId, 0, 5, "own"));
+        res.put("myArtists", artistService.getArtists(userId, userId, 0, 5));
+        res.put("recent", getRecent(userId));
+        res.put("most", getMost(userId));
+        res.put("newReleases", releaseService.getLastest(userId));
+        res.put("popularReleases", releaseService.getPopular(userId));
+        return res;
+    }
+
+    @Override
+    public List<Object> getRecent(String userId) {
+        Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "timestamp");
+        List<ITypeAndId> list = playStatRepo.findByUserId(userId, pageable);
+        return list.stream().map(item ->{
+            switch (item.getObjectType()) {
+                case "release":
+                    return releaseService.getSimpleRelease(item.getObjectId(), userId);
+                case "track":
+                    return trackService.getTrackById(item.getObjectId(),userId);
+                case "playlist":
+                    return playlistService.getPlaylistSimple(item.getObjectId(), userId);
+                default:
+                    return null;
+            }
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Object> getMost(String userId) {
+        Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "count");
+        List<ITypeAndId> list = playStatRepo.findByUserId(userId, pageable);
+        return list.stream().map(item ->{
+            switch (item.getObjectType()) {
+                case "release":
+                    return releaseService.getSimpleRelease(item.getObjectId(), userId);
+                case "track":
+                    return trackService.getTrackById(item.getObjectId(),userId);
+                case "playlist":
+                    return playlistService.getPlaylistSimple(item.getObjectId(), userId);
+                default:
+                    return null; 
+            }
+        }).collect(Collectors.toList());
     }
 
 }
