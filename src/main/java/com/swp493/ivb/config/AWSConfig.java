@@ -14,7 +14,7 @@ import org.springframework.context.annotation.Configuration;
 public class AWSConfig {
 
     public static final String BUCKET_NAME = "indievibe-storage";
-    public static final String BUCKET_URL = "http://"+BUCKET_NAME+".s3.amazonaws.com/";
+    public static final String BUCKET_URL = "https://"+BUCKET_NAME+".s3.amazonaws.com/";
 
     @Bean
     public AmazonS3 S3Instance() {
