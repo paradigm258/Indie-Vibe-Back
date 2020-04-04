@@ -102,8 +102,8 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     @Override
     public Map<String, Object> getHome(String userId) {
         Map<String, Object> res = new HashMap<>();
-        res.put("myPlaylist", playlistService.getPlaylists(userId, userId, 0, 5, "own"));
-        res.put("myArtists", artistService.getArtists(userId, userId, 0, 5));
+        res.put("myPlaylists", playlistService.getPlaylists(userId, userId, 0, 5, "own").getItems());
+        res.put("myArtists", artistService.getArtists(userId, userId, 0, 5).getItems());
         res.put("recent", getRecent(userId));
         res.put("most", getMost(userId));
         res.put("newReleases", releaseService.getLastest(userId));
