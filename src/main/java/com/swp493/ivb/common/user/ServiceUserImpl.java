@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -406,14 +407,16 @@ public class ServiceUserImpl implements ServiceUser {
         } else {
             user.setArtistStatus("open");
         }
+        userRepository.save(user);
     }
 
     @Override
     public Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit) {
-        int total = userRepository.countByDisplayNameIgnoreCaseContainingAndUserRoleId(key,"r-free");
+        List<String> roles = Arrays.asList("r-free","r-premium");
+        int total = userRepository.countByDisplayNameIgnoreCaseContainingAndUserRoleIdIn(key,roles);
         Paging<DTOUserPublic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
-        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContainingAndUserRoleId(key, "r-free", paging.asPageable());
+        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContainingAndUserRoleIdIn(key, roles, paging.asPageable());
         paging.setItems(list.stream().map(a -> getUserPublic(a.getId(), a.getId())).collect(Collectors.toList()));
         return paging;
     }
