@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RepositoryRelease extends JpaRepository<EntityRelease, String> {
-    List<String> findAllTrackIdById(String id);
     boolean existsByIdAndStatus(String id, String status);
     boolean existsByIdAndReleaseUsersUserIdAndReleaseUsersAction(String id, String userId, String action);
     List<IOnlyId> findByTitleIgnoreCaseContainingAndStatus(String key, String status, Pageable pageable);

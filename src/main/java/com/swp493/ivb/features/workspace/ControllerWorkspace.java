@@ -1,24 +1,64 @@
 package com.swp493.ivb.features.workspace;
 
+import java.util.List;
+import java.util.Optional;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
+import com.swp493.ivb.common.release.DTOTrackReleaseUpload;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
+import com.swp493.ivb.util.CustomValidation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 
 
 @RestController
 public class ControllerWorkspace {
+
     @Autowired
     ServiceWorkspace workspaceService;
+
     @PostMapping(value="/stream/count/{type}/{id}")
     public ResponseEntity<?> updateCount(@RequestAttribute EntityUser user,@PathVariable String type,@PathVariable String id) {
         workspaceService.updateCount(user.getId(),type, id);
         return Payload.successResponse("Success");
     }
+
+    @PostMapping(value="/account/baa")
+    public ResponseEntity<?> artistRequest(@RequestAttribute EntityUser user,
+    @RequestParam(required = false) String biography,
+    @RequestParam(name = "info", required = true) String info,
+    @RequestParam(name = "thumbnail", required = true) MultipartFile thumbnail,
+    @RequestParam(name = "audioFiles", required = true) MultipartFile[] audioFiles)
+    throws JsonMappingException, JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        DTOReleaseInfoUpload releaseInfo = mapper.readValue(info, DTOReleaseInfoUpload.class);
+        List<DTOTrackReleaseUpload> trackList = releaseInfo.getTracks();
+        if (trackList.size() != audioFiles.length / 2) {
+            return Payload.failureResponse("No audio file for track");
+        }
+        Optional<String> error = CustomValidation.validate(releaseInfo);
+        if (error.isPresent()) {
+            return Payload.failureResponse(error.get());
+        }
+        Optional<String> releaseId = workspaceService.requestBecomeArtirst(user.getId(), releaseInfo, thumbnail, audioFiles, biography);
+        if (releaseId.isPresent()) {
+            return Payload.successResponse(releaseId.get());
+        } else {
+            return Payload.failureResponse("Failed to upload");
+        }
+    }
+    
     
 }
