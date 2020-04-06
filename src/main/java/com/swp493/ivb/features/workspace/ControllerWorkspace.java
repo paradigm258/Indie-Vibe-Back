@@ -88,7 +88,7 @@ public class ControllerWorkspace {
     
     @DeleteMapping(value = "/workspace/tracks/{id}")
     public ResponseEntity<?> deleteTrack(@PathVariable String id, @RequestAttribute EntityUser user){  
-        return Payload.successResponse("Release deleted: "+workspaceService.deleteTrack(user.getId(), id));
+        return Payload.successResponse("Track deleted: "+workspaceService.deleteTrack(user.getId(), id));
     }
 
     @PutMapping(value="/workspace/tracks/{id}")

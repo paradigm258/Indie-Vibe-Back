@@ -211,9 +211,10 @@ public class ServiceTrackImpl implements ServiceTrack {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         EntityTrack track = trackRepo.findById(trackId).get();
         EntityRelease release = track.getRelease();
-        if (release.getTracks().size() <= 1)
+        List<EntityTrack> tracks = release.getTracks();
+        if (tracks.size() <= 1)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't delete last track in a release");
-        trackRepo.delete(track);
+        tracks.remove(track);
         try {
             s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
         } catch (SdkClientException e) {
@@ -225,10 +226,11 @@ public class ServiceTrackImpl implements ServiceTrack {
             log.error("Failed to delete: " + track.getTitle(), e);
         }
         Set<EntityMasterData> newGenres = new HashSet<>();
-        release.getTracks().stream().forEach(reTr -> {
+        tracks.stream().forEach(reTr -> {
             newGenres.addAll(reTr.getGenres());
         });
         release.setGenres(newGenres);
+        trackRepo.delete(track);
         releaseRepo.save(release);
         return trackId;
     }
