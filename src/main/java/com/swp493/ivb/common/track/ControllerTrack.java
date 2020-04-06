@@ -46,9 +46,14 @@ public class ControllerTrack {
     @GetMapping(value = "/tracks/{trackId}")
     public ResponseEntity<?> getTrackFull(@PathVariable String trackId, @RequestAttribute EntityUser user) {
         DTOTrackFull track = trackService.getTrackById(trackId, user.getId());
-
         return Payload.successResponse(track);
     }
+
+    @GetMapping(value="/tracks/simple/{trackId}")
+    public ResponseEntity<?> getTrackSimple(@PathVariable String trackId, @RequestAttribute EntityUser user) {
+        return Payload.successResponse(trackService.getTrackSimple(trackId, user.getId()));
+    }
+    
 
     @GetMapping(value = "/stream/info/{bitrate}/{id}")
     @CrossOrigin(origins = "*")

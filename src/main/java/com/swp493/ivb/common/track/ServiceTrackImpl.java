@@ -163,13 +163,7 @@ public class ServiceTrackImpl implements ServiceTrack {
     public DTOTrackFull getTrackFullFromEntity(EntityTrack track, String userId) {
         ModelMapper mapper = new ModelMapper();
         mapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        DTOTrackFull res = mapper.map(track, DTOTrackFull.class);
-        res.setRelation(userTrackRepo.getRelation(userId, track.getId()));
-
-        // set artists who own or featured the track
-        Set<EntityUserTrack> trackArtists = track.getArtist();
-        res.setArtists(trackArtists.stream().map(ut -> artistService.getArtistSimple(userId, ut.getUser().getId()))
-                .collect(Collectors.toSet()));
+        DTOTrackFull res = mapper.map(getTrackSimple(track, userId), DTOTrackFull.class);
 
         // set artist who own the release (that the track belongs to)
         Optional<EntityUserRelease> releaseOwner = Optional.of(track.getRelease().getArtistRelease().get(0));
@@ -312,5 +306,25 @@ public class ServiceTrackImpl implements ServiceTrack {
         }
         in.close();
         out.close();
+    }
+
+    @Override
+    public DTOTrackSimple getTrackSimple(String trackId, String userId) {
+        EntityTrack track = trackRepo.findById(trackId).get();
+        if (!hasTrackAccessPermission(trackId, userId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        return getTrackSimple(track, userId);
+    }
+
+    DTOTrackSimple getTrackSimple(EntityTrack track, String userId) {
+        ModelMapper mapper = new ModelMapper();
+        DTOTrackSimple res = mapper.map(track, DTOTrackFull.class);
+        res.setRelation(userTrackRepo.getRelation(userId, track.getId()));
+
+        // set artists who own or featured the track
+        Set<EntityUserTrack> trackArtists = track.getArtist();
+        res.setArtists(trackArtists.stream().map(ut -> artistService.getArtistSimple(userId, ut.getUser().getId()))
+                .collect(Collectors.toSet()));
+        return res;
     }
 }
