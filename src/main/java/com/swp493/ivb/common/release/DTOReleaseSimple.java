@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.swp493.ivb.common.artist.DTOArtistSimple;
+import com.swp493.ivb.common.mdata.DTOReleaseType;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,8 @@ public class DTOReleaseSimple {
     protected Timestamp date;
 
     protected String status;
+
+    protected DTOReleaseType releaseType;
 
     protected Set<String> relation = new HashSet<>();
 
