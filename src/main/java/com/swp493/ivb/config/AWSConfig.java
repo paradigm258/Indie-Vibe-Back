@@ -26,7 +26,7 @@ public class AWSConfig {
     }
     @Bean
     public AmazonS3 S3Instance() {
-        final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_1).build();
+        final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTHEAST_1).build();
         return s3;
     }
 }
