@@ -56,14 +56,7 @@ public class ControllerRelease {
     @DeleteMapping(value = "/releases/{id}")
     public ResponseEntity<?> deleteRelease(@RequestAttribute EntityUser user,
             @PathVariable(required = true) String id) {
-
-        Optional<String> releaseId = releaseService.deleteRelease(id, user.getId());
-        if (releaseId.isPresent()) {
-            return Payload.successResponse(releaseId.get());
-        } else {
-            return Payload.failureResponse("Failed to delete release");
-        }
-
+        return Payload.successResponse(releaseService.deleteRelease(id, user.getId()));
     }
 
     @GetMapping(value = "/releases/simple/{id}")

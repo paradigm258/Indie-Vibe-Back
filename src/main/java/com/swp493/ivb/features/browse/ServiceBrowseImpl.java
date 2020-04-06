@@ -14,7 +14,7 @@ import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.features.workspace.ITypeAndId;
-import com.swp493.ivb.features.workspace.RepositoryPlayObject;
+import com.swp493.ivb.features.workspace.RepositoryPlayRecord;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -41,7 +41,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     ServiceArtist artistService;
 
     @Autowired
-    RepositoryPlayObject playStatRepo;
+    RepositoryPlayRecord playStatRepo;
 
     @Override
     public Map<String, Object> getGeneral(String userId) {
@@ -65,7 +65,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
         return genres.stream().map(g -> getGenreCollection(userId, g)).collect(Collectors.toList());
     }
 
-    DTOGerneCollection<DTOReleaseSimple> getGenreCollection(String userId, DTOGenre genre) {
+    public DTOGerneCollection<DTOReleaseSimple> getGenreCollection(String userId, DTOGenre genre) {
         DTOGerneCollection<DTOReleaseSimple> res = new DTOGerneCollection<>();
         res.setGenre(genre);
         res.setItems(releaseService.getReleaseGenre(genre.getId(), userId, 0, 4).getItems());
@@ -121,7 +121,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
                 case "release":
                     return releaseService.getSimpleRelease(item.getObjectId(), userId);
                 case "track":
-                    return trackService.getTrackById(item.getObjectId(),userId);
+                    return trackService.getTrackById(item.getObjectId(), userId);
                 case "playlist":
                     return playlistService.getPlaylistSimple(item.getObjectId(), userId);
                 default:

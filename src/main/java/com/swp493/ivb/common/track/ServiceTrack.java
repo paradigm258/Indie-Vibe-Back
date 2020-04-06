@@ -12,7 +12,7 @@ public interface ServiceTrack {
 
     public boolean unfavoriteTrack(String userId, String trackId);
 
-    public Paging<DTOTrackFull> getTracks(String userId, String viewerId, int offset, int limit, String type);
+    public Paging<DTOTrackFull> getUserTracks(String userId, String viewerId, int offset, int limit, String type);
 
     public DTOTrackFull getTrackById(String id,String userId);
 
@@ -25,5 +25,9 @@ public interface ServiceTrack {
     public Paging<DTOTrackFull> findTrack(String userId, String key, int offset, int limit);
 
     public DTOTrackSimpleWithLink getTrackSimpleWithLink(String trackId);
+
+    public String deleteTrack(String userId, String trackId);
+
+	public String updateTrack(String userId, String trackId, DTOTrackUpdate data);
 
 }

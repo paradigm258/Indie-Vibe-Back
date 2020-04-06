@@ -55,6 +55,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -189,7 +190,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 String key = track.getId() + "/128";
                 s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata128);
                 uploadKeyList.add(key);
-                track.setMp3128(AWSConfig.BUCKET_URL + key);
+                track.setMp3128(key);
 
                 writeInputToOutput(trackContent320.getInputStream(), new FileOutputStream(file));
                 Mp3File mp3320 = new Mp3File(file);
@@ -200,7 +201,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 key = track.getId() + "/320";
                 s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata320);
                 uploadKeyList.add(key);
-                track.setMp3320(AWSConfig.BUCKET_URL + key);
+                track.setMp3320(key);
             }
 
             release.setTracks(tracks);
@@ -224,47 +225,32 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     @Override
-    public Optional<String> deleteRelease(String releaseId, String artistId) {
-        Optional<EntityRelease> release = releaseRepo.findById(releaseId);
-        return release.map(r -> {
-            if (!r.getArtist().getId().equals(artistId))
-                return "";
-            releaseRepo.delete(r);
+    public String deleteRelease(String releaseId, String artistId) {
+        EntityRelease release = releaseRepo.findById(releaseId).get();
+        if (!release.getArtist().getId().equals(artistId))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        releaseRepo.delete(release);
+        try {
+            s3.deleteObject(AWSConfig.BUCKET_NAME, release.getId());
+        } catch (SdkClientException e) {
+            log.error("Failed to delete: " + release.getTitle(), e);
+        }
+        release.getTracks().stream().forEach(track -> {
             try {
-                s3.deleteObject(AWSConfig.BUCKET_NAME, r.getId());
+                s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
             } catch (SdkClientException e) {
-                log.error("Failed to delete: " + r.getTitle(), e);
+                log.error("Failed to delete: " + track.getTitle(), e);
             }
-            r.getTracks().stream().map(track -> {
-                try {
-                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
-                } catch (SdkClientException e) {
-                    log.error("Failed to delete: " + track.getTitle(), e);
-                }
-                try {
-                    s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/320");
-                } catch (SdkClientException e) {
-                    log.error("Failed to delete: " + track.getTitle(), e);
-                }
-                return null;
-            });
-            return r.getId();
+            try {
+                s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/320");
+            } catch (SdkClientException e) {
+                log.error("Failed to delete: " + track.getTitle(), e);
+            }
         });
+        return releaseId;
     }
 
-    @Override
-    public Optional<List<DTOReleaseSimple>> getOwnRelease(String artistId) {
-        Optional<EntityArtist> artist = artistRepo.findById(artistId);
-        return artist.map(a -> {
-            ModelMapper mapper = new ModelMapper();
-            List<DTOReleaseSimple> list = a.getOwnReleases().stream().map(r -> {
-                DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
-                releaseSimple.setRelation(userReleaseRepo.getRelation(artistId, r.getId()));
-                return releaseSimple;
-            }).collect(Collectors.toList());
-            return list;
-        });
-    }
+    
 
     private void deleteCancel(List<String> keyList) {
         for (String keyToDelete : keyList) {
@@ -283,6 +269,8 @@ public class ServiceReleaseImpl implements ServiceRelease {
             out.write(buffer, 0, len);
             len = in.read(buffer);
         }
+        in.close();
+        out.close();
     }
 
     @Override
@@ -327,10 +315,16 @@ public class ServiceReleaseImpl implements ServiceRelease {
             Paging<DTOTrackSimple> paging = new Paging<>();
             paging.setPageInfo(trackRepo.countByReleaseId(releaseId), limit, offset);
             Pageable pageable = paging.asPageable();
-            paging.setItems(trackRepo.findAllByReleaseId(releaseId, pageable).stream().map(t ->{
-                DTOTrackSimple trackSimple = mapper.map(t, DTOTrackSimple.class);
-                trackSimple.setArtists(t.getArtist().stream().map(at->artistService.getArtistSimple(userId, at.getUser().getId())).collect(Collectors.toSet()));
-                trackSimple.setRelation(userTrackRepo.getRelation(userId, t.getId()));
+            paging.setItems(trackRepo.findAllByReleaseId(releaseId, pageable).stream()
+            .map(t ->{
+                DTOTrackSimple trackSimple;
+                if(trackService.hasTrackAccessPermission(t.getId(), userId)){
+                    trackSimple = mapper.map(t,DTOTrackSimple.class);
+                    trackSimple.setArtists(t.getArtist().stream().map(at->artistService.getArtistSimple(userId, at.getUser().getId())).collect(Collectors.toSet()));
+                    trackSimple.setRelation(userTrackRepo.getRelation(userId, t.getId()));
+                }else{
+                    trackSimple = new DTOTrackSimple();
+                }
                 return trackSimple;
             }).collect(Collectors.toList()));
             releaseFull.setTracks(paging);
@@ -370,9 +364,8 @@ public class ServiceReleaseImpl implements ServiceRelease {
         }
         if(success){
             releaseRepo.flush();
-            return true;
         }
-        return false;
+        return success;
     }
 
     public DTOReleaseSimple getReleaseSimple(String releaseId, String userId){
@@ -458,7 +451,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
     @Override
     public DTOReleasePending getPendingRelease(String userId, int offset, int limit) {
         ModelMapper mapper = new ModelMapper();
-        String releaseId = releaseRepo.findFirstByArtistReleaseUserId(userId).getId();
+        String releaseId = userReleaseRepo.findFirstByUserIdAndReleaseNotNullAndAction(userId, "own").getRelease().getId();
         int total = trackRepo.countByReleaseId(releaseId);
         Paging<DTOTrackSimpleWithLink> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
@@ -473,6 +466,35 @@ public class ServiceReleaseImpl implements ServiceRelease {
     public List<DTOReleaseSimple> getPopular(String userId) {
         List<String> list = popularTracking.getPopular();
         return list.stream().map(release -> getReleaseSimple(release, userId)).collect(Collectors.toList());
+    }
+
+    @Override
+    public boolean updateRelease(DTOReleaseUpdate data, String userId, String releaseId) {
+        if(!releaseRepo.existsByIdAndReleaseUsersUserIdAndReleaseUsersAction(releaseId, userId, "own"))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        EntityRelease release = releaseRepo.getOne(releaseId);
+        if(StringUtils.hasText(data.getTitle())){
+            release.setTitle(data.getTitle());
+        }
+        if(StringUtils.hasText(data.getType())){
+            EntityMasterData releaseType = masterDataRepo.findByIdAndType(data.getType(), "release").get();
+            release.setReleaseType(releaseType);
+        }
+        MultipartFile thumbnail = data.getThumbnail();
+        if(thumbnail != null){
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(thumbnail.getSize());
+            String key = releaseId;
+            try {
+                s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                release.setThumbnail(AWSConfig.BUCKET_URL+key);
+            } catch (IOException e) {
+                throw new RuntimeException("Error getting input stream for thumbnail",e);
+            }
+        }
+        releaseRepo.save(release);
+        return true;
     }
 
     

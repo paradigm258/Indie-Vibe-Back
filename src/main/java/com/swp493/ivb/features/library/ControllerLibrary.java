@@ -78,7 +78,7 @@ public class ControllerLibrary {
         @RequestParam(defaultValue = "0") int offset, 
         @RequestParam(defaultValue = "20") int limit) {
         if(!userService.existsById(userId)) throw new NoSuchElementException();
-        return Payload.successResponse(trackService.getTracks(userId, user.getId(), offset, limit, type));
+        return Payload.successResponse(trackService.getUserTracks(userId, user.getId(), offset, limit, type));
     }
     
     @GetMapping(value="/library/{userId}/artists")

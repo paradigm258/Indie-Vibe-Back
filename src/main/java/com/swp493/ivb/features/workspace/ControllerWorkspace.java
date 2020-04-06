@@ -3,25 +3,29 @@ package com.swp493.ivb.features.workspace;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
+import com.swp493.ivb.common.release.DTOReleaseUpdate;
 import com.swp493.ivb.common.release.DTOTrackReleaseUpload;
+import com.swp493.ivb.common.track.DTOTrackUpdate;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 import com.swp493.ivb.util.CustomValidation;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
-
 
 @RestController
 public class ControllerWorkspace {
@@ -60,5 +64,35 @@ public class ControllerWorkspace {
         }
     }
     
+    @PutMapping(value="/workspace/releases/{id}")
+    public ResponseEntity<?> updateRelease(@Valid DTOReleaseUpdate data, @PathVariable String id, @RequestAttribute EntityUser user) {
+        if(workspaceService.updateRelease(data, user.getId(), id))
+            return Payload.successResponse("Release updated");
+        else
+            return Payload.failureResponse("Update release failed");
+    }
+
+    @DeleteMapping(value = "/workspace/releases/{id}")
+    public ResponseEntity<?> deleteRelease(@PathVariable String id, @RequestAttribute EntityUser user){  
+        return Payload.successResponse("Release deleted: "+workspaceService.deleteRelease(user.getId(), id));
+    }
+
+    @PostMapping(value="/workspace/releases/{id}")
+    public ResponseEntity<?> actionRelease(@PathVariable String id, @RequestAttribute EntityUser user, @RequestParam String action) {
+        if(workspaceService.actionRelease(user.getId(),id, action)){
+            return Payload.successResponse("Successfully "+action);
+        }else {
+            return Payload.failureResponse("Failed to "+action);
+        }
+    }
     
+    @DeleteMapping(value = "/workspace/tracks/{id}")
+    public ResponseEntity<?> deleteTrack(@PathVariable String id, @RequestAttribute EntityUser user){  
+        return Payload.successResponse("Release deleted: "+workspaceService.deleteRelease(user.getId(), id));
+    }
+
+    @PutMapping(value="/workspace/tracks/{id}")
+    public ResponseEntity<?> updateTrack(@PathVariable String id, @RequestAttribute EntityUser user, @Valid DTOTrackUpdate data) {     
+        return Payload.successResponse("Track updated "+workspaceService.updateTrack(user.getId(), id, data));
+    }
 }

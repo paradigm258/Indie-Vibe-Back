@@ -3,10 +3,14 @@ package com.swp493.ivb.features.workspace;
 import java.util.Date;
 import java.util.Optional;
 
+import com.swp493.ivb.common.relationship.RepositoryUserRelease;
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
+import com.swp493.ivb.common.release.DTOReleaseUpdate;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.release.RepositoryRelease;
 import com.swp493.ivb.common.release.ServiceRelease;
+import com.swp493.ivb.common.track.DTOTrackUpdate;
+import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
 
@@ -21,7 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Autowired
-    RepositoryPlayObject playObjectRepository;
+    RepositoryPlayRecord playObjectRepository;
 
     @Autowired
     RepositoryRelease releaseRepo;
@@ -30,7 +34,13 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     RepositoryUser userRepo;
 
     @Autowired
+    RepositoryUserRelease userReleaseRepo;
+
+    @Autowired
     ServiceRelease releaseService;
+
+    @Autowired
+    ServiceTrack trackService;
 
     @Override
     public void updateCount(String userId, String type, String id) {
@@ -74,6 +84,35 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
             if(StringUtils.hasText(biography)) userRepo.insertBiography(biography, userId);
             return releaseService.uploadRelease(userId, info, thumbnail, audioFiles);
         } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid artist status");
+    }
+
+    @Override
+    public boolean updateRelease(DTOReleaseUpdate data, String userId, String releaseId) {
+        return releaseService.updateRelease(data, userId, releaseId);
+    }
+
+    @Override
+    public String deleteRelease(String userId, String releaseId) {
+        if(!userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own"))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if(userReleaseRepo.countByUserIdAndReleaseNotNullAndAction(userId, "own")<=1) 
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't delete your last record");
+        return releaseService.deleteRelease(releaseId, userId);
+    }
+
+    @Override
+    public boolean actionRelease(String userId, String releaseId, String action) {
+        return releaseService.actionRelease(releaseId, userId, action);
+    }
+
+    @Override
+    public String deleteTrack(String userId, String trackId) {
+        return trackService.deleteTrack(userId, trackId);
+    }
+
+    @Override
+    public String updateTrack(String userId, String trackId, DTOTrackUpdate data) {
+        return trackService.updateTrack(userId, trackId, data);
     }
 
 }
