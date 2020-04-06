@@ -163,10 +163,13 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         Pageable pageable = paging.asPageable();
         
         paging.setItems(
-            playlistTrackRepo.findByPlaylistId(playlist.getId(), pageable).stream().map(track -> {
+            playlistTrackRepo.findByPlaylistId(playlist.getId(), pageable).stream()
+            .map(track -> {
                 DTOTrackPlaylist trackPlaylist = new DTOTrackPlaylist();
                 trackPlaylist.setAddedAt(track.getInsertedDate());
-                trackPlaylist.setTrack(trackService.getTrackFullFromEntity(track.getTrack(), userId));
+                if(hasTrackAccessPermission(track.getTrack().getId(), userId)){
+                    trackPlaylist.setTrack(trackService.getTrackFullFromEntity(track.getTrack(), userId));
+                }
                 return trackPlaylist;
             }).collect(Collectors.toList())
         );
@@ -204,8 +207,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
         EntityTrack track = trackRepo.findById(trackId).get();
 
-        if( !hasPlaylistAccessPermission(playlistId, userId)) new ResponseStatusException(HttpStatus.FORBIDDEN);
-        if( !hasTrackAccessPermission(trackId, userId)) new ResponseStatusException(HttpStatus.FORBIDDEN);
+        if( !hasPlaylistAccessPermission(playlistId, userId)
+        ||  !hasTrackAccessPermission(trackId, userId))throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         boolean success = false;
         switch (action) {
             case "add":
@@ -309,10 +312,10 @@ public class ServicePlaylistImpl implements ServicePlaylist {
         if(!userPlaylistRepo.existsByUserIdAndPlaylistIdAndAction(userId , playlistId, "own"))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         EntityPlaylist playlist = playlistRepo.getOne(playlistId);
-        if(StringUtils.hasLength(playlistUpdate.getDescription())){
+        if(StringUtils.hasText(playlistUpdate.getDescription())){
             playlist.setDescription(playlistUpdate.getDescription());
         }
-        if(StringUtils.hasLength(playlistUpdate.getTitle())){
+        if(StringUtils.hasText(playlistUpdate.getTitle())){
             playlist.setTitle(playlistUpdate.getTitle());
         }
         MultipartFile thumbnail = playlistUpdate.getThumbnail();

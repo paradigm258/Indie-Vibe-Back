@@ -11,31 +11,17 @@ public interface ServiceRelease {
 
     Optional<String> uploadRelease(String artistId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
             MultipartFile[] audioFiles);
-
-    Optional<String> deleteRelease(String releaseId, String artistId);
-
-    Optional<List<DTOReleaseSimple>> getOwnRelease(String userId);
-
+    String deleteRelease(String releaseId, String artistId);
     Optional<DTOReleaseSimple> getSimpleRelease(String releaseId, String userId);
-
     List<String> streamRelease(String releaseId, String userId);
-
     Optional<DTOReleaseFull> getReleaseFull(String releaseId, String userId, int offset, int limit);
-
     boolean actionRelease(String releaseId, String userId, String action);
-
     Paging<DTOReleaseSimple> getReleases(String userId, String viewerId, int offset, int limit, String type);
-
     Paging<DTOReleaseSimple> findRelease(String key, String userId, int offset, int limit);
-
     Paging<DTOReleaseSimple> getReleaseGenre(String genreId, String userId, int offset, int limit);
-
     List<DTOReleaseSimple> getLastest(String userId);
-
     Paging<DTOReleaseSimple> getArtistReleaseByType(String artistId, String userId, String releaseType, int offset, int limit);
-
     DTOReleasePending getPendingRelease(String userId, int offset, int limit);
-
+    boolean updateRelease(DTOReleaseUpdate data, String userId, String releaseId);
     List<DTOReleaseSimple> getPopular(String userId);
-
 }
