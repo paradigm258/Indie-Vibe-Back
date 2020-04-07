@@ -202,6 +202,15 @@ public class ServiceTrackImpl implements ServiceTrack {
         ModelMapper mapper = new ModelMapper();
         EntityTrack track = trackRepo.findById(trackId).get();
         DTOTrackSimpleWithLink dto = mapper.map(track, DTOTrackSimpleWithLink.class);
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(AWSConfig.BUCKET_NAME,
+                track.getMp3128()).withMethod(HttpMethod.GET).withExpiration(AWSConfig.presignExpiration());
+        URL url = s3.generatePresignedUrl(generatePresignedUrlRequest);
+        dto.setMp3128(url.toString());
+
+        generatePresignedUrlRequest = new GeneratePresignedUrlRequest(AWSConfig.BUCKET_NAME,
+                track.getMp3320()).withMethod(HttpMethod.GET).withExpiration(AWSConfig.presignExpiration());
+        url = s3.generatePresignedUrl(generatePresignedUrlRequest);
+        dto.setMp3320(url.toString());
         return dto;
     }
 

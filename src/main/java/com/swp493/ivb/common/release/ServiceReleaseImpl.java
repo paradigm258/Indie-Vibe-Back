@@ -7,8 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -258,9 +259,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
             }
         });
         return releaseId;
-    }
-
-    
+    }  
 
     private void deleteCancel(List<String> keyList) {
         for (String keyToDelete : keyList) {
@@ -281,18 +280,6 @@ public class ServiceReleaseImpl implements ServiceRelease {
         }
         in.close();
         out.close();
-    }
-
-    @Override
-    public Optional<DTOReleaseSimple> getSimpleRelease(String releaseId, String userId) {
-        ModelMapper mapper = new ModelMapper();
-        Optional<EntityRelease> release = releaseRepo.findById(releaseId);
-        return release.map(r -> {
-            DTOReleaseSimple releaseSimple = mapper.map(r, DTOReleaseSimple.class);
-            releaseSimple.setRelation(userReleaseRepo.getRelation(userId, releaseId));
-            releaseSimple.setArtist(artistService.getArtistSimple(userId, r.getArtist().getId()));
-            return releaseSimple;
-        });
     }
 
     @Override
@@ -424,10 +411,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Override
     public Paging<DTOReleaseSimple> getReleaseGenre(String genreId, String userId, int offset, int limit) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.add(Calendar.WEEK_OF_YEAR, -2);
-        Date date = calendar.getTime();
+        Date date = Date.from(LocalDate.now().minusWeeks(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
         int total = releaseRepo.countByGenresIdAndStatusAndDateAfter(genreId, "public", date);
         Paging<DTOReleaseSimple> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
@@ -467,7 +451,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
         paging.setPageInfo(total, limit, offset);
         List<IOnlyId> list = trackRepo.findByReleaseId(releaseId, paging.asPageable());
         paging.setItems(list.stream().map(track -> trackService.getTrackSimpleWithLink(track.getId())).collect(Collectors.toList()));
-        DTOReleasePending res = mapper.map(getSimpleRelease(releaseId, userId), DTOReleasePending.class);
+        DTOReleasePending res = mapper.map(getReleaseSimple(releaseId, userId), DTOReleasePending.class);
         res.setTracks(paging);
         return res;
     }
