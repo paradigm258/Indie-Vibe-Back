@@ -27,7 +27,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Component
 public class BillingUtils {
 
-    private final String PLAN_MONTHLY = "plan_H0bEwXlH8JdG8l";
+    private final String PLAN_MONTHLY = "plan_H3IRYxddIIlcwL";
 
 //    @Value(value = "${STRIPE_KEY}")
 //    String key;
