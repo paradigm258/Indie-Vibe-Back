@@ -12,9 +12,9 @@ public interface ServiceRelease {
     Optional<String> uploadRelease(String artistId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
             MultipartFile[] audioFiles);
     String deleteRelease(String releaseId, String artistId);
-    Optional<DTOReleaseSimple> getSimpleRelease(String releaseId, String userId);
     List<String> streamRelease(String releaseId, String userId);
     Optional<DTOReleaseFull> getReleaseFull(String releaseId, String userId, int offset, int limit);
+    DTOReleaseSimple getReleaseSimple(String releaseId, String userId);
     boolean actionRelease(String releaseId, String userId, String action);
     Paging<DTOReleaseSimple> getReleases(String userId, String viewerId, int offset, int limit, String type);
     Paging<DTOReleaseSimple> findRelease(String key, String userId, int offset, int limit);

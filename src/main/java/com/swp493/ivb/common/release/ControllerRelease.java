@@ -64,8 +64,7 @@ public class ControllerRelease {
         @PathVariable(required = true) String id, 
         @RequestAttribute EntityUser user) {
 
-        Optional<DTOReleaseSimple> releaseSimple = releaseService.getSimpleRelease(id, user.getId());
-        return Payload.successResponse(releaseSimple.get());
+        return Payload.successResponse(releaseService.getReleaseSimple(id, user.getId()));
 
     }
 

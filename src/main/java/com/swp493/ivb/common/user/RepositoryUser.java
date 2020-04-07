@@ -6,8 +6,10 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * IndieUserRepository
@@ -29,11 +31,15 @@ public interface RepositoryUser extends JpaRepository<EntityUser, String> {
     @Query(value = "select count(followed_id) from user_follow_user where follower_id=:userId", nativeQuery = true)
     public int countFollowing(@Param("userId") String userId);
 
+    @Modifying
+    @Transactional
     @Query(value = "update user set biography = :biography where id = :userId", nativeQuery = true)
     public void insertBiography(String biography, String userId);
 
+    @Modifying
+    @Transactional
     @Query(value = "update user set biography = null where id = :userId", nativeQuery = true)
-    public void deleteBiography( String userId);
+    public void deleteBiography(String userId);
 
     public List<IOnlyId> findAllByFollowerUsersId(String followerId, Pageable pageable);
     public List<IOnlyId> findAllByFollowingUsersId(String followerId, Pageable pageable);

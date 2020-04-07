@@ -82,7 +82,12 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
         EntityUser user = userRepo.findById(userId).get();
         if(user.getArtistStatus().equals("open")){
             if(StringUtils.hasText(biography)) userRepo.insertBiography(biography, userId);
-            return releaseService.uploadRelease(userId, info, thumbnail, audioFiles);
+            Optional<String> releaseId = releaseService.uploadRelease(userId, info, thumbnail, audioFiles);
+            if (releaseId.isPresent()) {
+                user.setArtistStatus("pending");
+                userRepo.save(user); 
+            }
+            return releaseId;
         } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid artist status");
     }
 
