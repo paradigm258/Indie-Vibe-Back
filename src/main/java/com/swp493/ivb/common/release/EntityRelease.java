@@ -62,7 +62,7 @@ public class EntityRelease {
     @NotBlank
     private String status;
 
-    private int streamCount;
+    private long streamCount;
 
     @OneToMany(mappedBy = "release", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own'")
