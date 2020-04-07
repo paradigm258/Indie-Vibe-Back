@@ -27,5 +27,6 @@ public interface ServiceUser {
     void updateUserPlan(EntityUser user);
     void updateArtist(String userId, String action);
     Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit);
-	void makeCurator(String userId);
+    void makeCurator(String userId);
+    void cancelSubsciption(String userId);
 }
