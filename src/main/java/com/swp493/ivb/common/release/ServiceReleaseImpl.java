@@ -113,7 +113,17 @@ public class ServiceReleaseImpl implements ServiceRelease {
             release.setThumbnail("N/A");
             release.setReleaseType(masterDataRepo.findByIdAndType(info.getTypeId(), "release").get());
 
-            EntityArtist artist = artistRepo.findById(artistId).get();
+            Optional<EntityArtist> oArtist = artistRepo.findById(artistId);
+            EntityUser artist;
+            if(oArtist.isPresent()){
+                artist = oArtist.get();
+            }else{
+                artist = userRepo.findById(artistId).get();
+                if(!artist.getArtistStatus().equals("open")){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid artist status");
+                }
+            }
+                
             // insert for track and release
             Set<EntityMasterData> releaseGenres = new HashSet<>();
 
