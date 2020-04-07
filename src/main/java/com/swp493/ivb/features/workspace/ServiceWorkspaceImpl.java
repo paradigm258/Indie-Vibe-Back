@@ -4,12 +4,15 @@ import java.util.Date;
 import java.util.Optional;
 
 import com.swp493.ivb.common.relationship.RepositoryUserRelease;
+import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
 import com.swp493.ivb.common.release.DTOReleaseUpdate;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.release.RepositoryRelease;
 import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.track.DTOTrackUpdate;
+import com.swp493.ivb.common.track.EntityTrack;
+import com.swp493.ivb.common.track.RepositoryTrack;
 import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
@@ -31,10 +34,16 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     RepositoryRelease releaseRepo;
 
     @Autowired
+    RepositoryTrack trackRepo;
+
+    @Autowired
     RepositoryUser userRepo;
 
     @Autowired
     RepositoryUserRelease userReleaseRepo;
+
+    @Autowired
+    RepositoryUserTrack userTrackRepo;
 
     @Autowired
     ServiceRelease releaseService;
@@ -44,11 +53,17 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Override
     public void updateCount(String userId, String type, String id) {
+        EntityUser artist = null;
         switch (type) {
             case "release":
                 EntityRelease release = releaseRepo.getOne(id);
+                artist = release.getArtist();
                 release.setStreamCount(release.getStreamCount() + 1);
                 break;
+            case "track":
+                EntityTrack track = trackRepo.getOne(id);
+                artist = userTrackRepo.findByTrackIdAndAction(track.getId(), "own").getUser();
+                track.setStreamCount(track.getStreamCount() +1);
             default:
                 break;
         }
@@ -59,7 +74,15 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
             return up;
         }).orElse(newUserRecord(userId, type, id));
 
-        playRecordRepository.save(userPlay);
+        Optional<EntityPlayRecord> opUserPlayArtist = playRecordRepository.findByUserIdAndObjectId(userId, artist.getId());
+        EntityPlayRecord userPlayArtist = opUserPlayArtist.map(upa ->{
+            upa.setCount(upa.getCount()+1);
+            upa.setTimestamp(new Date());
+            return upa;
+        }).orElse(newUserRecord(userId, "artist", artist.getId()));
+
+        playRecordRepository.save(userPlayArtist);
+        playRecordRepository.saveAndFlush(userPlay);
     }
 
     EntityPlayRecord newUserRecord(String userId, String type, String id) {
