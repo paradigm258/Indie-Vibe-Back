@@ -18,6 +18,7 @@ import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.Subscription;
 import com.swp493.ivb.common.artist.ServiceArtist;
+import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.common.relationship.EntityUserRelease;
 import com.swp493.ivb.common.relationship.RepositoryUserRelease;
@@ -269,7 +270,13 @@ public class ServiceUserImpl implements ServiceUser {
                 switch (status) {
                     case "active":
                         user.setPlanStatus("active");
-                        user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+                        EntityMasterData role  = null;
+                        if(user.getArtistStatus().equals("approved")){
+                            role = masterDataRepo.findByIdAndType("r-artist", "role").get();
+                        }else{
+                            role = masterDataRepo.findByIdAndType("r-premium", "role").get();
+                        }
+                        user.setUserRole(role);
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
                         user.setPlanDue(Date.from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
                         user = userRepository.save(user);
@@ -305,7 +312,13 @@ public class ServiceUserImpl implements ServiceUser {
                     case "succeeded":
                         user.setBilling(charge.getId());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
-                        user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+                        EntityMasterData role  = null;
+                        if(user.getArtistStatus().equals("approved")){
+                            role = masterDataRepo.findByIdAndType("r-artist", "role").get();
+                        }else{
+                            role = masterDataRepo.findByIdAndType("r-premium", "role").get();
+                        }
+                        user.setUserRole(role);
                         user.setPlanStatus("active");
                         user = userRepository.save(user);
                         principal.setUser(user);
@@ -351,7 +364,7 @@ public class ServiceUserImpl implements ServiceUser {
                     }
                 } else {
                     user.setBilling(null);
-                    user.setPlanDue(null);
+                    user.setUserPlan(masterDataRepo.findByIdAndType("p-free", "plan").get());
                     user.setPlanStatus("expired");
                 }
                 user = userRepository.save(user);
@@ -364,10 +377,16 @@ public class ServiceUserImpl implements ServiceUser {
 
     private void activatePlan(EntityUser user) {
         user.setPlanStatus("active");
-        user.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+        EntityMasterData role  = null;
+        if(user.getArtistStatus().equals("approved")){
+            role = masterDataRepo.findByIdAndType("r-artist", "role").get();
+        }else{
+            role = masterDataRepo.findByIdAndType("r-premium", "role").get();
+        }
+        user.setUserRole(role);
         EntityUser userUpdate = userRepository.getOne(user.getId());
         userUpdate.setPlanStatus("active");
-        userUpdate.setUserRole(masterDataRepo.findByIdAndType("r-premium", "role").get());
+        userUpdate.setUserRole(role);
         userRepository.save(userUpdate);
     }
 
@@ -404,8 +423,7 @@ public class ServiceUserImpl implements ServiceUser {
                         break;
                 }
             }
-        }
-
+        } 
     }
 
     @Override
@@ -446,6 +464,25 @@ public class ServiceUserImpl implements ServiceUser {
             userRepository.save(user);
         }
         else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");
+    }
+
+    @Override
+    public void cancelSubsciption(String userId) {
+        EntityUser user = userRepository.findById(userId).get();
+        if("p-monthly".equals(user.getUserPlan().getId())){
+            try{
+                billingUtils.cancelSubscription(user.getBilling());
+                user.setBilling(null);
+                user.setPlanDue(null);
+                user.setPlanStatus("canceled");
+                if(!user.getUserRole().getId().equals("r-curator"))
+                user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
+                userRepository.save(user);
+            }catch(StripeException e){
+                log.error("Can't cancel stripe subscription", e);
+                throw new RuntimeException(e);
+            }
+        }else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid plan canceling");
     }
 
 }

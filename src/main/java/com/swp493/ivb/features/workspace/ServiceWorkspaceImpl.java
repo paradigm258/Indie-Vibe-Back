@@ -25,7 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Autowired
-    RepositoryPlayRecord playObjectRepository;
+    RepositoryPlayRecord playRecordRepository;
 
     @Autowired
     RepositoryRelease releaseRepo;
@@ -49,18 +49,17 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
                 EntityRelease release = releaseRepo.getOne(id);
                 release.setStreamCount(release.getStreamCount() + 1);
                 break;
-
             default:
                 break;
         }
-        Optional<EntityPlayRecord> opUserPlay = playObjectRepository.findByUserIdAndObjectId(userId, id);
+        Optional<EntityPlayRecord> opUserPlay = playRecordRepository.findByUserIdAndObjectId(userId, id);
         EntityPlayRecord userPlay = opUserPlay.map(up -> {
             up.setCount(up.getCount() + 1);
             up.setTimestamp(new Date());
             return up;
         }).orElse(newUserRecord(userId, type, id));
 
-        playObjectRepository.save(userPlay);
+        playRecordRepository.save(userPlay);
     }
 
     EntityPlayRecord newUserRecord(String userId, String type, String id) {

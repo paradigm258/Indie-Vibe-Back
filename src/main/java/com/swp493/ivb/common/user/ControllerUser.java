@@ -17,10 +17,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
-
-
-
 @RestController
 public class ControllerUser {
 
@@ -100,6 +96,12 @@ public class ControllerUser {
             return Payload.successResponse(resp);
         else
             return Payload.failureResponse("Payment failed");
+    }
+
+    @PutMapping(value="/account/cancel")
+    public ResponseEntity<?> cancelSupscribtion(@RequestAttribute EntityUser user) {
+        userService.cancelSubsciption(user.getId());
+        return Payload.successResponse("Subscription canceled");
     }
     
 }
