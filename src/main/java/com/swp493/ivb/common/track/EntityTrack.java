@@ -71,7 +71,7 @@ public class EntityTrack {
     @Column(name = "mp3_320")
     private String mp3320;
 
-    private int streamCount;
+    private long streamCount;
 
     @OneToMany(mappedBy = "track", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "action = 'own' or action = 'featured'")
