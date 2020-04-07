@@ -119,7 +119,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
             String type = item.getObjectType();
             switch (type) {
                 case "release":
-                    return releaseService.getSimpleRelease(item.getObjectId(), userId);
+                    return releaseService.getReleaseSimple(item.getObjectId(), userId);
                 case "track":
                     return trackService.getTrackById(item.getObjectId(), userId);
                 case "playlist":
@@ -137,7 +137,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
         return list.stream().map(item ->{
             switch (item.getObjectType()) {
                 case "release":
-                    return releaseService.getSimpleRelease(item.getObjectId(), userId);
+                    return releaseService.getReleaseSimple(item.getObjectId(), userId);
                 case "track":
                     return trackService.getTrackById(item.getObjectId(),userId);
                 case "playlist":
