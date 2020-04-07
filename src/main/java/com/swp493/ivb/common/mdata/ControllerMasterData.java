@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ControllerMasterData {
 
-    
-
     @Autowired
     private ServiceMasterData masterDataService;
 
@@ -29,14 +27,21 @@ public class ControllerMasterData {
 
     @GetMapping(value = "/release-types")
     public ResponseEntity<?> getReleaseTypes() {
-        
-            List<DTOReleaseType> releaseTypes = masterDataService.getReleaseTypeList();
-            if (releaseTypes.size() > 0) {
-                return Payload.successResponse(releaseTypes);
-            } else {
-                return Payload.failureResponse("Can't get releaseTypes");
-            }
-        
-        
+        List<DTOReleaseType> releaseTypes = masterDataService.getReleaseTypeList();
+        if (releaseTypes.size() > 0) {
+            return Payload.successResponse(releaseTypes);
+        } else {
+            return Payload.failureResponse("Can't get releaseTypes");
+        }
+    }
+
+    @GetMapping(value = "/report-types")
+    public ResponseEntity<?> getReportTypes() {
+        List<DTOReportType> reportTypes = masterDataService.getReportTypeList();
+        if (reportTypes.size() > 0) {
+            return Payload.successResponse(reportTypes);
+        } else {
+            return Payload.failureResponse("Can't get report types");
+        }
     }
 }

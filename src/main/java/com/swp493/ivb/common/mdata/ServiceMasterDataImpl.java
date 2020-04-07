@@ -40,6 +40,18 @@ public class ServiceMasterDataImpl implements ServiceMasterData {
     }
 
     @Override
+    public List<DTOReportType> getReportTypeList() {
+        ModelMapper mapper = new ModelMapper();
+        List<DTOReportType> reportTypeList = masterDataRepo
+                .findByType("report")
+                .parallelStream()
+                .map(genre -> mapper.map(genre, DTOReportType.class))
+                .collect(Collectors.toList());
+
+        return reportTypeList;
+    }
+
+    @Override
     public Paging<DTOGenre> findGenre(String key, int offset, int limit) {
         int total = masterDataRepo.countByNameIgnoreCaseContainingAndType(key, "genre");
         Paging<DTOGenre> paging = new Paging<>();
