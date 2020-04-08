@@ -188,13 +188,13 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
         List<DTOReleaseStatistic> items = new ArrayList<>();
         for (IObjectIdCount r : list) {
             String id = r.getObjectId();
-            DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(userId, id), DTOReleaseStatistic.class);
+            DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(id, userId), DTOReleaseStatistic.class);
             rs.setStreamCountPerMonth(r.getCount());
             items.add(rs);
             ids.remove(id);
         }
         for (String id: ids){
-            DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(userId, id), DTOReleaseStatistic.class);
+            DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(id, userId), DTOReleaseStatistic.class);
             rs.setStreamCountPerMonth(0);
             items.add(rs);
         }
