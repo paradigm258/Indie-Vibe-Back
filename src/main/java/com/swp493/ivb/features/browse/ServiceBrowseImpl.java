@@ -13,6 +13,7 @@ import com.swp493.ivb.common.playlist.ServicePlaylist;
 import com.swp493.ivb.common.release.DTOReleaseSimple;
 import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.track.ServiceTrack;
+import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.features.workspace.ITypeAndId;
 import com.swp493.ivb.features.workspace.RepositoryPlayRecord;
 
@@ -39,6 +40,9 @@ public class ServiceBrowseImpl implements ServiceBrowse {
 
     @Autowired
     ServiceArtist artistService;
+
+    @Autowired
+    ServiceUser userService;
 
     @Autowired
     RepositoryPlayRecord playStatRepo;
@@ -114,38 +118,40 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     @Override
     public List<Object> getRecent(String userId) {
         Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "timestamp");
-        List<ITypeAndId> list = playStatRepo.findByUserId(userId, pageable);
+        List<ITypeAndId> list = playStatRepo.findByUserIdAndObjectTypeNot(userId, "track", pageable);
         return list.stream().map(item ->{
             String type = item.getObjectType();
             switch (type) {
                 case "release":
                     return releaseService.getReleaseSimple(item.getObjectId(), userId);
-                case "track":
-                    return trackService.getTrackById(item.getObjectId(), userId);
                 case "playlist":
                     return playlistService.getPlaylistSimple(item.getObjectId(), userId);
+                case "artist":
+                    return userService.getUserPublic(item.getObjectId(), userId);
                 default:
                     return null;
             }
-        }).collect(Collectors.toList());
+        }).filter(item -> item != null)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Object> getMost(String userId) {
         Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "count");
-        List<ITypeAndId> list = playStatRepo.findByUserId(userId, pageable);
+        List<ITypeAndId> list = playStatRepo.findByUserIdAndObjectTypeNot(userId, "track", pageable);
         return list.stream().map(item ->{
             switch (item.getObjectType()) {
                 case "release":
                     return releaseService.getReleaseSimple(item.getObjectId(), userId);
-                case "track":
-                    return trackService.getTrackById(item.getObjectId(),userId);
                 case "playlist":
                     return playlistService.getPlaylistSimple(item.getObjectId(), userId);
+                case "artist":
+                    return userService.getUserPublic(item.getObjectId(), userId);
                 default:
                     return null; 
             }
-        }).collect(Collectors.toList());
+        }).filter(item -> item != null)
+                .collect(Collectors.toList());
     }
 
 }

@@ -9,5 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface RepositoryPlayRecord extends JpaRepository<EntityPlayRecord,String>{
 
     public Optional<EntityPlayRecord> findByUserIdAndObjectId(String userId, String objectId);
-    public List<ITypeAndId> findByUserId(String userId, Pageable pageable);
+    public List<ITypeAndId> findByUserIdAndObjectTypeNot(String userId, String objectType, Pageable pageable);
 }
