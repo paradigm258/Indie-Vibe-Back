@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +41,10 @@ public class Paging<T> {
 
     public Pageable asPageable(){
         return PageRequest.of(offset/limit, limit);
+    }
+
+    public Pageable asPageable(Direction direction, String properties){
+        return PageRequest.of(offset/limit, limit, direction, properties);
     }
 
     public List<T> getItems() {

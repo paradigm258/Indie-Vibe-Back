@@ -1,10 +1,14 @@
 package com.swp493.ivb.features.workspace;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
+import com.swp493.ivb.common.release.DTOReleaseStatistic;
 import com.swp493.ivb.common.release.DTOReleaseUpdate;
+import com.swp493.ivb.common.track.DTOTrackStatistic;
 import com.swp493.ivb.common.track.DTOTrackUpdate;
+import com.swp493.ivb.common.view.Paging;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,4 +21,8 @@ public interface ServiceWorkspace {
     public boolean actionRelease(String userId, String releaseId, String action);
     public String deleteTrack(String userId, String trackId);
     public String updateTrack(String userId, String trackId, DTOTrackUpdate data);
+    public List<Long> yearStats(String userId, int year);
+    public Paging<DTOReleaseStatistic> releaseStats(String userId, int month, int year, int offset, int limit);
+    public Paging<DTOTrackStatistic> trackStats(String userId, int month, int year, int offset, int limit);
+
 }

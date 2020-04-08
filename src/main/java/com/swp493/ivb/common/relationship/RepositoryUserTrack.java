@@ -20,4 +20,6 @@ public interface RepositoryUserTrack extends JpaRepository<EntityUserTrack,Strin
     List<EntityUserTrack> findAllByUserIdAndTrackStatusAndAction(String userId, String status, String action, Pageable pageable);
     @Query(value = "SELECT action FROM user_object where user_id=?1 and track_id=?2", nativeQuery = true)
     Set<String> getRelation(String userId, String trackId);
+    @Query(value = "SELECT track_id FROM user_object where user_id=?1 and action ='own' and track_id is not null",nativeQuery = true)
+    List<String> getOwnTracks(String userId);
 }

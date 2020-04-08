@@ -25,4 +25,5 @@ public interface RepositoryRelease extends JpaRepository<EntityRelease, String> 
     List<IOnlyId> findByArtistReleaseUserIdAndReleaseTypeIdAndStatus(String artistId, String releaseType, String status, Pageable pageable);
     IOnlyId findFirstByArtistReleaseUserId(String userId);
     List<IOnlyId> findByStatus(String status,Pageable pageable);
+    List<IOnlyId> findByArtistReleaseUserId(String artistId);
 }
