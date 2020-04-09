@@ -1,23 +1,34 @@
 package com.swp493.ivb.features.workspace;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.swp493.ivb.common.artist.RepositoryArtist;
 import com.swp493.ivb.common.relationship.RepositoryUserRelease;
 import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
+import com.swp493.ivb.common.release.DTOReleaseStatistic;
 import com.swp493.ivb.common.release.DTOReleaseUpdate;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.release.RepositoryRelease;
 import com.swp493.ivb.common.release.ServiceRelease;
+import com.swp493.ivb.common.track.DTOTrackStatistic;
 import com.swp493.ivb.common.track.DTOTrackUpdate;
 import com.swp493.ivb.common.track.EntityTrack;
 import com.swp493.ivb.common.track.RepositoryTrack;
 import com.swp493.ivb.common.track.ServiceTrack;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
+import com.swp493.ivb.common.view.Paging;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,6 +42,9 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     RepositoryPlayRecord playRecordRepository;
 
     @Autowired
+    RepositoryArtistStats artistStatsRepo;
+
+    @Autowired
     RepositoryRelease releaseRepo;
 
     @Autowired
@@ -38,6 +52,9 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Autowired
     RepositoryUser userRepo;
+
+    @Autowired
+    RepositoryArtist artistRepo;
 
     @Autowired
     RepositoryUserRelease userReleaseRepo;
@@ -53,36 +70,38 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Override
     public void updateCount(String userId, String type, String id) {
-        EntityUser artist = null;
+        Date date = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
         switch (type) {
             case "release":
                 EntityRelease release = releaseRepo.getOne(id);
-                artist = release.getArtist();
                 release.setStreamCount(release.getStreamCount() + 1);
                 break;
             case "track":
                 EntityTrack track = trackRepo.getOne(id);
-                artist = userTrackRepo.findByTrackIdAndAction(track.getId(), "own").getUser();
-                track.setStreamCount(track.getStreamCount() +1);
-            default:
+                EntityUser artist = userTrackRepo.findByTrackIdAndAction(id, "own").getUser();
+                track.setStreamCount(track.getStreamCount() + 1);
+                Optional<EntityPlayRecord> opUserPlayArtist = playRecordRepository.findByUserIdAndObjectIdAndTimestampAfter(userId,
+                        artist.getId(),date);
+                EntityPlayRecord userPlayArtist = opUserPlayArtist.map(upa -> {
+                    upa.setCount(upa.getCount() + 1);
+                    upa.setTimestamp(new Date());
+                    return upa;
+                }).orElse(newUserRecord(userId, "artist", artist.getId()));
+                playRecordRepository.save(userPlayArtist);
                 break;
+            case "playlist":
+                break;
+            default:
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        Optional<EntityPlayRecord> opUserPlay = playRecordRepository.findByUserIdAndObjectId(userId, id);
+        Optional<EntityPlayRecord> opUserPlay = playRecordRepository.findByUserIdAndObjectIdAndTimestampAfter(userId, id, date);
         EntityPlayRecord userPlay = opUserPlay.map(up -> {
             up.setCount(up.getCount() + 1);
             up.setTimestamp(new Date());
             return up;
         }).orElse(newUserRecord(userId, type, id));
 
-        Optional<EntityPlayRecord> opUserPlayArtist = playRecordRepository.findByUserIdAndObjectId(userId, artist.getId());
-        EntityPlayRecord userPlayArtist = opUserPlayArtist.map(upa ->{
-            upa.setCount(upa.getCount()+1);
-            upa.setTimestamp(new Date());
-            return upa;
-        }).orElse(newUserRecord(userId, "artist", artist.getId()));
-
-        playRecordRepository.save(userPlayArtist);
-        playRecordRepository.saveAndFlush(userPlay);
+        playRecordRepository.save(userPlay);
     }
 
     EntityPlayRecord newUserRecord(String userId, String type, String id) {
@@ -102,15 +121,17 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     public Optional<String> requestBecomeArtirst(String userId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
             MultipartFile[] audioFiles, String biography) {
         EntityUser user = userRepo.findById(userId).get();
-        if(user.getArtistStatus().equals("open")){
-            if(StringUtils.hasText(biography)) userRepo.insertBiography(biography, userId);
+        if (user.getArtistStatus().equals("open")) {
+            if (StringUtils.hasText(biography))
+                userRepo.insertBiography(biography, userId);
             Optional<String> releaseId = releaseService.uploadRelease(userId, info, thumbnail, audioFiles);
             if (releaseId.isPresent()) {
                 user.setArtistStatus("pending");
-                userRepo.save(user); 
+                userRepo.save(user);
             }
             return releaseId;
-        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid artist status");
+        } else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid artist status");
     }
 
     @Override
@@ -120,9 +141,9 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Override
     public String deleteRelease(String userId, String releaseId) {
-        if(!userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own"))
+        if (!userReleaseRepo.existsByUserIdAndReleaseIdAndAction(userId, releaseId, "own"))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        if(userReleaseRepo.countByUserIdAndReleaseNotNullAndAction(userId, "own")<=1) 
+        if (userReleaseRepo.countByUserIdAndReleaseNotNullAndAction(userId, "own") <= 1)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You can't delete your last record");
         return releaseService.deleteRelease(releaseId, userId);
     }
@@ -140,6 +161,71 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     @Override
     public String updateTrack(String userId, String trackId, DTOTrackUpdate data) {
         return trackService.updateTrack(userId, trackId, data);
+    }
+
+    @Override
+    public List<Long> yearStats(String userId, int year) {
+        List<Long> counts = new ArrayList<>();  
+        for(int i=1; i<13; i++){
+            LocalDate date = LocalDate.of(year, i, 1);
+            Date start = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            Date end = Date.from(date.plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+            counts.add(playRecordRepository.getCountBetween(userId, start, end)); 
+        }
+
+        return counts;
+    }
+
+    @Override
+    public Paging<DTOReleaseStatistic> releaseStats(String userId, int month, int year, int offset, int limit) {
+        int total = userReleaseRepo.countByUserIdAndReleaseNotNullAndAction(userId, "own");
+        Paging<DTOReleaseStatistic> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        Date date = Date.from(LocalDate.of(year, month, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        List<String> ids = releaseRepo.findByArtistReleaseUserId(userId).stream().map(r ->r.getId()).collect(Collectors.toList());
+        List<IObjectIdCount> list = artistStatsRepo.findByObjectIdInAndRecordMonth(ids, date, paging.asPageable(Direction.DESC,"count"));
+        ModelMapper mapper = new ModelMapper();
+        List<DTOReleaseStatistic> items = new ArrayList<>();
+        for (IObjectIdCount r : list) {
+            String id = r.getObjectId();
+            DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(userId, id), DTOReleaseStatistic.class);
+            rs.setStreamCountPerMonth(r.getCount());
+            items.add(rs);
+            ids.remove(id);
+        }
+        for (String id: ids){
+            DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(userId, id), DTOReleaseStatistic.class);
+            rs.setStreamCountPerMonth(0);
+            items.add(rs);
+        }
+        paging.setItems(items);
+        return paging;
+    }
+
+    @Override
+    public Paging<DTOTrackStatistic> trackStats(String userId, int month, int year, int offset, int limit) {
+        int total = userTrackRepo.countByUserIdAndTrackNotNullAndAction(userId, "own");
+        Paging<DTOTrackStatistic> paging = new Paging<>();
+        paging.setPageInfo(total, limit, offset);
+        Date date = Date.from(LocalDate.of(year, month, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        List<String> ids = userTrackRepo.getOwnTracks(userId);
+        List<IObjectIdCount> list = artistStatsRepo.findByObjectIdInAndRecordMonth(ids, date, paging.asPageable(Direction.DESC,"count"));
+        ModelMapper mapper = new ModelMapper();
+        List<DTOTrackStatistic> items = new ArrayList<>();
+        for (IObjectIdCount r : list) {
+            String id = r.getObjectId();
+            DTOTrackStatistic rs = mapper.map(trackService.getTrackSimple(id, userId), DTOTrackStatistic.class);
+            rs.setStreamCountPerMonth(r.getCount());
+            items.add(rs);
+            ids.remove(id);
+        }
+        for (String id: ids){
+            DTOTrackStatistic rs = mapper.map(trackService.getTrackSimple(id, userId), DTOTrackStatistic.class);
+            rs.setStreamCountPerMonth(0);
+            items.add(rs);
+        }
+        paging.setItems(items);
+        return paging;
     }
 
 }

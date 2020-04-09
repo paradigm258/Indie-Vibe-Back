@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 @RestController
 public class ControllerWorkspace {
@@ -95,4 +97,31 @@ public class ControllerWorkspace {
     public ResponseEntity<?> updateTrack(@PathVariable String id, @RequestAttribute EntityUser user, @Valid DTOTrackUpdate data) {     
         return Payload.successResponse("Track updated "+workspaceService.updateTrack(user.getId(), id, data));
     }
+
+    @GetMapping(value="/workspace/statistics/{artistId}")
+    public ResponseEntity<?> getYearlyStats(@RequestAttribute EntityUser user, @PathVariable String artistId,@RequestParam int year) {
+        return Payload.successResponse(workspaceService.yearStats(artistId,year));
+    }
+
+    @GetMapping(value="/workspace/statistics/{artistId}/releases")
+    public ResponseEntity<?> getReleaseStats(@RequestAttribute EntityUser user,
+        @PathVariable String artistId, 
+        @RequestParam int month, 
+        @RequestParam int year,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "20") int limit ) {
+        return Payload.successResponse(workspaceService.releaseStats(artistId, month, year, offset, limit));
+    }
+
+    @GetMapping(value="/workspace/statistics/{artistId}/tracks")
+    public ResponseEntity<?> getTrackStats(@RequestAttribute EntityUser user, 
+        @PathVariable String artistId, 
+        @RequestParam int month, 
+        @RequestParam int year,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "20") int limit ) {
+        return Payload.successResponse(workspaceService.trackStats(artistId, month, year, offset, limit));
+    }
+    
+    
 }
