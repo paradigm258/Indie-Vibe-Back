@@ -194,6 +194,7 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
             ids.remove(id);
         }
         for (String id: ids){
+            if(items.size()>=limit) break;
             DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(id, userId), DTOReleaseStatistic.class);
             rs.setStreamCountPerMonth(0);
             items.add(rs);
@@ -220,6 +221,7 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
             ids.remove(id);
         }
         for (String id: ids){
+            if(items.size()>=limit) break;
             DTOTrackStatistic rs = mapper.map(trackService.getTrackSimple(id, userId), DTOTrackStatistic.class);
             rs.setStreamCountPerMonth(0);
             items.add(rs);
