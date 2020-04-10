@@ -1,5 +1,6 @@
 package com.swp493.ivb.features.cms;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
@@ -16,4 +17,6 @@ public interface ServiceCMS {
     public void makeCurator(String userId);
     public Paging<DTOReport> findReport(Optional<String> type, Optional<String> status, int offset, int limit);
     public void reviewReport(String id,String action);
+    public List<Long> yearlySumStream(int start, int end);
+    public List<Long> monthlySumStream(int year);
 }
