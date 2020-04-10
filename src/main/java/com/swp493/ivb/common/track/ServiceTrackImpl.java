@@ -37,6 +37,7 @@ import com.swp493.ivb.common.user.IOnlyId;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
+import com.swp493.ivb.features.workspace.RepositoryArtistStats;
 import com.swp493.ivb.features.workspace.RepositoryPlayRecord;
 
 import org.modelmapper.ModelMapper;
@@ -71,7 +72,11 @@ public class ServiceTrackImpl implements ServiceTrack {
     @Autowired
     private RepositoryUserTrack userTrackRepo;
 
+    @Autowired
     private RepositoryPlayRecord playRecordRepo;
+
+    @Autowired
+    private RepositoryArtistStats artistStatsRepo;
 
     @Autowired
     private ServiceArtist artistService;
@@ -243,10 +248,8 @@ public class ServiceTrackImpl implements ServiceTrack {
         });
         release.setGenres(newGenres);
         trackRepo.delete(track);
-        playRecordRepo.findByObjectId(trackId).stream().forEach(
-            pr ->playRecordRepo.delete(pr)
-        );
-        
+        playRecordRepo.findByObjectId(trackId).forEach(pr ->playRecordRepo.delete(pr));
+        artistStatsRepo.findByObjectId(trackId).forEach(as -> artistStatsRepo.delete(as));
         releaseRepo.save(release);
         return trackId;
     }

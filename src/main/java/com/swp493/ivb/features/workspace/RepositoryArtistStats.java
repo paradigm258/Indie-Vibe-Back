@@ -13,4 +13,6 @@ public interface RepositoryArtistStats extends JpaRepository<EntityArtistStats, 
 
     List<IObjectIdCount> findByObjectIdInAndRecordMonth(List<String> ids, Date month, Pageable pageable);
     Optional<EntityArtistStats> findByObjectIdAndRecordMonth(String id, Date month);
+    List<EntityArtistStats> findByObjectId(String id);
+    
 }

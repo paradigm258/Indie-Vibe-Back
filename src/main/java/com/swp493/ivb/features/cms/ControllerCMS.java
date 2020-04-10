@@ -1,5 +1,7 @@
 package com.swp493.ivb.features.cms;
 
+import java.util.Optional;
+
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 
@@ -49,9 +51,26 @@ public class ControllerCMS {
     }
 
     @PutMapping(value="/cms/delegate")
-    public ResponseEntity<?> putMethodName(@RequestParam String userId) {
+    public ResponseEntity<?> makeCurator(@RequestParam String userId) {
         cmsService.makeCurator(userId);
         return Payload.successResponse("Success");
     }
+
+    @GetMapping(value="/cms/reports/{type}")
+    public ResponseEntity<?> getReports(
+        @PathVariable(required = false)String type,
+        @RequestParam(defaultValue = "0") int offset,
+        @RequestParam(defaultValue = "20") int limit) {
+        return Payload.successResponse(cmsService.findReport(Optional.ofNullable(type), offset, limit));
+    }
+    
+    @GetMapping(value="/cms/reports/{id}")
+    public ResponseEntity<?> reviewReport(
+        @PathVariable String id,
+        @RequestParam String action) {
+        cmsService.reviewReport(id, action);
+        return Payload.successResponse("Successfully "+action);
+    }
+    
 
 }

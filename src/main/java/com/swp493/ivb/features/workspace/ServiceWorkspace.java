@@ -24,5 +24,6 @@ public interface ServiceWorkspace {
     public List<Long> yearStats(String userId, int year);
     public Paging<DTOReleaseStatistic> releaseStats(String userId, int month, int year, int offset, int limit);
     public Paging<DTOTrackStatistic> trackStats(String userId, int month, int year, int offset, int limit);
-
+    public List<Long> streamStatsYear(int start, int end);
+    public List<Long> streamStatsMonth(int year);
 }
