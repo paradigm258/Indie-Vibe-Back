@@ -45,6 +45,7 @@ import com.swp493.ivb.common.user.IOnlyId;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
+import com.swp493.ivb.features.workspace.RepositoryArtistStats;
 import com.swp493.ivb.features.workspace.RepositoryPlayRecord;
 import com.swp493.ivb.util.PopularTracking;
 
@@ -89,6 +90,9 @@ public class ServiceReleaseImpl implements ServiceRelease {
 
     @Autowired
     private RepositoryPlayRecord playRecordRepo;
+
+    @Autowired
+    private RepositoryArtistStats artistStatsRepo;
 
     @Autowired
     private ServiceArtist artistService;
@@ -244,17 +248,16 @@ public class ServiceReleaseImpl implements ServiceRelease {
         EntityRelease release = releaseRepo.findById(releaseId).get();
         if (!release.getArtist().getId().equals(artistId))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        release.getTracks().forEach(t ->{
-            playRecordRepo.findById(t.getId()).ifPresent(pr -> playRecordRepo.delete(pr));
-        });
-        releaseRepo.delete(release);
-        playRecordRepo.findById(releaseId).ifPresent(pr -> playRecordRepo.delete(pr));
+        playRecordRepo.findByObjectId(releaseId).forEach(pr -> playRecordRepo.delete(pr));
+        artistStatsRepo.findByObjectId(releaseId).forEach(as -> artistStatsRepo.delete(as));
         try {
             s3.deleteObject(AWSConfig.BUCKET_NAME, release.getId());
         } catch (SdkClientException e) {
             log.error("Failed to delete: " + release.getTitle(), e);
         }
-        release.getTracks().stream().forEach(track -> {
+        release.getTracks().forEach(track -> {
+            playRecordRepo.findByObjectId(track.getId()).forEach(pr -> playRecordRepo.delete(pr));
+            artistStatsRepo.findByObjectId(track.getId()).forEach(as -> artistStatsRepo.delete(as));
             try {
                 s3.deleteObject(AWSConfig.BUCKET_NAME, track.getId() + "/128");
             } catch (SdkClientException e) {
@@ -266,6 +269,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
                 log.error("Failed to delete: " + track.getTitle(), e);
             }
         });
+        releaseRepo.delete(release);
         return releaseId;
     }  
 

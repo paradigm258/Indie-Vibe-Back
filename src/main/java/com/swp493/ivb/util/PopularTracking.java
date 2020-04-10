@@ -76,7 +76,7 @@ public class PopularTracking {
                 a.setCount(playRecordRepo.getCountBetween(entityPlayRecord.getObjectId(), month, date));
                 return a;
             }).orElse(newArtistStat(entityPlayRecord.getObjectId(), type, month, playRecordRepo.getCountBetween(entityPlayRecord.getObjectId(), month, date)));
-        artistStatsRepo.save(at);
+            artistStatsRepo.save(at);
         }
     }
 

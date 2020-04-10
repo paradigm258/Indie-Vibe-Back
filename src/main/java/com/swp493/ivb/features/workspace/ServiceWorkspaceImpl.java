@@ -230,4 +230,16 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
         return paging;
     }
 
+    @Override
+    public List<Long> streamStatsYear(int start, int end) {
+        
+        return null;
+    }
+
+    @Override
+    public List<Long> streamStatsMonth(int year) {
+        
+        return null;
+    }
+
 }

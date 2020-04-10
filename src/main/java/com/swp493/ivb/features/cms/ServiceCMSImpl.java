@@ -1,5 +1,7 @@
 package com.swp493.ivb.features.cms;
 
+import java.util.Optional;
+
 import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.release.DTOReleasePending;
@@ -7,6 +9,8 @@ import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Paging;
+import com.swp493.ivb.features.report.DTOReport;
+import com.swp493.ivb.features.report.ServiceReport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,6 +26,9 @@ public class ServiceCMSImpl implements ServiceCMS {
 
     @Autowired
     ServiceRelease releaseService;
+
+    @Autowired
+    ServiceReport reportService;
 
     @Override
     public Paging<DTOArtistFull> getRequests(String adminId, int offset, int limit) {
@@ -47,6 +54,16 @@ public class ServiceCMSImpl implements ServiceCMS {
     @Override
     public void makeCurator(String userId) {
         userService.makeCurator(userId);
+    }
+
+    @Override
+    public Paging<DTOReport> findReport(Optional<String> type, int offset, int limit) {
+        return reportService.findReport(type, offset, limit);
+    }
+
+    @Override
+    public void reviewReport(String id, String action) {
+        reportService.reviewReport(id, action);
     }
 
 }
