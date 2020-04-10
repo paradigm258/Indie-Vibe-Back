@@ -54,6 +54,7 @@ public class ServiceReportImpl implements ServiceReport {
         report.setReason(reason);
         report.setReporter(reporter);
         report.setArtist(artist);
+        report.setStatus("pending");
         reportRepo.save(report);
     }
 
