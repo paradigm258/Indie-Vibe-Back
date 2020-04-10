@@ -57,8 +57,8 @@ public class ServiceCMSImpl implements ServiceCMS {
     }
 
     @Override
-    public Paging<DTOReport> findReport(Optional<String> type, int offset, int limit) {
-        return reportService.findReport(type, offset, limit);
+    public Paging<DTOReport> findReport(Optional<String> type, Optional<String> status, int offset, int limit) {
+        return reportService.findReport(type, status, offset, limit);
     }
 
     @Override

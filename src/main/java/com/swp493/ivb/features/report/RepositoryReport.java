@@ -12,6 +12,10 @@ import org.springframework.stereotype.Repository;
 public interface RepositoryReport extends JpaRepository<EntityReport, String> {
 
     public int countByType(EntityMasterData type);
+    public int countByStatus(String status);
+    public int countByTypeAndStatus(EntityMasterData type, String status);
     public List<EntityReport> findByType(EntityMasterData type, Pageable pageable);
+    public List<EntityReport> findByStatus(String status, Pageable pageable);
+    public List<EntityReport> findByTypeAndStatus(EntityMasterData type, String status, Pageable pageable);
     
 }
