@@ -54,6 +54,7 @@ public class ServiceReportImpl implements ServiceReport {
         report.setReason(reason);
         report.setReporter(reporter);
         report.setArtist(artist);
+        report.setStatus("pending");
         reportRepo.save(report);
     }
 
@@ -67,19 +68,28 @@ public class ServiceReportImpl implements ServiceReport {
     }
 
     @Override
-    public Paging<DTOReport> findReport(Optional<String> type, int offset, int limit) {
+    public Paging<DTOReport> findReport(Optional<String> type, Optional<String> status, int offset, int limit) {
         int total;
         List<EntityReport> reports;
         Paging<DTOReport> paging = new Paging<>();
         if(type.isPresent()){
             EntityMasterData reportType = masterDataRepo.findById(type.get()).get();
-            total = reportRepo.countByType(reportType);
+            total = status.isPresent() ?
+                    reportRepo.countByTypeAndStatus(reportType, status.get())
+                    : reportRepo.countByType(reportType);
             paging.setPageInfo(total, limit, offset);
-            reports = reportRepo.findByType(reportType, paging.asPageable());
+            if (status.isPresent())
+                reports = reportRepo.findByTypeAndStatus(reportType, status.get(), paging.asPageable());
+            else
+                reports = reportRepo.findByType(reportType, paging.asPageable());
         }else{
-            total = (int)reportRepo.count();
+            total = status.isPresent() ? reportRepo.countByStatus(status.get()) : (int) reportRepo.count();
             paging.setPageInfo(total, limit, offset);
-            reports = reportRepo.findAll(paging.asPageable()).getContent();
+
+            if (status.isPresent())
+                reports = reportRepo.findByStatus(status.get(), paging.asPageable());
+            else
+                reports = reportRepo.findAll(paging.asPageable()).getContent();
         }
         paging.setItems(reports.stream().map(r -> getReport(r)).collect(Collectors.toList()));
         return paging;

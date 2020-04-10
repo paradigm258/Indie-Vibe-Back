@@ -56,15 +56,17 @@ public class ControllerCMS {
         return Payload.successResponse("Success");
     }
 
-    @GetMapping(value="/cms/reports/{type}")
+    @GetMapping(value= {"/cms/reports", "/cms/reports/{type}"})
     public ResponseEntity<?> getReports(
         @PathVariable(required = false)String type,
+        @RequestParam(required = false) String status,
         @RequestParam(defaultValue = "0") int offset,
         @RequestParam(defaultValue = "20") int limit) {
-        return Payload.successResponse(cmsService.findReport(Optional.ofNullable(type), offset, limit));
+        return Payload.successResponse(
+                cmsService.findReport(Optional.ofNullable(type), Optional.ofNullable(status), offset, limit));
     }
     
-    @GetMapping(value="/cms/reports/{id}")
+    @PutMapping(value="/cms/reports/{id}")
     public ResponseEntity<?> reviewReport(
         @PathVariable String id,
         @RequestParam String action) {

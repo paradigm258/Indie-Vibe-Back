@@ -8,5 +8,5 @@ public interface ServiceReport {
     public DTOReport getReport (String id);
     public void reportArtist(String userId, String artistId, String type, String reason);
     public void reviewReport(String id, String action);
-    public Paging<DTOReport> findReport(Optional<String> type, int offset, int limit);
+    public Paging<DTOReport> findReport(Optional<String> type, Optional<String> status, int offset, int limit);
 }
