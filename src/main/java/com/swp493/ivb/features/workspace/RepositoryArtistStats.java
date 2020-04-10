@@ -37,6 +37,6 @@ public interface RepositoryArtistStats extends JpaRepository<EntityArtistStats, 
     @Query(value = "select ifnull(sum(count),0) from artist_stats where type='artist' and year(record_month) = :year",nativeQuery = true)
     long getSumYearStream(int year);
     
-    @Query(value = "select ifnull(sum(count),0) from artist_stats where type='artist' and record_month = :month")
+    @Query(value = "select ifnull(sum(count),0) from artist_stats where type='artist' and record_month = :month", nativeQuery = true)
     long getSumMonthStream(Date month);
 }
