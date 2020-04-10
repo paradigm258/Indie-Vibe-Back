@@ -74,5 +74,14 @@ public class ControllerCMS {
         return Payload.successResponse("Successfully "+action);
     }
     
+    @GetMapping(value="/cms/stream/yearly")
+    public ResponseEntity<?> yearlyStats(@RequestParam int start, @RequestParam int end) {
+        return Payload.successResponse(cmsService.yearlySumStream(start, end));
+    }
+    
+    @GetMapping(value="/cms/stream/monthly")
+    public ResponseEntity<?> monthlyStats(@RequestParam int year) {
+        return Payload.successResponse(cmsService.monthlySumStream(year));
+    }
 
 }

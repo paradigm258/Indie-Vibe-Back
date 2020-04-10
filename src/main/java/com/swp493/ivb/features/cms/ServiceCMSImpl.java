@@ -1,5 +1,6 @@
 package com.swp493.ivb.features.cms;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
@@ -11,6 +12,7 @@ import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.features.report.DTOReport;
 import com.swp493.ivb.features.report.ServiceReport;
+import com.swp493.ivb.features.workspace.ServiceWorkspace;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +31,9 @@ public class ServiceCMSImpl implements ServiceCMS {
 
     @Autowired
     ServiceReport reportService;
+
+    @Autowired
+    ServiceWorkspace workspaceService;
 
     @Override
     public Paging<DTOArtistFull> getRequests(String adminId, int offset, int limit) {
@@ -65,5 +70,17 @@ public class ServiceCMSImpl implements ServiceCMS {
     public void reviewReport(String id, String action) {
         reportService.reviewReport(id, action);
     }
+
+    @Override
+    public List<Long> yearlySumStream(int start, int end) {
+        return workspaceService.streamStatsYear(start, end);
+    }
+
+    @Override
+    public List<Long> monthlySumStream(int year) {
+        return workspaceService.streamStatsMonth(year);
+    }
+
+    
 
 }

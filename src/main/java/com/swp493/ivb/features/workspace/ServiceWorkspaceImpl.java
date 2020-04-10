@@ -1,10 +1,12 @@
 package com.swp493.ivb.features.workspace;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -28,7 +30,6 @@ import com.swp493.ivb.common.view.Paging;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -182,23 +183,16 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
         Paging<DTOReleaseStatistic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
         Date date = Date.from(LocalDate.of(year, month, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        List<String> ids = releaseRepo.findByArtistReleaseUserId(userId).stream().map(r ->r.getId()).collect(Collectors.toList());
-        List<IObjectIdCount> list = artistStatsRepo.findByObjectIdInAndRecordMonth(ids, date, paging.asPageable(Direction.DESC,"count"));
+        List<Map<String,Object>> list = artistStatsRepo.getReleaseIdAndCount(userId, date, paging.asPageable());
         ModelMapper mapper = new ModelMapper();
-        List<DTOReleaseStatistic> items = new ArrayList<>();
-        for (IObjectIdCount r : list) {
-            String id = r.getObjectId();
+        List<DTOReleaseStatistic> items = list.stream().map(m ->{
+            String id = (String) m.get("object_id");
+            int count = ((BigInteger) m.get("count")).intValueExact();
             DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(id, userId), DTOReleaseStatistic.class);
-            rs.setStreamCountPerMonth(r.getCount());
-            items.add(rs);
-            ids.remove(id);
-        }
-        for (String id: ids){
-            if(items.size()>=limit) break;
-            DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(id, userId), DTOReleaseStatistic.class);
-            rs.setStreamCountPerMonth(0);
-            items.add(rs);
-        }
+            rs.setStreamCountPerMonth(count);
+            return rs;
+        }).collect(Collectors.toList());
+        
         paging.setItems(items);
         return paging;
     }
@@ -209,37 +203,39 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
         Paging<DTOTrackStatistic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
         Date date = Date.from(LocalDate.of(year, month, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        List<String> ids = userTrackRepo.getOwnTracks(userId);
-        List<IObjectIdCount> list = artistStatsRepo.findByObjectIdInAndRecordMonth(ids, date, paging.asPageable(Direction.DESC,"count"));
+        List<Map<String, Object>> list = artistStatsRepo.getTrackIdAndCount(userId, date, paging.asPageable());
         ModelMapper mapper = new ModelMapper();
-        List<DTOTrackStatistic> items = new ArrayList<>();
-        for (IObjectIdCount r : list) {
-            String id = r.getObjectId();
+        List<DTOTrackStatistic> items = list.stream().map(m ->{
+            String id = (String) m.get("object_id");
+            int count = ((BigInteger) m.get("count")).intValueExact();
             DTOTrackStatistic rs = mapper.map(trackService.getTrackSimple(id, userId), DTOTrackStatistic.class);
-            rs.setStreamCountPerMonth(r.getCount());
-            items.add(rs);
-            ids.remove(id);
-        }
-        for (String id: ids){
-            if(items.size()>=limit) break;
-            DTOTrackStatistic rs = mapper.map(trackService.getTrackSimple(id, userId), DTOTrackStatistic.class);
-            rs.setStreamCountPerMonth(0);
-            items.add(rs);
-        }
+            rs.setStreamCountPerMonth(count);
+            return rs;
+        }).collect(Collectors.toList());
         paging.setItems(items);
         return paging;
     }
 
     @Override
     public List<Long> streamStatsYear(int start, int end) {
-        
-        return null;
+        if(start > end) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        List<Long> list = new ArrayList<>();
+        for(;start<=end;start++){
+            list.add(artistStatsRepo.getSumYearStream(start));
+        }
+        return list;
     }
 
     @Override
     public List<Long> streamStatsMonth(int year) {
-        
-        return null;
+        LocalDate month = LocalDate.of(year, 1, 1);
+        List<Long> list = new ArrayList<>();
+        for(int i =1 ;i< 13;i++){
+            Date date = Date.from(month.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            list.add(artistStatsRepo.getSumMonthStream(date));
+            month = month.plusMonths(1);
+        }
+        return list;
     }
 
 }
