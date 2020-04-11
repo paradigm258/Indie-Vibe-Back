@@ -7,11 +7,11 @@ import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.release.DTOReleasePending;
 import com.swp493.ivb.common.release.ServiceRelease;
+import com.swp493.ivb.common.report.DTOReport;
+import com.swp493.ivb.common.report.ServiceReport;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Paging;
-import com.swp493.ivb.features.report.DTOReport;
-import com.swp493.ivb.features.report.ServiceReport;
 import com.swp493.ivb.features.workspace.ServiceWorkspace;
 
 import org.springframework.beans.factory.annotation.Autowired;

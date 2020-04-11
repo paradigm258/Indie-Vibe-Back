@@ -1,4 +1,4 @@
-package com.swp493.ivb.features.report;
+package com.swp493.ivb.common.report;
 
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
