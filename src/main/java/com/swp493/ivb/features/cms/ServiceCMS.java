@@ -1,13 +1,14 @@
 package com.swp493.ivb.features.cms;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.release.DTOReleasePending;
+import com.swp493.ivb.common.report.DTOReport;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.view.Paging;
-import com.swp493.ivb.features.report.DTOReport;
 
 public interface ServiceCMS {
     public Paging<DTOArtistFull> getRequests(String adminId, int offset, int limit);
@@ -19,4 +20,7 @@ public interface ServiceCMS {
     public void reviewReport(String id,String action);
     public List<Long> yearlySumStream(int start, int end);
     public List<Long> monthlySumStream(int year);
+    public Map<String,Object> yearlySumRevenue(int start, int end);
+    public Map<String,Object> monthlySumRevenue(int year);
+    public void recordPurchase(Long amount, String type);
 }

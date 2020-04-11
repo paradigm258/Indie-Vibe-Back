@@ -16,6 +16,7 @@ import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
 import com.swp493.ivb.common.release.DTOReleaseStatistic;
 import com.swp493.ivb.common.release.DTOReleaseUpdate;
+import com.swp493.ivb.common.release.DTOTrackReleaseUpload;
 import com.swp493.ivb.common.release.EntityRelease;
 import com.swp493.ivb.common.release.RepositoryRelease;
 import com.swp493.ivb.common.release.ServiceRelease;
@@ -81,8 +82,8 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
                 EntityTrack track = trackRepo.getOne(id);
                 EntityUser artist = userTrackRepo.findByTrackIdAndAction(id, "own").getUser();
                 track.setStreamCount(track.getStreamCount() + 1);
-                Optional<EntityPlayRecord> opUserPlayArtist = playRecordRepository.findByUserIdAndObjectIdAndTimestampAfter(userId,
-                        artist.getId(),date);
+                Optional<EntityPlayRecord> opUserPlayArtist = playRecordRepository
+                        .findByUserIdAndObjectIdAndTimestampAfter(userId, artist.getId(), date);
                 EntityPlayRecord userPlayArtist = opUserPlayArtist.map(upa -> {
                     upa.setCount(upa.getCount() + 1);
                     upa.setTimestamp(new Date());
@@ -95,7 +96,8 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
             default:
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        Optional<EntityPlayRecord> opUserPlay = playRecordRepository.findByUserIdAndObjectIdAndTimestampAfter(userId, id, date);
+        Optional<EntityPlayRecord> opUserPlay = playRecordRepository.findByUserIdAndObjectIdAndTimestampAfter(userId,
+                id, date);
         EntityPlayRecord userPlay = opUserPlay.map(up -> {
             up.setCount(up.getCount() + 1);
             up.setTimestamp(new Date());
@@ -166,12 +168,12 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Override
     public List<Long> yearStats(String userId, int year) {
-        List<Long> counts = new ArrayList<>();  
-        for(int i=1; i<13; i++){
+        List<Long> counts = new ArrayList<>();
+        for (int i = 1; i < 13; i++) {
             LocalDate date = LocalDate.of(year, i, 1);
             Date start = Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
             Date end = Date.from(date.plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-            counts.add(playRecordRepository.getCountBetween(userId, start, end)); 
+            counts.add(playRecordRepository.getCountBetween(userId, start, end));
         }
 
         return counts;
@@ -183,16 +185,16 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
         Paging<DTOReleaseStatistic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
         Date date = Date.from(LocalDate.of(year, month, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        List<Map<String,Object>> list = artistStatsRepo.getReleaseIdAndCount(userId, date, paging.asPageable());
+        List<Map<String, Object>> list = artistStatsRepo.getReleaseIdAndCount(userId, date, paging.asPageable());
         ModelMapper mapper = new ModelMapper();
-        List<DTOReleaseStatistic> items = list.stream().map(m ->{
+        List<DTOReleaseStatistic> items = list.stream().map(m -> {
             String id = (String) m.get("object_id");
             int count = ((BigInteger) m.get("count")).intValueExact();
             DTOReleaseStatistic rs = mapper.map(releaseService.getReleaseSimple(id, userId), DTOReleaseStatistic.class);
             rs.setStreamCountPerMonth(count);
             return rs;
         }).collect(Collectors.toList());
-        
+
         paging.setItems(items);
         return paging;
     }
@@ -205,7 +207,7 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
         Date date = Date.from(LocalDate.of(year, month, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
         List<Map<String, Object>> list = artistStatsRepo.getTrackIdAndCount(userId, date, paging.asPageable());
         ModelMapper mapper = new ModelMapper();
-        List<DTOTrackStatistic> items = list.stream().map(m ->{
+        List<DTOTrackStatistic> items = list.stream().map(m -> {
             String id = (String) m.get("object_id");
             int count = ((BigInteger) m.get("count")).intValueExact();
             DTOTrackStatistic rs = mapper.map(trackService.getTrackSimple(id, userId), DTOTrackStatistic.class);
@@ -218,9 +220,10 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Override
     public List<Long> streamStatsYear(int start, int end) {
-        if(start > end) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        if (start > end)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         List<Long> list = new ArrayList<>();
-        for(;start<=end;start++){
+        for (; start <= end; start++) {
             list.add(artistStatsRepo.getSumYearStream(start));
         }
         return list;
@@ -230,12 +233,18 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     public List<Long> streamStatsMonth(int year) {
         LocalDate month = LocalDate.of(year, 1, 1);
         List<Long> list = new ArrayList<>();
-        for(int i =1 ;i< 13;i++){
+        for (int i = 1; i < 13; i++) {
             Date date = Date.from(month.atStartOfDay(ZoneId.systemDefault()).toInstant());
             list.add(artistStatsRepo.getSumMonthStream(date));
             month = month.plusMonths(1);
         }
         return list;
+    }
+
+    @Override
+    public void addToRelease(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos,
+            MultipartFile[] files) {
+        releaseService.addTrackPlaylist(userId, releaseId, trackInfos, files);
     }
 
 }

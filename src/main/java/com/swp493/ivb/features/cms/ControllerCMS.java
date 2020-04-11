@@ -84,4 +84,14 @@ public class ControllerCMS {
         return Payload.successResponse(cmsService.monthlySumStream(year));
     }
 
+    @GetMapping(value="/cms/revenue/yearly")
+    public ResponseEntity<?> yearlyRevenue(@RequestParam int start, @RequestParam int end) {
+        return Payload.successResponse(cmsService.yearlySumRevenue(start, end));
+    }
+    
+    @GetMapping(value="/cms/revenue/monthly")
+    public ResponseEntity<?> monthlyRevenue(@RequestParam int year) {
+        return Payload.successResponse(cmsService.monthlySumRevenue(year));
+    }
+
 }

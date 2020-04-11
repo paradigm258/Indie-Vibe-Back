@@ -1,7 +1,7 @@
 spring:
     datasource:
         platform: mysql
-        url: jdbc:mysql://${RDS_HOSTNAME:localhost}:${RDS_PORT:3306}/ivbase
+        url: jdbc:mysql://${RDS_HOSTNAME:localhost}:${RDS_PORT:3306}/ivbase?useUnicode=yes&characterEncoding=UTF-8
         username: ${RDS_USERNAME:root}
         password: ${RDS_PASSWORD:1234}
         driverClassName: com.mysql.cj.jdbc.Driver

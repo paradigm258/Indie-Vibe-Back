@@ -13,6 +13,7 @@ import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
 import com.stripe.model.Customer;
+import com.stripe.model.Invoice;
 import com.stripe.model.Subscription;
 import com.stripe.param.SubscriptionCancelParams;
 import com.swp493.ivb.common.user.EntityUser;
@@ -51,9 +52,10 @@ public class BillingUtils {
         return Subscription.create(params);
     }
 
-    public void cancelSubscription(String subId) throws StripeException {
+    public long cancelSubscription(String subId) throws StripeException {
         Subscription subscription = Subscription.retrieve(subId);
-        subscription.cancel(SubscriptionCancelParams.builder().setInvoiceNow(true).setProrate(true).build());
+        subscription = subscription.cancel(SubscriptionCancelParams.builder().setInvoiceNow(true).setProrate(true).build());
+        return Invoice.retrieve(subscription.getLatestInvoice()).getAmountPaid();
     }
 
     public String createCustomer(String stripeToken, EntityUser user) throws StripeException {
@@ -105,7 +107,7 @@ public class BillingUtils {
         return Subscription.retrieve(subId).getStatus();
     }
 
-    public String checkChargeStatus(String chargeId) throws StripeException {
-        return Charge.retrieve(chargeId).getStatus();
+    public Charge checkChargeStatus(String chargeId) throws StripeException {
+        return Charge.retrieve(chargeId);
     }
 }
