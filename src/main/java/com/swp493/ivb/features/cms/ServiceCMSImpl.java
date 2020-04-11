@@ -110,7 +110,7 @@ public class ServiceCMSImpl implements ServiceCMS {
             monthly.add(revenueRecordRepo.getYearRevenue(start, "p-montly"));
         }
         res.put("fixed", fixed);
-        res.put("montly", monthly);
+        res.put("monthly", monthly);
         return res;
     }
 
@@ -124,7 +124,7 @@ public class ServiceCMSImpl implements ServiceCMS {
             monthly.add(revenueRecordRepo.getMonthRevenue(year, i, "p-monthly"));
         }
         res.put("fixed", fixed);
-        res.put("montly", monthly);
+        res.put("monthly", monthly);
         return res;
     }
 
