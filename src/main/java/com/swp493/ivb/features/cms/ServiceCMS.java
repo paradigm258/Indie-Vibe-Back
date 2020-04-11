@@ -1,6 +1,7 @@
 package com.swp493.ivb.features.cms;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
@@ -19,4 +20,7 @@ public interface ServiceCMS {
     public void reviewReport(String id,String action);
     public List<Long> yearlySumStream(int start, int end);
     public List<Long> monthlySumStream(int year);
+    public Map<String,Object> yearlySumRevenue(int start, int end);
+    public Map<String,Object> monthlySumRevenue(int year);
+    public void recordPurchase(Long amount, String type);
 }

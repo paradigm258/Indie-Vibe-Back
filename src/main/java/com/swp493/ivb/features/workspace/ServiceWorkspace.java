@@ -6,6 +6,7 @@ import java.util.Optional;
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
 import com.swp493.ivb.common.release.DTOReleaseStatistic;
 import com.swp493.ivb.common.release.DTOReleaseUpdate;
+import com.swp493.ivb.common.release.DTOTrackReleaseUpload;
 import com.swp493.ivb.common.track.DTOTrackStatistic;
 import com.swp493.ivb.common.track.DTOTrackUpdate;
 import com.swp493.ivb.common.view.Paging;
@@ -17,6 +18,7 @@ public interface ServiceWorkspace {
     public Optional<String> requestBecomeArtirst(String userId, DTOReleaseInfoUpload info, MultipartFile thumbnail,
     MultipartFile[] audioFiles, String biography);
     public boolean updateRelease(DTOReleaseUpdate data, String userId, String releaseId);
+    public void addToRelease(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos, MultipartFile[] files);
     public String deleteRelease(String userId, String releaseId);
     public boolean actionRelease(String userId, String releaseId, String action);
     public String deleteTrack(String userId, String trackId);

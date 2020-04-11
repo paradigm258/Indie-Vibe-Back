@@ -28,6 +28,7 @@ import com.swp493.ivb.config.AWSConfig;
 import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
 import com.swp493.ivb.config.IndieUserPrincipal;
+import com.swp493.ivb.features.cms.ServiceCMS;
 import com.swp493.ivb.util.BillingUtils;
 
 import org.modelmapper.ModelMapper;
@@ -68,6 +69,9 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Autowired
     ServiceRelease releaseService;
+
+    @Autowired
+    ServiceCMS cmsService;
 
     @Autowired
     PasswordEncoder encoder;
@@ -279,6 +283,7 @@ public class ServiceUserImpl implements ServiceUser {
                         user.setUserRole(role);
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
                         user.setPlanDue(Date.from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                        cmsService.recordPurchase(30000L, "p-montly");
                         user = userRepository.save(user);
                         principal.setUser(user);
                         return "Payment success";
@@ -318,6 +323,7 @@ public class ServiceUserImpl implements ServiceUser {
                         }else{
                             role = masterDataRepo.findByIdAndType("r-premium", "role").get();
                         }
+                        cmsService.recordPurchase(charge.getAmount(), "p-monthly");
                         user.setUserRole(role);
                         user.setPlanStatus("active");
                         user = userRepository.save(user);
@@ -355,6 +361,7 @@ public class ServiceUserImpl implements ServiceUser {
                     String status = billingUtils.checkSubscriptionStatus(user.getBilling());
                     switch (status) {
                         case "active":
+                            cmsService.recordPurchase(30000L, "p-monthly");
                             user.setPlanDue(Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant()));
                             user.setPlanStatus("active");
                             break;
@@ -394,6 +401,7 @@ public class ServiceUserImpl implements ServiceUser {
     public void updateUserPlan(EntityUser user) {
         if ("pending".equals(user.getPlanStatus())) {
             String status;
+            Charge charge = null;
             if (user.getUserPlan().getId().equals("p-monthly")) {
                 try {
                     status = billingUtils.checkSubscriptionStatus(user.getBilling());
@@ -409,12 +417,14 @@ public class ServiceUserImpl implements ServiceUser {
                 }
             } else {
                 try {
-                    status = billingUtils.checkChargeStatus(user.getBilling());
+                    charge = billingUtils.checkChargeStatus(user.getBilling());
+                    status = charge.getStatus();
                 } catch (StripeException e) {
                     status = "pending";
                 }
                 switch (status) {
                     case "succeeded":
+                        cmsService.recordPurchase(charge.getAmount(), "p-fixed");
                         activatePlan(user);
                         break;
                     case "failed":
@@ -471,7 +481,8 @@ public class ServiceUserImpl implements ServiceUser {
         EntityUser user = userRepository.findById(userId).get();
         if("p-monthly".equals(user.getUserPlan().getId())){
             try{
-                billingUtils.cancelSubscription(user.getBilling());
+                long refund = billingUtils.cancelSubscription(user.getBilling());
+                cmsService.recordPurchase(refund, "p-monthly");
                 user.setBilling(null);
                 user.setPlanDue(null);
                 user.setPlanStatus("canceled");

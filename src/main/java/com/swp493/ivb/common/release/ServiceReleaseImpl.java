@@ -24,6 +24,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.mpatric.mp3agic.InvalidDataException;
 import com.mpatric.mp3agic.Mp3File;
 import com.swp493.ivb.common.artist.DTOArtistSimple;
 import com.swp493.ivb.common.artist.EntityArtist;
@@ -501,6 +502,92 @@ public class ServiceReleaseImpl implements ServiceRelease {
         }
         releaseRepo.save(release);
         return true;
+    }
+
+    @Override
+    public void addTrackPlaylist(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos,
+            MultipartFile[] files) {
+        EntityRelease release = releaseRepo.findById(releaseId).get();
+        if(!hasReleaseAccessPermission(releaseId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+
+        Set<EntityMasterData> releaseGenres = new HashSet<>();
+        for(int i=0;i<trackInfos.size();i++){
+
+            DTOTrackReleaseUpload trackInfo = trackInfos.get(i);
+            MultipartFile file128 = files[i*2];
+            MultipartFile file320 = files[i*2+1];
+
+            EntityTrack track = new EntityTrack();
+            track.setTitle(trackInfo.getTitle());
+            track.setStatus("public");
+            track.setProducer(trackInfo.getProducer());
+            track.setRelease(release);
+            track.setFileSize128(file128.getSize());
+            track.setFileSize320(file320.getSize());
+            track.setGenres(Arrays.stream(trackInfo.getGenres()).map(genreId -> {
+                EntityMasterData genre = masterDataRepo.findByIdAndType(genreId, "genre").get();
+                releaseGenres.add(genre);
+                return genre;
+            }).collect(Collectors.toSet()));
+
+            track.setDuration(0L);
+            track.setMp3128("mp3128");
+            track.setMp3320("mp3320");
+
+            EntityUserTrack artistTrack = new EntityUserTrack();
+            artistTrack.setUser(release.getArtist());
+            artistTrack.setTrack(track);
+            artistTrack.setAction("own");
+            track.getTrackUsers().add(artistTrack);
+
+            track = trackRepo.save(track);
+            release.getTracks().add(track);
+
+            File file = null;
+            List<String> uploadKeyList = new LinkedList<>();
+
+            try {
+                file = File.createTempFile(release.getId(), null);
+
+                writeInputToOutput(file128.getInputStream(), new FileOutputStream(file));
+                Mp3File mp3128 = new Mp3File(file);
+                track.setDuration(mp3128.getLengthInMilliseconds());
+                ObjectMetadata metadata128 = new ObjectMetadata();
+                metadata128.setContentLength(track.getFileSize128());
+                String key = track.getId() + "/128";
+                s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata128);
+                uploadKeyList.add(key);
+                track.setMp3128(key);
+
+                writeInputToOutput(file320.getInputStream(), new FileOutputStream(file));
+                Mp3File mp3320 = new Mp3File(file);
+                track.setDuration(mp3320.getLengthInMilliseconds());
+
+                ObjectMetadata metadata320 = new ObjectMetadata();
+                metadata320.setContentLength(track.getFileSize320());
+                key = track.getId() + "/320";
+                s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata320);
+                uploadKeyList.add(key);
+                track.setMp3320(key);
+
+                trackRepo.save(track);
+            } catch (Exception e) {
+                log.error("Track upload failed", e);
+                release.getTracks().remove(track);
+                trackRepo.delete(track);
+                deleteCancel(uploadKeyList);
+                if(e instanceof InvalidDataException){
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Unable to process mp3 file");
+                }
+                return;
+            } finally {
+                if (file != null && file.exists()) {
+                    file.delete();
+                }
+            }
+        }
+        release.getGenres().addAll(releaseGenres);
+        releaseRepo.save(release);
     }
 
     
