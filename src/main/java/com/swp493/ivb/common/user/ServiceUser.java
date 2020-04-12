@@ -28,5 +28,6 @@ public interface ServiceUser {
     void updateArtist(String userId, String action);
     Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit);
     void makeCurator(String userId);
+    void unmakeCurator(String userId);
     void cancelSubsciption(String userId);
 }

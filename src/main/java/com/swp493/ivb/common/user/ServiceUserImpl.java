@@ -456,7 +456,7 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Override
     public Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit) {
-        List<String> roles = Arrays.asList("r-free","r-premium");
+        List<String> roles = Arrays.asList("r-free","r-premium","r-curator");
         int total = userRepository.countByDisplayNameIgnoreCaseContainingAndUserRoleIdIn(key,roles);
         Paging<DTOUserPublic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
@@ -471,6 +471,22 @@ public class ServiceUserImpl implements ServiceUser {
         String roleId = user.getUserRole().getId();
         if (roleId.equals("r-free")||roleId.equals("r-premium")) {
             user.setUserRole(masterDataRepo.findById("r-curator").get());
+            userRepository.save(user);
+        }
+        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");
+    }
+
+    @Override
+    public void unmakeCurator(String userId) {
+        EntityUser user = userRepository.getOne(userId);
+        String roleId = user.getUserRole().getId();
+        if ("r-curator".equals(roleId)) {
+            String currPlan = user.getUserPlan().getId();
+            if ("p-free".equals(currPlan)) {
+                user.setUserRole(masterDataRepo.findById("r-free").get());
+            } else {
+                user.setUserRole(masterDataRepo.findById("r-premium").get());
+            }
             userRepository.save(user);
         }
         else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");

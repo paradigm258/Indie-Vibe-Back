@@ -56,6 +56,12 @@ public class ControllerCMS {
         return Payload.successResponse("Success");
     }
 
+    @PutMapping(value="/cms/undelegate")
+    public ResponseEntity<?> unmakeCurator(@RequestParam String userId) {
+        cmsService.unmakeCurator(userId);
+        return Payload.successResponse("Success");
+    }
+
     @GetMapping(value= {"/cms/reports", "/cms/reports/{type}"})
     public ResponseEntity<?> getReports(
         @PathVariable(required = false)String type,
