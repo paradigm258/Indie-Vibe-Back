@@ -16,6 +16,7 @@ public interface ServiceCMS {
     public boolean responseRequest(String userId, String action);
     public Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit);
     public void makeCurator(String userId);
+    public void unmakeCurator(String userId);
     public Paging<DTOReport> findReport(Optional<String> type, Optional<String> status, int offset, int limit);
     public void reviewReport(String id,String action);
     public List<Long> yearlySumStream(int start, int end);

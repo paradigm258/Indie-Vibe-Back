@@ -78,6 +78,11 @@ public class ServiceCMSImpl implements ServiceCMS {
     }
 
     @Override
+    public void unmakeCurator(String userId) {
+        userService.unmakeCurator(userId);
+    }
+
+    @Override
     public Paging<DTOReport> findReport(Optional<String> type, Optional<String> status, int offset, int limit) {
         return reportService.findReport(type, status, offset, limit);
     }
