@@ -110,6 +110,10 @@ public class EntityUser {
     private Set<EntityUserTrack> trackUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "action = 'own' and track_id is not null")
+    private Set<EntityUserTrack> userOwnTracks = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Where(clause = "playlist_id is not null")
     private Set<EntityUserPlaylist> userPlaylists = new HashSet<>();
 
