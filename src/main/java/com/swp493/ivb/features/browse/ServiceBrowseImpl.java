@@ -127,7 +127,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
                 case "playlist":
                     return playlistService.getPlaylistSimple(item.getObjectId(), userId);
                 case "artist":
-                    return userService.getUserPublic(item.getObjectId(), userId);
+                    return artistService.getArtistFull(userId, item.getObjectId());
                 default:
                     return null;
             }
@@ -146,7 +146,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
                 case "playlist":
                     return playlistService.getPlaylistSimple(item.getObjectId(), userId);
                 case "artist":
-                    return userService.getUserPublic(item.getObjectId(), userId);
+                    return artistService.getArtistFull(userId, item.getObjectId());
                 default:
                     return null; 
             }

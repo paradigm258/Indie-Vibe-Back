@@ -1,8 +1,10 @@
 package com.swp493.ivb.common.artist;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.swp493.ivb.common.mdata.DTOReleaseType;
@@ -106,5 +108,15 @@ public class ServiceArtistImpl implements ServiceArtist {
         return paging;
     }
 
-    
+    @Override
+    public List<String> streamArtist(String artistId) {
+        Optional<EntityArtist> artist = artistRepo.findById(artistId);
+
+        return artist.map(a -> {
+            return a.getUserOwnTracks()
+                .stream()
+                .map(uot -> uot.getTrack().getId())
+                .collect(Collectors.toList());
+        }).orElse(Collections.<String>emptyList());
+    }
 }

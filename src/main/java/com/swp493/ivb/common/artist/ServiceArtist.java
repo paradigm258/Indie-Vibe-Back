@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.artist;
 
+import java.util.List;
 import java.util.Map;
 
 import com.swp493.ivb.common.view.Paging;
@@ -11,5 +12,6 @@ public interface ServiceArtist {
     Paging<DTOArtistFull> findArtist(String key, String viewerId, int offset, int limit);
     Map<String, Object> getArtistReleaseByType(String artistId, String userId, String releaseTypeId, int offset, int limit);
     Paging<DTOArtistFull> getArtistsRequestProfile(String adminId, int offset, int limit);
+    List<String> streamArtist(String artistId);
 }
 

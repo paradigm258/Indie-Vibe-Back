@@ -31,6 +31,9 @@ public class ControllerArtist {
     public ResponseEntity<?> getArtist(@PathVariable String artistId, @RequestAttribute EntityUser user) {
         return Payload.successResponse(artistService.getArtistFull(user.getId(), artistId));
     }
-    
-    
+
+    @GetMapping(value = "/stream/artist/{artistId}")
+    public ResponseEntity<?> streamArtist(@PathVariable String artistId) {
+        return Payload.successResponse(artistService.streamArtist(artistId));
+    }
 }
