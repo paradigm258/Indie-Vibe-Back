@@ -50,7 +50,6 @@ public class ControllerRelease {
         } else {
             return Payload.failureResponse("Failed to upload");
         }
-
     }
 
     @DeleteMapping(value = "/releases/{id}")

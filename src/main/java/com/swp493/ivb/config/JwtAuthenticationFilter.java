@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = getJwtFromRequest(request);
-            if (!StringUtils.isEmpty(jwt)) {
+            if (StringUtils.hasText(jwt)) {
                 OAuth2AccessToken accessToken = tokenStore.readAccessToken(jwt);
                 OAuth2Authentication authentication = tokenStore.readAuthentication(jwt);
                 if (accessToken != null && !accessToken.isExpired()) {

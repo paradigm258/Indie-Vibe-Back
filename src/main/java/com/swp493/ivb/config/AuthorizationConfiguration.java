@@ -24,9 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
-import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.endpoint.FrameworkEndpoint;
@@ -41,7 +39,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-@EnableAuthorizationServer
 @Configuration
 public class AuthorizationConfiguration extends AuthorizationServerConfigurerAdapter {
 
@@ -55,18 +52,6 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 			throws Exception {
 		this.authenticationManager = authenticationConfiguration.getAuthenticationManager();
 		this.keyPair = keyPair;
-	}
-
-	@Override
-	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-		// @formatter:off
-		clients.inMemory()
-			.withClient("web")
-				.authorizedGrantTypes("password")
-				.secret(encoder.encode("secret"))
-				.scopes("user")
-				.accessTokenValiditySeconds(600);
-		// @formatter:on
 	}
 
 	@Override

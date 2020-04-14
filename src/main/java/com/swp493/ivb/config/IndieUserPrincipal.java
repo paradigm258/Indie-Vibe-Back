@@ -42,7 +42,7 @@ public class IndieUserPrincipal implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String role;
-        if (user.getPlanStatus() != null && user.getPlanStatus().equals("active")
+        if ("active".equals(user.getPlanStatus())
                 || user.getUserRole().getId().equals("r-curator") || user.getUserRole().getId().equals("r-admin")) {
             role = user.getUserRole().getId();
         } else {

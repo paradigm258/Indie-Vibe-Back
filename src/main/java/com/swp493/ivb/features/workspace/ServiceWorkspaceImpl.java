@@ -245,7 +245,7 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     @Override
     public void addToRelease(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos,
             MultipartFile[] files) {
-        releaseService.addTrackPlaylist(userId, releaseId, trackInfos, files);
+        releaseService.addTrackRelease(userId, releaseId, trackInfos, files);
     }
 
 }
