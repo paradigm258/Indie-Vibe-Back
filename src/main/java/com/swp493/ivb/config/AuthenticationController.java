@@ -22,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
@@ -84,8 +85,12 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body("Bad credentials");
         String refreshTokenValue = bearerToken.substring(7, bearerToken.length());
         TokenRequest tokenRequest = new TokenRequest(null, "web", null, null);
-        OAuth2AccessToken accessToken = tokenServices.refreshAccessToken(refreshTokenValue, tokenRequest);
-        return ResponseEntity.ok().body(accessToken);
+        try {
+            OAuth2AccessToken accessToken = tokenServices.refreshAccessToken(refreshTokenValue, tokenRequest);
+            return ResponseEntity.ok().body(accessToken);
+        } catch (AuthenticationException e) {
+            return Payload.failedAuthorization("Invalid refresh token");
+        }     
     }
 
     @PostMapping(value = "/login")
