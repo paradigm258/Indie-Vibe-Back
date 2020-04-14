@@ -41,7 +41,8 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.POST,"/api/login/**","/api/register/**","/api/token","/api/logout").permitAll()
             .antMatchers("/api/**").fullyAuthenticated()
             .antMatchers("/api/cms/**").hasAuthority("r-admin")
-            .antMatchers(HttpMethod.POST, "/releases").hasAuthority("r-artist");
+            .antMatchers(HttpMethod.POST, "/releases").hasAuthority("r-artist")
+            .and().logout().disable();
     }
 
 }
