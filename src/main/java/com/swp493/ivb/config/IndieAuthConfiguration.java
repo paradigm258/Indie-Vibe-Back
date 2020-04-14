@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @EnableWebSecurity
 @Configuration
-
 public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -40,10 +39,9 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .authenticationEntryPoint(unauthorizedHandler)
             .and().authorizeRequests()
             .antMatchers(HttpMethod.POST,"/api/login/**","/api/register/**","/api/token","/api/logout").permitAll()
-            .antMatchers("/api").fullyAuthenticated()
+            .antMatchers("/api/**").fullyAuthenticated()
             .antMatchers("/api/cms/**").hasAuthority("r-admin")
-            .antMatchers(HttpMethod.POST, "/releases").hasAuthority("r-artist")
-            .and().logout().disable();
+            .antMatchers(HttpMethod.POST, "/releases").hasAuthority("r-artist");
     }
 
 }
