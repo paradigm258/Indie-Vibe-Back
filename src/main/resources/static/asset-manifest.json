@@ -1,25 +1,26 @@
 {
   "files": {
-    "main.css": "/static/css/main.4c994208.chunk.css",
-    "main.js": "/static/js/main.b314f497.chunk.js",
-    "main.js.map": "/static/js/main.b314f497.chunk.js.map",
+    "main.css": "/static/css/main.7202d388.chunk.css",
+    "main.js": "/static/js/main.14f154f3.chunk.js",
+    "main.js.map": "/static/js/main.14f154f3.chunk.js.map",
     "runtime-main.js": "/static/js/runtime-main.b746e42a.js",
     "runtime-main.js.map": "/static/js/runtime-main.b746e42a.js.map",
     "static/css/2.17e5ed98.chunk.css": "/static/css/2.17e5ed98.chunk.css",
-    "static/js/2.a6a4b649.chunk.js": "/static/js/2.a6a4b649.chunk.js",
-    "static/js/2.a6a4b649.chunk.js.map": "/static/js/2.a6a4b649.chunk.js.map",
+    "static/js/2.d387191e.chunk.js": "/static/js/2.d387191e.chunk.js",
+    "static/js/2.d387191e.chunk.js.map": "/static/js/2.d387191e.chunk.js.map",
     "index.html": "/index.html",
-    "precache-manifest.71bd5ead1bf15b1adcc562ad1fff43de.js": "/precache-manifest.71bd5ead1bf15b1adcc562ad1fff43de.js",
+    "precache-manifest.565e9e3b14b0a26f6e9589d4128a9e47.js": "/precache-manifest.565e9e3b14b0a26f6e9589d4128a9e47.js",
     "service-worker.js": "/service-worker.js",
     "static/css/2.17e5ed98.chunk.css.map": "/static/css/2.17e5ed98.chunk.css.map",
-    "static/css/main.4c994208.chunk.css.map": "/static/css/main.4c994208.chunk.css.map",
-    "static/js/2.a6a4b649.chunk.js.LICENSE": "/static/js/2.a6a4b649.chunk.js.LICENSE",
+    "static/css/main.7202d388.chunk.css.map": "/static/css/main.7202d388.chunk.css.map",
+    "static/js/2.d387191e.chunk.js.LICENSE": "/static/js/2.d387191e.chunk.js.LICENSE",
     "static/media/add-playlist.6d6b5ac3.svg": "/static/media/add-playlist.6d6b5ac3.svg",
     "static/media/add.68142657.svg": "/static/media/add.68142657.svg",
     "static/media/arrow-back.41272baa.svg": "/static/media/arrow-back.41272baa.svg",
     "static/media/arrow-down.5a6eb333.svg": "/static/media/arrow-down.5a6eb333.svg",
     "static/media/arrow-forward.78257f62.svg": "/static/media/arrow-forward.78257f62.svg",
     "static/media/arrow-right.cd8e03b4.svg": "/static/media/arrow-right.cd8e03b4.svg",
+    "static/media/avatar-placeholder.jpg": "/static/media/avatar-placeholder.4f3550d3.jpg",
     "static/media/style.scss": "/static/media/bg.cb43d220.jpg",
     "static/media/browse.dccbdff1.svg": "/static/media/browse.dccbdff1.svg",
     "static/media/ca-hoi-hoang.jpg": "/static/media/ca-hoi-hoang.bcfdda1d.jpg",
@@ -66,8 +67,8 @@
   "entrypoints": [
     "static/js/runtime-main.b746e42a.js",
     "static/css/2.17e5ed98.chunk.css",
-    "static/js/2.a6a4b649.chunk.js",
-    "static/css/main.4c994208.chunk.css",
-    "static/js/main.b314f497.chunk.js"
+    "static/js/2.d387191e.chunk.js",
+    "static/css/main.7202d388.chunk.css",
+    "static/js/main.14f154f3.chunk.js"
   ]
 }
