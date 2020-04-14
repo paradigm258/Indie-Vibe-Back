@@ -40,28 +40,28 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
         http
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and().cors()
+            // .and().cors()
             .and().csrf().disable()
             .exceptionHandling()
             .authenticationEntryPoint(unauthorizedHandler)
             .and().authorizeRequests()
-            .antMatchers("/login/**","/register/**","/token","/logout").permitAll()
-            .antMatchers("/cms/**").hasAuthority("r-admin")
+            .antMatchers(HttpMethod.POST,"/api/login/**","/api/register/**","/api/token","/api/logout").permitAll()
+            .antMatchers("/api").fullyAuthenticated()
+            .antMatchers("/api/cms/**").hasAuthority("r-admin")
             .antMatchers(HttpMethod.POST, "/releases").hasAuthority("r-artist")
-            .anyRequest().fullyAuthenticated()
             .and().logout().disable();
     }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "Upgrade-Insecure-Requests", "range"));
-        configuration.setExposedHeaders(Arrays.asList("x-auth-token"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() {
+    //     CorsConfiguration configuration = new CorsConfiguration();
+    //     configuration.setAllowedOrigins(Arrays.asList("*"));
+    //     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+    //     configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "Upgrade-Insecure-Requests", "range"));
+    //     configuration.setExposedHeaders(Arrays.asList("x-auth-token"));
+    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    //     source.registerCorsConfiguration("/**", configuration);
+    //     return source;
+    // }
 
 }
