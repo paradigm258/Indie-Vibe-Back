@@ -80,8 +80,9 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
                 break;
             case "track":
                 EntityTrack track = trackRepo.getOne(id);
-                EntityUser artist = userTrackRepo.findByTrackIdAndAction(id, "own").getUser();
                 track.setStreamCount(track.getStreamCount() + 1);
+            case "artist":
+                EntityUser artist = userTrackRepo.findByTrackIdAndAction(id, "own").getUser();
                 Optional<EntityPlayRecord> opUserPlayArtist = playRecordRepository
                         .findByUserIdAndObjectIdAndTimestampAfter(userId, artist.getId(), date);
                 EntityPlayRecord userPlayArtist = opUserPlayArtist.map(upa -> {

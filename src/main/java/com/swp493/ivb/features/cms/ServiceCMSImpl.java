@@ -11,7 +11,6 @@ import java.util.Optional;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.artist.ServiceArtist;
-import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
 import com.swp493.ivb.common.release.DTOReleasePending;
 import com.swp493.ivb.common.release.ServiceRelease;

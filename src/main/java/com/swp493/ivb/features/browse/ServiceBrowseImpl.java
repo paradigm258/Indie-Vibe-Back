@@ -118,7 +118,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     @Override
     public List<Object> getRecent(String userId) {
         Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "timestamp");
-        List<ITypeAndId> list = playStatRepo.findByUserIdAndObjectTypeNot(userId, "track", pageable);
+        List<ITypeAndId> list = playStatRepo.findDistinctObjectIdByUserIdAndObjectTypeNot(userId, "track", pageable);
         return list.stream().map(item ->{
             String type = item.getObjectType();
             switch (type) {
@@ -138,7 +138,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     @Override
     public List<Object> getMost(String userId) {
         Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "count");
-        List<ITypeAndId> list = playStatRepo.findByUserIdAndObjectTypeNot(userId, "track", pageable);
+        List<ITypeAndId> list = playStatRepo.findDistinctObjectIdByUserIdAndObjectTypeNot(userId, "track", pageable);
         return list.stream().map(item ->{
             switch (item.getObjectType()) {
                 case "release":
