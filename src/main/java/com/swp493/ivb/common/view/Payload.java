@@ -64,4 +64,8 @@ public class Payload<T> {
     public static  ResponseEntity<Payload<Object>> failureResponse(Object message){
         return ResponseEntity.badRequest().body(new Payload<>().fail(message));
     }
+
+    public static ResponseEntity<Payload<Object>> failedAuthorization(Object message){
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Payload<>().fail(message));
+    }
 }

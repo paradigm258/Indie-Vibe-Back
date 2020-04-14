@@ -19,8 +19,6 @@ import com.swp493.ivb.features.workspace.RepositoryPlayRecord;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -117,28 +115,15 @@ public class ServiceBrowseImpl implements ServiceBrowse {
 
     @Override
     public List<Object> getRecent(String userId) {
-        Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "timestamp");
-        List<ITypeAndId> list = playStatRepo.findDistinctObjectIdByUserIdAndObjectTypeNot(userId, "track", pageable);
-        return list.stream().map(item ->{
-            String type = item.getObjectType();
-            switch (type) {
-                case "release":
-                    return releaseService.getReleaseSimple(item.getObjectId(), userId);
-                case "playlist":
-                    return playlistService.getPlaylistSimple(item.getObjectId(), userId);
-                case "artist":
-                    return artistService.getArtistFull(userId, item.getObjectId());
-                default:
-                    return null;
-            }
-        }).filter(item -> item != null)
-                .collect(Collectors.toList());
+        return constructData(playStatRepo.findRecent(userId, PageRequest.of(0, 5)), userId);
     }
 
     @Override
     public List<Object> getMost(String userId) {
-        Pageable pageable = PageRequest.of(0, 5, Direction.DESC, "count");
-        List<ITypeAndId> list = playStatRepo.findDistinctObjectIdByUserIdAndObjectTypeNot(userId, "track", pageable);
+        return constructData(playStatRepo.findMost(userId, PageRequest.of(0, 5)), userId);
+    }
+
+    private List<Object> constructData(List<ITypeAndId> list, String userId){
         return list.stream().map(item ->{
             switch (item.getObjectType()) {
                 case "release":

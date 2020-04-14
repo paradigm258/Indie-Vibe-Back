@@ -91,6 +91,7 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
                 }).orElse(newUserRecord(userId, "artist", artist.getId()));
                 playRecordRepository.save(userPlayArtist);
                 break;
+            case "artist":
             case "playlist":
                 break;
             default:

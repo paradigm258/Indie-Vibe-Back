@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -96,12 +95,12 @@ public class AuthenticationController {
             Authentication authentication = manager.authenticate(principal);
             return TokenResponse(authentication);
         } catch (BadCredentialsException e) {
-            return Payload.failureResponse("Bad creadential");
+            return Payload.failedAuthorization("Bad credential");
         }
 
     }
 
-    @RequestMapping(value = "/login/facebook")
+    @PostMapping(value = "/login/facebook")
     public ResponseEntity<?> loginFb(String userFbId, String userFbToken) {
         try {
             UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
@@ -111,10 +110,10 @@ public class AuthenticationController {
                         null, userDetails.getAuthorities());
                 return TokenResponse(userAuth);
             } else {
-                return Payload.failureResponse("Token invalid");
+                return Payload.failedAuthorization("Token invalid");
             }
         } catch (UsernameNotFoundException e) {
-            return Payload.failureResponse("Facebook account not connected");
+            return Payload.failedAuthorization("Facebook account not connected");
         }
 
     }
