@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.view;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -13,6 +15,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Payload<T> {
+
+    private Date timestamp = new Date();
 
     @JsonInclude(Include.NON_EMPTY)
     private String status;

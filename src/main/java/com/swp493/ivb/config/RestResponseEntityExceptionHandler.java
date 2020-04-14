@@ -37,7 +37,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
             default:
                 break;
         }
-        return ResponseEntity.status(ex.getStatus()).build();
+        log.info("Info",ex);
+        return ResponseEntity.status(ex.getStatus()).body(new Payload<>().fail(ex.getReason()));
     }
 
     @Override

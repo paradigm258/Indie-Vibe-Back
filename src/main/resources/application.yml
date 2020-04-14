@@ -11,7 +11,7 @@ spring:
             max-request-size: 500MB
 logging:
     level: 
-        ROOT: ERROR
+        ROOT: INFO
 server:
     forward-headers-strategy: framework
     port: 5000
