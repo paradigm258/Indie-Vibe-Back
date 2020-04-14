@@ -81,7 +81,6 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
             case "track":
                 EntityTrack track = trackRepo.getOne(id);
                 track.setStreamCount(track.getStreamCount() + 1);
-            case "artist":
                 EntityUser artist = userTrackRepo.findByTrackIdAndAction(id, "own").getUser();
                 Optional<EntityPlayRecord> opUserPlayArtist = playRecordRepository
                         .findByUserIdAndObjectIdAndTimestampAfter(userId, artist.getId(), date);
@@ -92,6 +91,7 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
                 }).orElse(newUserRecord(userId, "artist", artist.getId()));
                 playRecordRepository.save(userPlayArtist);
                 break;
+            case "artist":
             case "playlist":
                 break;
             default:
