@@ -505,7 +505,7 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     @Override
-    public void addTrackPlaylist(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos,
+    public void addTrackRelease(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos,
             MultipartFile[] files) {
         EntityRelease release = releaseRepo.findById(releaseId).get();
         if(!hasReleaseAccessPermission(releaseId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);

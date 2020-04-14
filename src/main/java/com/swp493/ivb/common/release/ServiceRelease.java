@@ -20,7 +20,7 @@ public interface ServiceRelease {
     Paging<DTOReleaseSimple> findRelease(String key, String userId, int offset, int limit);
     Paging<DTOReleaseSimple> getReleaseGenre(String genreId, String userId, int offset, int limit);
     List<DTOReleaseSimple> getLastest(String userId);
-    void addTrackPlaylist(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos, MultipartFile[] files);
+    void addTrackRelease(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos, MultipartFile[] files);
     Paging<DTOReleaseSimple> getArtistReleaseByType(String artistId, String userId, String releaseType, int offset, int limit);
     DTOReleasePending getPendingRelease(String userId, int offset, int limit);
     boolean updateRelease(DTOReleaseUpdate data, String userId, String releaseId);
