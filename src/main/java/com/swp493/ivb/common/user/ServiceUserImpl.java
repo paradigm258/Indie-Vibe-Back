@@ -132,7 +132,8 @@ public class ServiceUserImpl implements ServiceUser {
         user.setEmail(fbForm.getEmail());
         user.setFbId(fbForm.getFbId());
         user.setThumbnail(fbForm.getThumbnail());
-
+        user.setDob(fbForm.getDob());
+        
         user = userDefault(user);
         userRepository.save(user);
     }
@@ -152,6 +153,7 @@ public class ServiceUserImpl implements ServiceUser {
         EntityUser follower = userRepository.findById(followerId).get();
         EntityUser followed = userRepository.findById(followedId).get();
         follower.getFollowingUsers().add(followed);
+        followed.getFollowerUsers().add(follower);
         userRepository.flush();
     }
 
@@ -160,6 +162,7 @@ public class ServiceUserImpl implements ServiceUser {
         EntityUser follower = userRepository.findById(followerId).get();
         EntityUser followed = userRepository.findById(followedId).get();
         follower.getFollowingUsers().remove(followed);
+        followed.getFollowerUsers().remove(follower);
         userRepository.flush();
     }
 

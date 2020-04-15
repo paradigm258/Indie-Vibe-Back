@@ -5,12 +5,13 @@ spring:
         username: ${RDS_USERNAME:root}
         password: ${RDS_PASSWORD:1234}
         driverClassName: com.mysql.cj.jdbc.Driver
-    jpa:
-        show-sql: true
     servlet:
         multipart:
             max-file-size: 500MB
             max-request-size: 500MB
+logging:
+    level: 
+        ROOT: INFO
 server:
     forward-headers-strategy: framework
     port: 5000
