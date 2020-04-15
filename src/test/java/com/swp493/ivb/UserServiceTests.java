@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.NoSuchElementException;
+
 import com.swp493.ivb.common.user.DTOUserPrivate;
 import com.swp493.ivb.common.user.DTOUserPublic;
 import com.swp493.ivb.common.user.EntityUser;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest
@@ -44,6 +47,12 @@ public class UserServiceTests {
         final String unknown = "unknown";
         assertThrows(UsernameNotFoundException.class, ()->userDetailsService.loadUserByFbId(unknown));
         assertThrows(UsernameNotFoundException.class, ()->userDetailsService.loadUserByUsername(unknown));
+    }
+
+    @Test
+    void unknownIdTests(){
+        String unknown = "unknown";
+        assertThrows(NoSuchElementException.class, ()->userService.getUserPrivate(unknown));
     }
 
     @Test
