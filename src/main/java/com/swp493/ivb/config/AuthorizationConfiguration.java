@@ -76,7 +76,7 @@ public class AuthorizationConfiguration extends AuthorizationServerConfigurerAda
 		services.setSupportRefreshToken(true);
 		services.setReuseRefreshToken(false);
 		services.setTokenStore(TokenStore());
-		//services.setTokenEnhancer(accessTokenConverter());
+		services.setTokenEnhancer(accessTokenConverter());
 		return services;
 	}
 

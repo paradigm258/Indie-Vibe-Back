@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.track;
 
+import java.util.List;
+
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 
@@ -69,5 +71,9 @@ public class ControllerTrack {
         return Payload.successResponse(trackService.streamFavorite(user.getId()));
     }
     
+    @GetMapping(value = "/queue-detail")
+    public ResponseEntity<?> queueDetail(@RequestAttribute EntityUser user, List<String> tracks){
+        return Payload.successResponse(trackService.queueTracks(user.getId(),tracks));
+    }
 
 }
