@@ -286,7 +286,7 @@ public class ServiceUserImpl implements ServiceUser {
                         user.setUserRole(role);
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
                         user.setPlanDue(Date.from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
-                        cmsService.recordPurchase(30000L, "p-montly");
+                        cmsService.recordPurchase(30000L, "p-monthly");
                         user = userRepository.save(user);
                         principal.setUser(user);
                         return "Payment success";
@@ -326,7 +326,7 @@ public class ServiceUserImpl implements ServiceUser {
                         }else{
                             role = masterDataRepo.findByIdAndType("r-premium", "role").get();
                         }
-                        cmsService.recordPurchase(charge.getAmount(), "p-monthly");
+                        cmsService.recordPurchase(charge.getAmount(), "p-fixed");
                         user.setUserRole(role);
                         user.setPlanStatus("active");
                         user = userRepository.save(user);
