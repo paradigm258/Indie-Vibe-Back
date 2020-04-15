@@ -72,7 +72,7 @@ public class ControllerTrack {
     }
     
     @GetMapping(value = "/queue-detail")
-    public ResponseEntity<?> queueDetail(@RequestAttribute EntityUser user, List<String> tracks){
+    public ResponseEntity<?> queueDetail(@RequestAttribute EntityUser user,@RequestParam List<String> tracks){
         return Payload.successResponse(trackService.queueTracks(user.getId(),tracks));
     }
 
