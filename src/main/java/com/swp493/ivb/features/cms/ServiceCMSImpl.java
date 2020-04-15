@@ -111,7 +111,7 @@ public class ServiceCMSImpl implements ServiceCMS {
         List<Long> monthly = new ArrayList<>();
         for (; start <= end; start++) {
             fixed.add(revenueRecordRepo.getYearRevenue(start, "p-fixed"));
-            monthly.add(revenueRecordRepo.getYearRevenue(start, "p-montly"));
+            monthly.add(revenueRecordRepo.getYearRevenue(start, "p-monthly"));
         }
         res.put("fixed", fixed);
         res.put("monthly", monthly);
