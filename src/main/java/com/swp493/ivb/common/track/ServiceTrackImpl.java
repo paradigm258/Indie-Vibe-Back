@@ -348,4 +348,9 @@ public class ServiceTrackImpl implements ServiceTrack {
                 .collect(Collectors.toSet()));
         return res;
     }
+
+    @Override
+    public List<DTOTrackFull> queueTracks(String userId, List<String> trackIds) {
+        return trackIds.stream().map(trackId -> getTrackById(trackId, userId)).collect(Collectors.toList());
+    }
 }

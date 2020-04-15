@@ -54,14 +54,19 @@ public class UserServiceTests {
         
         //Follow self
         assertThrows(ResponseStatusException.class, ()->userService.followUser(userId1, userId1));
+        
         //Follow user
         assertDoesNotThrow(()->userService.followUser(userId1, userId2));
+
         //Followed appears in following list
         assertTrue(user1.getFollowingUsers().contains(user2),"User following not updated");
+
         //Follower appears in follower list
         assertTrue(user2.getFollowerUsers().contains(user1),"User follower not updated");
+
         //Unfollow user
         assertDoesNotThrow(()->userService.unfollowUser(userId1, userId2));
+
         user1 = userRepo.findById(userId1).get();
         user2 = userRepo.findById(userId2).get();
         //Followed removed from following list
