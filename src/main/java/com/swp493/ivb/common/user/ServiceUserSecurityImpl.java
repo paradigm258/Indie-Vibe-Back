@@ -34,7 +34,6 @@ public class ServiceUserSecurityImpl implements UserDetailsService {
             e.printStackTrace();
             throw e;
         }
-        
     }
 
     public UserDetails loadUserByFbId(String fbId) throws UsernameNotFoundException {

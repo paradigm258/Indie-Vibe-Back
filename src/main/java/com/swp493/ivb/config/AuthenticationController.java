@@ -22,10 +22,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
+import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.TokenRequest;
@@ -88,7 +88,7 @@ public class AuthenticationController {
         try {
             OAuth2AccessToken accessToken = tokenServices.refreshAccessToken(refreshTokenValue, tokenRequest);
             return ResponseEntity.ok().body(accessToken);
-        } catch (AuthenticationException e) {
+        } catch (InvalidGrantException e) {
             return Payload.failedAuthorization("Invalid refresh token");
         }     
     }
