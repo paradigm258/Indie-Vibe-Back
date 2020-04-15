@@ -17,5 +17,6 @@ public interface ServiceTrack {
     public DTOTrackSimpleWithLink getTrackSimpleWithLink(String trackId);
     public String deleteTrack(String userId, String trackId);
 	public String updateTrack(String userId, String trackId, DTOTrackUpdate data);
-	public DTOTrackSimple getTrackSimple(String trackId, String userId);
+    public DTOTrackSimple getTrackSimple(String trackId, String userId);
+    public List<DTOTrackFull> queueTracks(String userId, List<String> trackIds);
 }
