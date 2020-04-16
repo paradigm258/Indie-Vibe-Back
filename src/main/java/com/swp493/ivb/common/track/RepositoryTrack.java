@@ -22,6 +22,6 @@ public interface RepositoryTrack extends JpaRepository<EntityTrack, String> {
     List<IOnlyId> findByTitleIgnoreCaseContainingAndStatus(String key, String status, Pageable pageable);
     int countByTitleIgnoreCaseContainingAndStatus(String key, String status);
     List<IOnlyId> findByReleaseId(String releaseId, Pageable pageable);
-    @Query(value = "select track_id from user_object where track_id is not null and user_id = ?1",nativeQuery = true)
+    @Query(value = "select track_id from user_object where track_id is not null and user_id = ?1 and action='favorite'",nativeQuery = true)
     List<String> getFavIdList(String userId);
 }
