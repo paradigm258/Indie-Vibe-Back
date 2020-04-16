@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest
@@ -31,11 +30,12 @@ public class UserServiceTests {
     private final String userId2 = "9s2vQcIMmojuYEbg1Swu";
 
     @Autowired
+    RepositoryUser userRepo;
+    @Autowired
     ServiceUser userService;
     @Autowired
     ServiceUserSecurityImpl userDetailsService;
-    @Autowired
-    RepositoryUser userRepo;
+   
     @Test
     void serviceNotNullTests(){
         assertNotNull(userDetailsService);
@@ -50,7 +50,7 @@ public class UserServiceTests {
     }
 
     @Test
-    void unknownIdTests(){
+    void unknownIdTest(){
         String unknown = "unknown";
         assertThrows(NoSuchElementException.class, ()->userService.getUserPrivate(unknown));
     }
@@ -87,7 +87,7 @@ public class UserServiceTests {
 
     @Test
     @Transactional
-    void getDtoTests(){
+    void getDtoUserTests(){
         //Get public dto
         DTOUserPublic publicProfile = assertDoesNotThrow(()->userService.getUserPublic(userId1, userId2));
         assertNotNull(publicProfile);
