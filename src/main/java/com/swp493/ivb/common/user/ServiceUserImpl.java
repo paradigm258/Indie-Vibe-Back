@@ -505,6 +505,7 @@ public class ServiceUserImpl implements ServiceUser {
                 user.setBilling(null);
                 user.setPlanDue(null);
                 user.setPlanStatus("canceled");
+                user.setUserPlan(masterDataRepo.findByIdAndType("p-free", "plan").get());
                 if(!user.getUserRole().getId().equals("r-curator"))
                 user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
                 userRepository.save(user);
