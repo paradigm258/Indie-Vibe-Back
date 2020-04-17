@@ -312,6 +312,8 @@ public class ServiceReleaseImpl implements ServiceRelease {
     @Override
     public Optional<DTOReleaseFull> getReleaseFull(String releaseId, String userId, int offset, int limit) {
         ModelMapper mapper = new ModelMapper();
+        EntityUser user = userRepo.findById(userId).get();
+        if(!hasReleaseAccessPermission(releaseId, user.getId())) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         Optional<EntityRelease> release = releaseRepo.findById(releaseId);
         return release.map(r -> {
             DTOReleaseFull releaseFull = mapper.map(r, DTOReleaseFull.class);
@@ -379,8 +381,10 @@ public class ServiceReleaseImpl implements ServiceRelease {
     }
 
     public DTOReleaseSimple getReleaseSimple(String releaseId, String userId){
+        EntityUser user = userRepo.findById(userId).get();
+        EntityRelease release = releaseRepo.findById(releaseId).get();
         if(!hasReleaseAccessPermission(releaseId, userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        return getReleaseSimple(releaseRepo.findById(releaseId).get(), userId);
+        return getReleaseSimple(release, user.getId());
     }
 
     public DTOReleaseSimple getReleaseSimple(EntityRelease release, String userId){

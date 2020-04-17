@@ -187,7 +187,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
     @Override
     public DTOPlaylistSimple getPlaylistSimple(String playlistId, String userId)  {
         EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
-        return getPlaylistSimple(playlist, userId);
+        EntityUser user = userRepo.findById(userId).get();
+        return getPlaylistSimple(playlist, user.getId());
     }
 
     @Override

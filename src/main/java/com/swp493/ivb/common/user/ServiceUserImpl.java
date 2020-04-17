@@ -374,6 +374,8 @@ public class ServiceUserImpl implements ServiceUser {
                     }
                 } else {
                     user.setBilling(null);
+                    if("r-premium".equals(user.getUserRole().getId()))
+                        user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
                     user.setUserPlan(masterDataRepo.findByIdAndType("p-free", "plan").get());
                     user.setPlanStatus("expired");
                 }
@@ -409,6 +411,7 @@ public class ServiceUserImpl implements ServiceUser {
                 try {
                     status = billingUtils.checkSubscriptionStatus(user.getBilling());
                 } catch (StripeException e) {
+                    log.error("Error connecting to stripe", e);
                     status = "pending";
                 }
                 switch (status) {
@@ -423,6 +426,7 @@ public class ServiceUserImpl implements ServiceUser {
                     charge = billingUtils.checkChargeStatus(user.getBilling());
                     status = charge.getStatus();
                 } catch (StripeException e) {
+                    log.error("Error connecting to stripe", e);
                     status = "pending";
                 }
                 switch (status) {

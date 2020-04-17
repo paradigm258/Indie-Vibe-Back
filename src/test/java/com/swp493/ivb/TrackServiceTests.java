@@ -27,7 +27,7 @@ public class TrackServiceTests {
     ServiceTrack trackService;
 
     @Test
-    void notNullTrackServiceTest(){
+    void serviceNotNullTrack(){
         assertNotNull(trackService);
     }
 
@@ -65,7 +65,6 @@ public class TrackServiceTests {
 
         assertEquals(full.getId(), simple.getId(), "Id does not match");
         assertEquals(full.getType(), simple.getType(), "Type does not match");
-        assertEquals(full.getArtists(), simple.getArtists(), "Artists do not match");
         assertEquals(full.getGenres(), simple.getGenres(), "Genres do not match");
     }
 

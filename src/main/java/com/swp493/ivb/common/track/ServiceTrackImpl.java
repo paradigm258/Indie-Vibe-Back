@@ -163,9 +163,11 @@ public class ServiceTrackImpl implements ServiceTrack {
 
     @Override
     public DTOTrackFull getTrackById(String id, String userId) {
-        if (!hasTrackAccessPermission(id, userId))
+        EntityTrack track = trackRepo.findById(id).get();
+        EntityUser user = userRepo.findById(userId).get();
+        if (!hasTrackAccessPermission(id, user.getId()))
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        return getTrackFullFromEntity(trackRepo.findById(id).get(), userId);
+        return getTrackFullFromEntity(track, userId);
     }
 
     public DTOTrackFull getTrackFullFromEntity(EntityTrack track, String userId) {

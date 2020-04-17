@@ -25,13 +25,13 @@ public class ReleaseServiceTests {
     @Autowired
     ServiceRelease releaseService;
 
-    private final String validUserId = "";
-    private final String noPermissionUserId = "";
-    private final String releaseId = "";
+    private final String validUserId = "9IwDw6tHJMAR90UGvy0o";
+    private final String noPermissionUserId = "9s2vQcIMmojuYEbg1Swu";
+    private final String releaseId = "LwYor9e4MuE64lOfdg66";
     private final String unknownId = "unknown";
 
     @Test
-    void notNullServiceTest(){
+    void serviceNotNullTest(){
         assertNotNull(releaseService);
     }
 
