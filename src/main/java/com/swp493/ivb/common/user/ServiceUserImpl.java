@@ -121,6 +121,7 @@ public class ServiceUserImpl implements ServiceUser {
         user.setEmail(userForm.getEmail());
         user.setPassword(encoder.encode(userForm.getPassword()));
         user.setDob(userForm.getDob());
+        user.setGender(userForm.getGender());
         user = userDefault(user);
         userRepository.save(user);
     }
