@@ -1,7 +1,12 @@
 package com.swp493.ivb.config;
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.validation.Valid;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,6 +15,8 @@ import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
 import com.swp493.ivb.common.view.Payload;
 import com.swp493.ivb.util.BillingUtils;
+import com.swp493.ivb.util.ConfirmTokenUtils;
+import com.swp493.ivb.util.EmailUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,10 +46,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 /**
  * AuthenticationController
@@ -58,6 +69,9 @@ public class AuthenticationController {
 
     @Autowired
     TokenStore tokenStore;
+
+    @Autowired
+    ConfirmTokenUtils confirmUtils;
 
     @Autowired
     AuthenticationManager manager;
@@ -101,6 +115,8 @@ public class AuthenticationController {
             return TokenResponse(authentication);
         } catch (BadCredentialsException e) {
             return Payload.failedAuthorization("Bad credential");
+        } catch (DisabledException e){
+            return Payload.failedAuthorization("inactive");
         }
 
     }
@@ -110,7 +126,7 @@ public class AuthenticationController {
         try {
             UserDetails userDetails = userSecurityService.loadUserByFbId(userFbId);
 
-            if (checkFbToken(userFbId, userFbToken) == true) {
+            if (checkFbToken(userFbId, userFbToken)) {
                 UsernamePasswordAuthenticationToken userAuth = new UsernamePasswordAuthenticationToken(userDetails,
                         null, userDetails.getAuthorities());
                 return TokenResponse(userAuth);
@@ -196,4 +212,25 @@ public class AuthenticationController {
             return Payload.failureResponse("Token invalid");
         }
     }
+
+    @PostMapping(value = "/activate")
+    public ResponseEntity<?> activateAccount(@RequestParam String activateToken, @RequestParam String id){
+        try {
+            String tokenId = confirmUtils.decodeConfirmToken(activateToken);
+            if(!id.equals(tokenId)) return Payload.failureResponse("Incorrect id"); 
+            userService.activateUser(id);
+            return Payload.successResponse("Account activated");
+		} catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException
+				| NoSuchPaddingException e) {
+            logger.info("Invalid token", e);
+			return Payload.failureResponse("Token invalid");
+		}
+    }
+
+    @PostMapping(value="/reset")
+    public ResponseEntity<?> resendToken(String email, String password) {
+        userService.resendActivateEmail(email, password);
+        return Payload.successResponse("Success");
+    }
+    
 }

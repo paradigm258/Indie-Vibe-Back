@@ -6,6 +6,7 @@ import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 public class ControllerTrack {
@@ -61,7 +63,7 @@ public class ControllerTrack {
     @CrossOrigin(origins = "*")
     public ResponseEntity<?> getTrack(@RequestAttribute("user") EntityUser user, @PathVariable int bitrate,
             @PathVariable(required = true) String id) {
-
+        if(user.getUserRole().getId().equals("r-free")&&bitrate == 320) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         DTOTrackStreamInfo track = trackService.getTrackStreamInfo(id, bitrate, user.getId());
         return Payload.successResponse(track);
     }
