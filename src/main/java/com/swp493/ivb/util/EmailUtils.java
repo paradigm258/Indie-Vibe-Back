@@ -69,4 +69,21 @@ public class EmailUtils {
     public void sendExpireWarning(EntityUser user){
 
     }
+
+    public void sendResetPassword(EntityUser user, String password) throws MessagingException {
+        final Context ctx = new Context();
+        final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
+        final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        ctx.setVariable("logo", "logo");
+        ctx.setVariable("password", password);
+        String htmlText = templateEngine.process("ResetPasswordTemplate.html", ctx);
+        message.setFrom(serverEmail);
+        message.setTo(user.getEmail());
+        message.setSubject("Reset password");
+        message.setText(htmlText,true);
+        // ClassPathResource imageSource = new ClassPathResource("static/logo192.png");
+        // message.addInline("logo", imageSource,"image/png");
+        this.emailSender.send(mimeMessage);
+        templateEngine.clearTemplateCache();
+    }
 }

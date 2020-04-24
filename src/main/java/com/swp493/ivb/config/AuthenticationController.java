@@ -16,7 +16,6 @@ import com.swp493.ivb.common.user.ServiceUserSecurityImpl;
 import com.swp493.ivb.common.view.Payload;
 import com.swp493.ivb.util.BillingUtils;
 import com.swp493.ivb.util.ConfirmTokenUtils;
-import com.swp493.ivb.util.EmailUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +45,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.springframework.web.bind.annotation.RequestBody;
 
 
 /**
@@ -232,5 +229,12 @@ public class AuthenticationController {
         userService.resendActivateEmail(email, password);
         return Payload.successResponse("Success");
     }
+
+    @PostMapping(value="/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam String email) {
+        userService.resetPassword(email);
+        return ResponseEntity.accepted().build();
+    }
+    
     
 }

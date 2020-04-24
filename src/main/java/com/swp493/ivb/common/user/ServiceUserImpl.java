@@ -10,6 +10,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.crypto.BadPaddingException;
@@ -46,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -564,6 +566,21 @@ public class ServiceUserImpl implements ServiceUser {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Incorrect password");
         }
         sendActivateEmail(user);
+    }
+
+    @Override
+    public void resetPassword(String email) {
+        try {
+            EntityUser user = userRepository.findByEmail(email).get();
+            String plaintext = new RandomValueStringGenerator(10).generate();
+            user.setPassword(encoder.encode(plaintext));
+            userRepository.save(user);
+            emailUtils.sendResetPassword(user,plaintext);
+        } catch (NoSuchElementException e) {
+        } catch (MessagingException e) {
+            log.error("Error sending email", e);
+            throw new RuntimeException(e);
+        }
     }
 
 }

@@ -33,4 +33,5 @@ public interface ServiceUser {
     void activateUser(String userId);
     void sendActivateEmail(EntityUser user);
     void resendActivateEmail(String email, String password);
+    void resetPassword(String email);
 }
