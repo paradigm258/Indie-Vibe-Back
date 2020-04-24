@@ -238,7 +238,7 @@ public class AuthenticationController {
         } catch (NoSuchElementException e) {
             return Payload.failureResponse("Email does not exist");
         }
-        return ResponseEntity.accepted().build();
+        return Payload.successResponse("A new password has been sent to your email");
     }
     
     
