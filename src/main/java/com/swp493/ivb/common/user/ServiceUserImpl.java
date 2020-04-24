@@ -576,7 +576,6 @@ public class ServiceUserImpl implements ServiceUser {
             user.setPassword(encoder.encode(plaintext));
             userRepository.save(user);
             emailUtils.sendResetPassword(user,plaintext);
-        } catch (NoSuchElementException e) {
         } catch (MessagingException e) {
             log.error("Error sending email", e);
             throw new RuntimeException(e);

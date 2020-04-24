@@ -3,6 +3,7 @@ package com.swp493.ivb.config;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -232,7 +233,11 @@ public class AuthenticationController {
 
     @PostMapping(value="/reset-password")
     public ResponseEntity<?> resetPassword(@RequestParam String email) {
-        userService.resetPassword(email);
+        try {
+            userService.resetPassword(email);
+        } catch (NoSuchElementException e) {
+            return Payload.failureResponse("Email does not exist");
+        }
         return ResponseEntity.accepted().build();
     }
     
