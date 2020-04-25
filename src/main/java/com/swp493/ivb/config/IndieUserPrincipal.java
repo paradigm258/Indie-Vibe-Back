@@ -78,7 +78,7 @@ public class IndieUserPrincipal implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.isActivated();
+        return true;
     }
 
 }

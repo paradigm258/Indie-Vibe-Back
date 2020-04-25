@@ -1,6 +1,7 @@
 package com.swp493.ivb.common.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,20 +21,12 @@ public class ServiceUserSecurityImpl implements UserDetailsService {
     private RepositoryUser repo;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        try {
-            Optional<EntityUser> user = repo.findByEmail(username);
-
-            if (!user.isPresent()) {
-                throw new UsernameNotFoundException(username);
-            }
-            return new IndieUserPrincipal(user.get());
-        } catch (UsernameNotFoundException e) {
-           throw e;
-        } catch (Exception e){
-            e.printStackTrace();
-            throw e;
+    public UserDetails loadUserByUsername(String username) {
+        Optional<EntityUser> user = repo.findByEmail(username);
+        if (!user.isPresent()) {
+            throw new UsernameNotFoundException(username);
         }
+        return new IndieUserPrincipal(user.get());
     }
 
     public UserDetails loadUserByFbId(String fbId) throws UsernameNotFoundException {
