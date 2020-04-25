@@ -139,6 +139,8 @@ public class AuthenticationController {
 
     private ResponseEntity<?> TokenResponse(Authentication authentication) {
         IndieUserPrincipal user = (IndieUserPrincipal) authentication.getPrincipal();
+        EntityUser entityUser = user.getUser();
+        if(!entityUser.isActivated()) throw new DisabledException("Email is not confirmed");
         userService.updateUserPlan(user.getUser());
         OAuth2Request request = new OAuth2Request(null, "web", user.getAuthorities(), true, null, null, null, null,
                 null);
