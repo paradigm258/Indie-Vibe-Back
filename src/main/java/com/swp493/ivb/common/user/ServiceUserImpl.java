@@ -1,6 +1,8 @@
 package com.swp493.ivb.common.user;
 
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -8,7 +10,13 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import javax.mail.MessagingException;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -30,6 +38,7 @@ import com.swp493.ivb.config.DTORegisterFormFb;
 import com.swp493.ivb.config.IndieUserPrincipal;
 import com.swp493.ivb.features.cms.ServiceCMS;
 import com.swp493.ivb.util.BillingUtils;
+import com.swp493.ivb.util.EmailUtils;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -38,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.common.util.RandomValueStringGenerator;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -54,6 +64,9 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Autowired
     AmazonS3 s3;
+
+    @Autowired
+    EmailUtils emailUtils;
 
     @Autowired
     RepositoryUser userRepository;
@@ -122,8 +135,9 @@ public class ServiceUserImpl implements ServiceUser {
         user.setPassword(encoder.encode(userForm.getPassword()));
         user.setDob(userForm.getDob());
         user.setGender(userForm.getGender());
+        user.setActivated(false);
         user = userDefault(user);
-        userRepository.save(user);
+        sendActivateEmail(userRepository.save(user));
     }
 
     @Override
@@ -134,9 +148,10 @@ public class ServiceUserImpl implements ServiceUser {
         user.setFbId(fbForm.getFbId());
         user.setThumbnail(fbForm.getThumbnail());
         user.setDob(fbForm.getDob());
-        
+        user.setActivated(true);
         user = userDefault(user);
         userRepository.save(user);
+        
     }
 
     private EntityUser userDefault(EntityUser user) {
@@ -278,15 +293,16 @@ public class ServiceUserImpl implements ServiceUser {
                 switch (status) {
                     case "active":
                         user.setPlanStatus("active");
-                        EntityMasterData role  = null;
-                        if(user.getArtistStatus().equals("approved")){
+                        EntityMasterData role = null;
+                        if (user.getArtistStatus().equals("approved")) {
                             role = masterDataRepo.findByIdAndType("r-artist", "role").get();
-                        }else{
+                        } else {
                             role = masterDataRepo.findByIdAndType("r-premium", "role").get();
                         }
                         user.setUserRole(role);
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
-                        user.setPlanDue(Date.from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                        user.setPlanDue(Date
+                                .from(LocalDate.now().plusMonths(1).atStartOfDay(ZoneId.systemDefault()).toInstant()));
                         cmsService.recordPurchase(30000L, "p-monthly");
                         user = userRepository.save(user);
                         principal.setUser(user);
@@ -321,10 +337,10 @@ public class ServiceUserImpl implements ServiceUser {
                     case "succeeded":
                         user.setBilling(charge.getId());
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-fixed", "plan").get());
-                        EntityMasterData role  = null;
-                        if(user.getArtistStatus().equals("approved")){
+                        EntityMasterData role = null;
+                        if (user.getArtistStatus().equals("approved")) {
                             role = masterDataRepo.findByIdAndType("r-artist", "role").get();
-                        }else{
+                        } else {
                             role = masterDataRepo.findByIdAndType("r-premium", "role").get();
                         }
                         cmsService.recordPurchase(charge.getAmount(), "p-fixed");
@@ -375,7 +391,7 @@ public class ServiceUserImpl implements ServiceUser {
                     }
                 } else {
                     user.setBilling(null);
-                    if("r-premium".equals(user.getUserRole().getId()))
+                    if ("r-premium".equals(user.getUserRole().getId()))
                         user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
                     user.setUserPlan(masterDataRepo.findByIdAndType("p-free", "plan").get());
                     user.setPlanStatus("expired");
@@ -390,10 +406,10 @@ public class ServiceUserImpl implements ServiceUser {
 
     private void activatePlan(EntityUser user) {
         user.setPlanStatus("active");
-        EntityMasterData role  = null;
-        if(user.getArtistStatus().equals("approved")){
+        EntityMasterData role = null;
+        if (user.getArtistStatus().equals("approved")) {
             role = masterDataRepo.findByIdAndType("r-artist", "role").get();
-        }else{
+        } else {
             role = masterDataRepo.findByIdAndType("r-premium", "role").get();
         }
         user.setUserRole(role);
@@ -441,7 +457,7 @@ public class ServiceUserImpl implements ServiceUser {
                         break;
                 }
             }
-        } 
+        }
     }
 
     @Override
@@ -453,8 +469,9 @@ public class ServiceUserImpl implements ServiceUser {
         } else {
             user.setArtistStatus("open");
             userRepository.deleteBiography(userId);
-            List<EntityUserRelease> releases = userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, "own", PageRequest.of(0, 1));
-            releases.stream().forEach(ur ->{
+            List<EntityUserRelease> releases = userReleaseRepo.findByUserIdAndReleaseNotNullAndAction(userId, "own",
+                    PageRequest.of(0, 1));
+            releases.stream().forEach(ur -> {
                 String releaseId = ur.getRelease().getId();
                 releaseService.deleteRelease(releaseId, userId);
             });
@@ -464,11 +481,12 @@ public class ServiceUserImpl implements ServiceUser {
 
     @Override
     public Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit) {
-        List<String> roles = Arrays.asList("r-free","r-premium","r-curator");
-        int total = userRepository.countByDisplayNameIgnoreCaseContainingAndUserRoleIdIn(key,roles);
+        List<String> roles = Arrays.asList("r-free", "r-premium", "r-curator");
+        int total = userRepository.countByDisplayNameIgnoreCaseContainingAndUserRoleIdIn(key, roles);
         Paging<DTOUserPublic> paging = new Paging<>();
         paging.setPageInfo(total, limit, offset);
-        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContainingAndUserRoleIdIn(key, roles, paging.asPageable());
+        List<IOnlyId> list = userRepository.findByDisplayNameIgnoreCaseContainingAndUserRoleIdIn(key, roles,
+                paging.asPageable());
         paging.setItems(list.stream().map(a -> getUserPublic(a.getId(), a.getId())).collect(Collectors.toList()));
         return paging;
     }
@@ -477,11 +495,11 @@ public class ServiceUserImpl implements ServiceUser {
     public void makeCurator(String userId) {
         EntityUser user = userRepository.getOne(userId);
         String roleId = user.getUserRole().getId();
-        if (roleId.equals("r-free")||roleId.equals("r-premium")) {
+        if (roleId.equals("r-free") || roleId.equals("r-premium")) {
             user.setUserRole(masterDataRepo.findById("r-curator").get());
             userRepository.save(user);
-        }
-        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");
+        } else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");
     }
 
     @Override
@@ -496,29 +514,72 @@ public class ServiceUserImpl implements ServiceUser {
                 user.setUserRole(masterDataRepo.findById("r-premium").get());
             }
             userRepository.save(user);
-        }
-        else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");
+        } else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User role not compatible");
     }
 
     @Override
     public void cancelSubsciption(String userId) {
         EntityUser user = userRepository.findById(userId).get();
-        if("p-monthly".equals(user.getUserPlan().getId())){
-            try{
+        if ("p-monthly".equals(user.getUserPlan().getId())) {
+            try {
                 long refund = billingUtils.cancelSubscription(user.getBilling());
                 cmsService.recordPurchase(refund, "p-monthly");
                 user.setBilling(null);
                 user.setPlanDue(null);
                 user.setPlanStatus("canceled");
                 user.setUserPlan(masterDataRepo.findByIdAndType("p-free", "plan").get());
-                if(!user.getUserRole().getId().equals("r-curator"))
-                user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
+                if (!user.getUserRole().getId().equals("r-curator"))
+                    user.setUserRole(masterDataRepo.findByIdAndType("r-free", "role").get());
                 userRepository.save(user);
-            }catch(StripeException e){
+            } catch (StripeException e) {
                 log.error("Can't cancel stripe subscription", e);
                 throw new RuntimeException(e);
             }
-        }else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid plan canceling");
+        } else
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid plan canceling");
+    }
+
+    @Override
+    public void activateUser(String userId) {
+        EntityUser user = userRepository.getOne(userId);
+        if (!user.isActivated()) {
+            user.setActivated(true);
+            userRepository.save(user);
+        }
+    }
+
+    @Override
+    public void sendActivateEmail(EntityUser user) {
+        try {
+            emailUtils.sendConfirmEmail(user);
+        } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException
+                | NoSuchPaddingException | MessagingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void resendActivateEmail(String email, String password) {
+        EntityUser user = userRepository.findByEmail(email).get();
+        if (!encoder.matches(password, user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Incorrect password");
+        }
+        sendActivateEmail(user);
+    }
+
+    @Override
+    public void resetPassword(String email) {
+        try {
+            EntityUser user = userRepository.findByEmail(email).get();
+            String plaintext = new RandomValueStringGenerator(10).generate();
+            user.setPassword(encoder.encode(plaintext));
+            userRepository.save(user);
+            emailUtils.sendResetPassword(user,plaintext);
+        } catch (MessagingException e) {
+            log.error("Error sending email", e);
+            throw new RuntimeException(e);
+        }
     }
 
 }

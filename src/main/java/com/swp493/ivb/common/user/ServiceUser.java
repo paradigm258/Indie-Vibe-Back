@@ -30,4 +30,8 @@ public interface ServiceUser {
     void makeCurator(String userId);
     void unmakeCurator(String userId);
     void cancelSubsciption(String userId);
+    void activateUser(String userId);
+    void sendActivateEmail(EntityUser user);
+    void resendActivateEmail(String email, String password);
+    void resetPassword(String email);
 }
