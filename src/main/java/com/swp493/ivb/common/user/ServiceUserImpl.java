@@ -10,7 +10,6 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.crypto.BadPaddingException;
@@ -306,6 +305,7 @@ public class ServiceUserImpl implements ServiceUser {
                         cmsService.recordPurchase(30000L, "p-monthly");
                         user = userRepository.save(user);
                         principal.setUser(user);
+                        emailUtils.sendPurchaseSuccessEmail(user);
                         return "Payment success";
                     case "incomplete":
                         user.setUserPlan(masterDataRepo.findByIdAndType("p-monthly", "plan").get());
@@ -321,6 +321,8 @@ public class ServiceUserImpl implements ServiceUser {
             }
         } catch (StripeException e) {
             throw new RuntimeException(e);
+        } catch (MessagingException e) {
+            return "Payment success";
         }
     }
 
@@ -348,6 +350,7 @@ public class ServiceUserImpl implements ServiceUser {
                         user.setPlanStatus("active");
                         user = userRepository.save(user);
                         principal.setUser(user);
+                        emailUtils.sendPurchaseSuccessEmail(user);
                         return "Purchase success";
                     case "pending":
                         user.setBilling(charge.getId());
@@ -364,6 +367,8 @@ public class ServiceUserImpl implements ServiceUser {
 
             } catch (StripeException e) {
                 throw new RuntimeException(e);
+            } catch (MessagingException e) {
+                return "Payment success";
             }
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Your current plan is not expired");
@@ -402,6 +407,15 @@ public class ServiceUserImpl implements ServiceUser {
             }
         }
 
+        Date closeExpire = Date.from(LocalDate.now().plusDays(7).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        users = userRepository.findByPlanDue(closeExpire);
+        for (EntityUser user : users){
+            try {
+                emailUtils.sendExpireWarning(user);
+            } catch(MessagingException e){
+                log.error("Failed sending email", e);
+            }
+        }
     }
 
     private void activatePlan(EntityUser user) {
@@ -417,6 +431,11 @@ public class ServiceUserImpl implements ServiceUser {
         userUpdate.setPlanStatus("active");
         userUpdate.setUserRole(role);
         userRepository.save(userUpdate);
+        try {
+            emailUtils.sendPurchaseSuccessEmail(userUpdate);
+        } catch (MessagingException e) {
+            log.error("Error sending purchase success email", e);
+        }
     }
 
     @Override
@@ -461,7 +480,7 @@ public class ServiceUserImpl implements ServiceUser {
     }
 
     @Override
-    public void updateArtist(String userId, String action) {
+    public void updateArtist(String userId, String action) throws MessagingException {
         EntityUser user = userRepository.getOne(userId);
         if ("approve".equals(action)) {
             user.setArtistStatus("approved");
@@ -476,6 +495,7 @@ public class ServiceUserImpl implements ServiceUser {
                 releaseService.deleteRelease(releaseId, userId);
             });
         }
+        emailUtils.sendArtistRequestResponseEmail(user);
         userRepository.save(user);
     }
 

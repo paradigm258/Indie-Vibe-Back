@@ -1,5 +1,7 @@
 package com.swp493.ivb.common.user;
 
+import javax.mail.MessagingException;
+
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.DTORegisterForm;
 import com.swp493.ivb.config.DTORegisterFormFb;
@@ -25,7 +27,7 @@ public interface ServiceUser {
     String purchaseFixed(String type, String stripeToken, EntityUser authUser, String token);
     void updatePlan(); 
     void updateUserPlan(EntityUser user);
-    void updateArtist(String userId, String action);
+    void updateArtist(String userId, String action) throws MessagingException;
     Paging<DTOUserPublic> listUserProfiles(String key, int offset, int limit);
     void makeCurator(String userId);
     void unmakeCurator(String userId);

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.mail.MessagingException;
+
 import com.swp493.ivb.common.artist.EntityArtist;
 import com.swp493.ivb.common.artist.RepositoryArtist;
 import com.swp493.ivb.common.artist.ServiceArtist;
@@ -15,6 +17,7 @@ import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Paging;
+import com.swp493.ivb.util.EmailUtils;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +46,9 @@ public class ServiceReportImpl implements ServiceReport {
     @Autowired
     ServiceArtist artistSerice;
 
+    @Autowired
+    EmailUtils emailUtils;
+
     @Override
     public void reportArtist(String userId, String artistId, String type, String reason) {
         EntityReport report = new EntityReport();
@@ -59,11 +65,12 @@ public class ServiceReportImpl implements ServiceReport {
     }
 
     @Override
-    public void reviewReport(String id, String action) {
+    public void reviewReport(String id, String action) throws MessagingException {
         if(!action.equals("proceed") && !action.equals("reject")) 
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid action");
-        EntityReport report = reportRepo.getOne(id);
+        EntityReport report = reportRepo.findById(id).get();
         report.setStatus(action+"ed");
+        emailUtils.sendProcessedReportEmail(report);
         reportRepo.save(report);
     }
 
