@@ -2,6 +2,8 @@ package com.swp493.ivb.util;
 
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -9,6 +11,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
+import com.swp493.ivb.common.report.EntityReport;
 import com.swp493.ivb.common.user.EntityUser;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,8 +69,22 @@ public class EmailUtils {
         templateEngine.clearTemplateCache();
     }
 
-    public void sendExpireWarning(EntityUser user){
-
+    public void sendExpireWarning(EntityUser user) throws MessagingException {
+        final Context ctx = new Context();
+        final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
+        final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        ctx.setVariable("logo", "logo");
+        LocalDateTime date = user.getPlanDue().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        ctx.setVariable("expireDate", date.atZone(ZoneId.systemDefault()).toString());
+        String htmlText = templateEngine.process("WarningExpireTemplate.html", ctx);
+        message.setFrom(serverEmail);
+        message.setTo(user.getEmail());
+        message.setSubject("Premium plan expiration");
+        message.setText(htmlText,true);
+        ClassPathResource imageSource = new ClassPathResource("static/logo192.png");
+        message.addInline("logo", imageSource,"image/png");
+        this.emailSender.send(mimeMessage);
+        templateEngine.clearTemplateCache();
     }
 
     public void sendResetPassword(EntityUser user, String password) throws MessagingException {
@@ -81,8 +98,62 @@ public class EmailUtils {
         message.setTo(user.getEmail());
         message.setSubject("Reset password");
         message.setText(htmlText,true);
-        // ClassPathResource imageSource = new ClassPathResource("static/logo192.png");
-        // message.addInline("logo", imageSource,"image/png");
+        ClassPathResource imageSource = new ClassPathResource("static/logo192.png");
+        message.addInline("logo", imageSource,"image/png");
+        this.emailSender.send(mimeMessage);
+        templateEngine.clearTemplateCache();
+    }
+
+    public void sendProcessedReportEmail(EntityReport report) throws MessagingException {
+        final Context ctx = new Context();
+        final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
+        final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        ctx.setVariable("logo", "logo");
+        ctx.setVariable("artist", report.getArtist().getDisplayName());
+        ctx.setVariable("action", report.getStatus());
+        String htmlText = templateEngine.process("ReportProcessTemplate.html", ctx);
+        message.setFrom(serverEmail);
+        message.setTo(report.getReporter().getEmail());
+        message.setSubject("Report reviewed");
+        message.setText(htmlText,true);
+        ClassPathResource imageSource = new ClassPathResource("static/logo192.png");
+        message.addInline("logo", imageSource,"image/png");
+        this.emailSender.send(mimeMessage);
+        templateEngine.clearTemplateCache();
+    }
+
+    public void sendPurchaseSuccessEmail(EntityUser user) throws MessagingException {
+        final Context ctx = new Context();
+        final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
+        final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        ctx.setVariable("logo", "logo");
+        LocalDateTime date = user.getPlanDue().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        ctx.setVariable("expireDate", date.atZone(ZoneId.systemDefault()).toString());
+        ctx.setVariable("planType", user.getUserPlan().getName());
+        String htmlText = templateEngine.process("PurchaseSuccessTemplate.html", ctx);
+        message.setFrom(serverEmail);
+        message.setTo(user.getEmail());
+        message.setSubject("Purchase Successful");
+        message.setText(htmlText,true);
+        ClassPathResource imageSource = new ClassPathResource("static/logo192.png");
+        message.addInline("logo", imageSource,"image/png");
+        this.emailSender.send(mimeMessage);
+        templateEngine.clearTemplateCache();
+    }
+
+    public void sendArtistRequestResponseEmail(EntityUser user) throws MessagingException {
+        final Context ctx = new Context();
+        final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
+        final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        ctx.setVariable("logo", "logo");
+        ctx.setVariable("action", user.getArtistStatus().equals("open")?"rejected":"approved");
+        String htmlText = templateEngine.process("ArtistRequestResponseTemplate.html", ctx);
+        message.setFrom(serverEmail);
+        message.setTo(user.getEmail());
+        message.setSubject("Request become an artist");
+        message.setText(htmlText,true);
+        ClassPathResource imageSource = new ClassPathResource("static/logo192.png");
+        message.addInline("logo", imageSource,"image/png");
         this.emailSender.send(mimeMessage);
         templateEngine.clearTemplateCache();
     }

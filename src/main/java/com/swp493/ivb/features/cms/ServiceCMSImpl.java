@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.mail.MessagingException;
+
 import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
@@ -61,7 +63,7 @@ public class ServiceCMSImpl implements ServiceCMS {
     }
 
     @Override
-    public boolean responseRequest(String userId, String action) {
+    public boolean responseRequest(String userId, String action) throws MessagingException {
         userService.updateArtist(userId, action);
         return true;
     }
@@ -87,7 +89,7 @@ public class ServiceCMSImpl implements ServiceCMS {
     }
 
     @Override
-    public void reviewReport(String id, String action) {
+    public void reviewReport(String id, String action) throws MessagingException {
         reportService.reviewReport(id, action);
     }
 

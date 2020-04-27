@@ -2,6 +2,8 @@ package com.swp493.ivb.features.cms;
 
 import java.util.Optional;
 
+import javax.mail.MessagingException;
+
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 
@@ -14,7 +16,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 public class ControllerCMS {
@@ -34,7 +35,8 @@ public class ControllerCMS {
     }
 
     @PostMapping(value = "/cms/request/{userId}")
-    public ResponseEntity<?> responseRequest(@PathVariable String userId, @RequestParam String action) {
+    public ResponseEntity<?> responseRequest(@PathVariable String userId, @RequestParam String action)
+            throws MessagingException {
         if (cmsService.responseRequest(userId, action)) {
             return Payload.successResponse("Successfully " + action + " request");
         } else {
@@ -43,39 +45,34 @@ public class ControllerCMS {
     }
 
     @GetMapping(value = "/cms/profiles/{key}")
-    public ResponseEntity<?> getUserProfiles(
-        @PathVariable String key,
-        @RequestParam(defaultValue = "0") int offset,
-        @RequestParam(defaultValue = "20") int limit) {
+    public ResponseEntity<?> getUserProfiles(@PathVariable String key, @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "20") int limit) {
         return Payload.successResponse(cmsService.listUserProfiles(key, offset, limit));
     }
 
-    @PutMapping(value="/cms/delegate")
+    @PutMapping(value = "/cms/delegate")
     public ResponseEntity<?> makeCurator(@RequestParam String userId) {
         cmsService.makeCurator(userId);
         return Payload.successResponse("Success");
     }
 
-    @PutMapping(value="/cms/undelegate")
+    @PutMapping(value = "/cms/undelegate")
     public ResponseEntity<?> unmakeCurator(@RequestParam String userId) {
         cmsService.unmakeCurator(userId);
         return Payload.successResponse("Success");
     }
 
-    @GetMapping(value= {"/cms/reports", "/cms/reports/{type}"})
-    public ResponseEntity<?> getReports(
-        @PathVariable(required = false)String type,
-        @RequestParam(required = false) String status,
-        @RequestParam(defaultValue = "0") int offset,
-        @RequestParam(defaultValue = "20") int limit) {
+    @GetMapping(value = { "/cms/reports", "/cms/reports/{type}" })
+    public ResponseEntity<?> getReports(@PathVariable(required = false) String type,
+            @RequestParam(required = false) String status, @RequestParam(defaultValue = "0") int offset,
+            @RequestParam(defaultValue = "20") int limit) {
         return Payload.successResponse(
                 cmsService.findReport(Optional.ofNullable(type), Optional.ofNullable(status), offset, limit));
     }
-    
-    @PutMapping(value="/cms/reports/{id}")
-    public ResponseEntity<?> reviewReport(
-        @PathVariable String id,
-        @RequestParam String action) {
+
+    @PutMapping(value = "/cms/reports/{id}")
+    public ResponseEntity<?> reviewReport(@PathVariable String id, @RequestParam String action)
+            throws MessagingException {
         cmsService.reviewReport(id, action);
         return Payload.successResponse("Successfully "+action);
     }
