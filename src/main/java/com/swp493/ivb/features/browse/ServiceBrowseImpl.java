@@ -53,7 +53,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
             genre ->{
                 DTOGerneCollection<DTOPlaylistSimple> result = new DTOGerneCollection<>();
                 result.setGenre(genre);
-                result.setItems(playlistService.getGenrePlaylists(genre.getId(), userId, 0, 4).getItems());
+                result.setItems(playlistService.getGenrePlaylists(genre.getId(), userId, 0, 6).getItems());
                 return result;
             }   
         ).collect(Collectors.toList());
@@ -93,7 +93,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     @Override
     public Map<String, Object> getGenre(String userId, String genreId) {
         int offset = 0;
-        int limit = 4;
+        int limit = 6;
         Map<String, Object> res = new HashMap<>();
         res.put("genre", masterDataService.getGenre(genreId));
         res.put("playlists", playlistService.getGenrePlaylists(genreId, userId, offset, limit).getItems());
@@ -104,8 +104,8 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     @Override
     public Map<String, Object> getHome(String userId) {
         Map<String, Object> res = new HashMap<>();
-        res.put("myPlaylists", playlistService.getPlaylists(userId, userId, 0, 5, "own").getItems());
-        res.put("myArtists", artistService.getArtists(userId, userId, 0, 5).getItems());
+        res.put("myPlaylists", playlistService.getPlaylists(userId, userId, 0, 6, "own").getItems());
+        res.put("myArtists", artistService.getArtists(userId, userId, 0, 6).getItems());
         res.put("recent", getRecent(userId));
         res.put("most", getMost(userId));
         res.put("newReleases", releaseService.getLastest(userId));
@@ -115,12 +115,12 @@ public class ServiceBrowseImpl implements ServiceBrowse {
 
     @Override
     public List<Object> getRecent(String userId) {
-        return constructData(playStatRepo.findRecent(userId, PageRequest.of(0, 5)), userId);
+        return constructData(playStatRepo.findRecent(userId, PageRequest.of(0, 6)), userId);
     }
 
     @Override
     public List<Object> getMost(String userId) {
-        return constructData(playStatRepo.findMost(userId, PageRequest.of(0, 5)), userId);
+        return constructData(playStatRepo.findMost(userId, PageRequest.of(0, 6)), userId);
     }
 
     private List<Object> constructData(List<ITypeAndId> list, String userId){
