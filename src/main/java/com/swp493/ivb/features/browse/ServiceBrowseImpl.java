@@ -70,7 +70,7 @@ public class ServiceBrowseImpl implements ServiceBrowse {
     public DTOGerneCollection<DTOReleaseSimple> getGenreCollection(String userId, DTOGenre genre) {
         DTOGerneCollection<DTOReleaseSimple> res = new DTOGerneCollection<>();
         res.setGenre(genre);
-        res.setItems(releaseService.getReleaseGenre(genre.getId(), userId, 0, 4).getItems());
+        res.setItems(releaseService.getReleaseGenre(genre.getId(), userId, 0, 6).getItems());
         return res;
     }
 
