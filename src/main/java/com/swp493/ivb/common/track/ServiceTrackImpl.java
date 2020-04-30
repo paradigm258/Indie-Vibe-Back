@@ -282,7 +282,7 @@ public class ServiceTrackImpl implements ServiceTrack {
                 Mp3File fmp3 = new Mp3File(file);
                 track.setDuration(fmp3.getLengthInMilliseconds());
                 ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(track.getFileSize128());
+                metadata.setContentLength(mp3128.getSize());
                 String key = track.getId() + "/128";
                 s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata);
                 uploadKeyList.add(key);
@@ -290,12 +290,11 @@ public class ServiceTrackImpl implements ServiceTrack {
             }
             MultipartFile mp3320 = data.getMp3320();
             if (mp3320 != null) {
-                
                 writeInputToOutput(mp3320.getInputStream(), new FileOutputStream(file));
                 Mp3File fmp3 = new Mp3File(file);
                 track.setDuration(fmp3.getLengthInMilliseconds());
                 ObjectMetadata metadata = new ObjectMetadata();
-                metadata.setContentLength(track.getFileSize320());
+                metadata.setContentLength(mp3320.getSize());
                 String key = track.getId() + "/320";
                 s3.putObject(AWSConfig.BUCKET_NAME, key, new FileInputStream(file), metadata);
                 uploadKeyList.add(key);
