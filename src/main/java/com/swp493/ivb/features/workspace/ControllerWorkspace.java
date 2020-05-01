@@ -33,6 +33,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 
+
 @RestController
 public class ControllerWorkspace {
 
@@ -148,5 +149,10 @@ public class ControllerWorkspace {
         return Payload.successResponse(workspaceService.trackStats(artistId, month, year, offset, limit));
     }
     
+    @PutMapping(value="/workspace/biography")
+    public ResponseEntity<?> putMethodName(@RequestParam String biography, @RequestAttribute EntityUser user) {
+        workspaceService.updateBiography(biography, user.getId());
+        return Payload.successResponse("Bio updated");
+    }
     
 }

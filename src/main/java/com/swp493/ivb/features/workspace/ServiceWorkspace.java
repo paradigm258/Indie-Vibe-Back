@@ -23,6 +23,7 @@ public interface ServiceWorkspace {
     public boolean actionRelease(String userId, String releaseId, String action);
     public String deleteTrack(String userId, String trackId);
     public String updateTrack(String userId, String trackId, DTOTrackUpdate data);
+    public void updateBiography(String bio, String artistId);
     public List<Long> yearStats(String userId, int year);
     public Paging<DTOReleaseStatistic> releaseStats(String userId, int month, int year, int offset, int limit);
     public Paging<DTOTrackStatistic> trackStats(String userId, int month, int year, int offset, int limit);

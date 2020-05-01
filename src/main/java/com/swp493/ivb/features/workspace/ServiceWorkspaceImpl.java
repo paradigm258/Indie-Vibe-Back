@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.swp493.ivb.common.artist.RepositoryArtist;
+import com.swp493.ivb.common.artist.ServiceArtist;
 import com.swp493.ivb.common.relationship.RepositoryUserRelease;
 import com.swp493.ivb.common.relationship.RepositoryUserTrack;
 import com.swp493.ivb.common.release.DTOReleaseInfoUpload;
@@ -69,6 +70,9 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
 
     @Autowired
     ServiceTrack trackService;
+
+    @Autowired
+    ServiceArtist artistService; 
 
     @Override
     public void updateCount(String userId, String type, String id) {
@@ -246,6 +250,11 @@ public class ServiceWorkspaceImpl implements ServiceWorkspace {
     public void addToRelease(String userId, String releaseId, List<DTOTrackReleaseUpload> trackInfos,
             MultipartFile[] files) {
         releaseService.addTrackRelease(userId, releaseId, trackInfos, files);
+    }
+
+    @Override
+    public void updateBiography(String bio, String artistId) {
+        artistService.updateBiography(bio, artistId);
     }
 
 }

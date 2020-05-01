@@ -119,4 +119,11 @@ public class ServiceArtistImpl implements ServiceArtist {
                 .collect(Collectors.toList());
         }).orElse(Collections.<String>emptyList());
     }
+
+    @Override
+    public void updateBiography(String bio, String artistId) {
+        EntityArtist artist = artistRepo.getOne(artistId);
+        artist.setBiography(bio);
+        artistRepo.save(artist);
+    }
 }
