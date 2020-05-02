@@ -13,5 +13,6 @@ public interface ServiceArtist {
     Map<String, Object> getArtistReleaseByType(String artistId, String userId, String releaseTypeId, int offset, int limit);
     Paging<DTOArtistFull> getArtistsRequestProfile(String adminId, int offset, int limit);
     List<String> streamArtist(String artistId);
+    void updateBiography(String bio, String artistId);
 }
 
