@@ -7,6 +7,10 @@ import java.util.Optional;
 import javax.mail.MessagingException;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
+import com.swp493.ivb.common.mdata.DTOGenre;
+import com.swp493.ivb.common.mdata.DTOGenreCreate;
+import com.swp493.ivb.common.mdata.DTOGenreUpdate;
+import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.release.DTOReleasePending;
 import com.swp493.ivb.common.report.DTOReport;
 import com.swp493.ivb.common.user.DTOUserPublic;
@@ -26,4 +30,8 @@ public interface ServiceCMS {
     public Map<String,Object> yearlySumRevenue(int start, int end);
     public Map<String,Object> monthlySumRevenue(int year);
     public void recordPurchase(Long amount, String type);
+    public DTOGenre getGenre(String id);
+    public EntityMasterData addGenre(DTOGenreCreate data);
+    public void deleteGenre(String id);
+    public void updateGenre(String id, DTOGenreUpdate data);
 }

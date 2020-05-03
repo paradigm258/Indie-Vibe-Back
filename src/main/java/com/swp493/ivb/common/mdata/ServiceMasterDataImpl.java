@@ -1,19 +1,30 @@
 package com.swp493.ivb.common.mdata;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.swp493.ivb.common.view.Paging;
+import com.swp493.ivb.config.AWSConfig;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class ServiceMasterDataImpl implements ServiceMasterData {
 
     @Autowired
     private RepositoryMasterData masterDataRepo;
+
+    @Autowired
+    private AmazonS3 s3;
 
     @Override
     public List<DTOGenre> getGenreList() {
@@ -72,5 +83,64 @@ public class ServiceMasterDataImpl implements ServiceMasterData {
     public DTOReleaseType getReleaseType(String id){
         ModelMapper mapper = new ModelMapper();
         return mapper.map(masterDataRepo.findByIdAndType(id,"release").get(), DTOReleaseType.class);
+    }
+
+    @Override
+    public EntityMasterData addGenre(DTOGenreCreate data) {
+        EntityMasterData genre = new EntityMasterData();
+        genre.setType("genre");
+        genre.setName(data.getName());
+        if(StringUtils.hasText(data.getDescription())){
+            genre.setDescription(data.getDescription());
+        }
+        genre = masterDataRepo.save(genre);
+        MultipartFile thumbnail = data.getThumbnail();
+        if (thumbnail != null) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(thumbnail.getSize());
+            String key = "genre/"+genre.getId();
+            try {
+                s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                genre.setThumbnail(AWSConfig.BUCKET_URL + key);
+            } catch (IOException e) {
+                throw new RuntimeException("Error getting input stream for thumbnail", e);
+            }
+        }
+        return masterDataRepo.save(genre);
+    }
+
+    @Override
+    public void deleteGenre(String id) {
+        EntityMasterData genre = new EntityMasterData();
+        genre.setId(id);
+        genre.setType("genre");
+        masterDataRepo.delete(genre);
+    }
+
+    @Override
+    public void updateGenre(String id, DTOGenreUpdate data) {
+        EntityMasterData genre = masterDataRepo.findByIdAndType(id, "genre").get();
+        if(StringUtils.hasText(data.getName())){
+            genre.setName(data.getName());
+        }
+        if(StringUtils.hasText(data.getDescription())){
+            genre.setDescription(data.getDescription());
+        }
+        MultipartFile thumbnail = data.getThumbnail();
+        if (thumbnail != null) {
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentLength(thumbnail.getSize());
+            String key = "genres/"+genre.getId();
+            try {
+                s3.putObject(new PutObjectRequest(AWSConfig.BUCKET_NAME, key, thumbnail.getInputStream(), metadata)
+                        .withCannedAcl(CannedAccessControlList.PublicRead));
+                genre.setThumbnail(AWSConfig.BUCKET_URL + key);
+            } catch (IOException e) {
+                throw new RuntimeException("Error getting input stream for thumbnail", e);
+            }
+        }
+        masterDataRepo.save(genre);
+
     }
 }

@@ -3,12 +3,17 @@ package com.swp493.ivb.features.cms;
 import java.util.Optional;
 
 import javax.mail.MessagingException;
+import javax.validation.Valid;
 
+import com.swp493.ivb.common.mdata.DTOGenreCreate;
+import com.swp493.ivb.common.mdata.DTOGenreUpdate;
+import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.user.EntityUser;
 import com.swp493.ivb.common.view.Payload;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 public class ControllerCMS {
@@ -97,4 +103,25 @@ public class ControllerCMS {
         return Payload.successResponse(cmsService.monthlySumRevenue(year));
     }
 
+    @GetMapping(value="/cms/genres/{id}")
+    public ResponseEntity<?> getGenre(@PathVariable String id) {
+        return Payload.successResponse(cmsService.getGenre(id));
+    }
+
+    @PostMapping(value="/cms/genres/{id}")
+    public ResponseEntity<?> addGenre(@PathVariable String id, @Valid DTOGenreCreate data) {
+        EntityMasterData genre = cmsService.addGenre(data);
+        return Payload.successResponse(genre.getId());
+    }
+    
+    @DeleteMapping(value = "/cms/genres/{id}")
+    public ResponseEntity<?> deleteGenres(@PathVariable String id){
+        cmsService.deleteGenre(id);
+        return Payload.successResponse("Success");
+    }
+    @PutMapping(value="/cms/genres/{id}")
+    public ResponseEntity<?> updateGenre(@PathVariable String id, @Valid DTOGenreUpdate data) {
+        cmsService.updateGenre(id, data);
+        return Payload.successResponse("Success");
+    }
 }

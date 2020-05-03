@@ -13,7 +13,12 @@ import javax.mail.MessagingException;
 
 import com.swp493.ivb.common.artist.DTOArtistFull;
 import com.swp493.ivb.common.artist.ServiceArtist;
+import com.swp493.ivb.common.mdata.DTOGenre;
+import com.swp493.ivb.common.mdata.DTOGenreCreate;
+import com.swp493.ivb.common.mdata.DTOGenreUpdate;
+import com.swp493.ivb.common.mdata.EntityMasterData;
 import com.swp493.ivb.common.mdata.RepositoryMasterData;
+import com.swp493.ivb.common.mdata.ServiceMasterData;
 import com.swp493.ivb.common.release.DTOReleasePending;
 import com.swp493.ivb.common.release.ServiceRelease;
 import com.swp493.ivb.common.report.DTOReport;
@@ -33,6 +38,9 @@ public class ServiceCMSImpl implements ServiceCMS {
 
     @Autowired
     RepositoryRevenueRecord revenueRecordRepo;
+
+    @Autowired
+    ServiceMasterData masterDataService;
 
     @Autowired
     ServiceArtist artistService;
@@ -108,7 +116,7 @@ public class ServiceCMSImpl implements ServiceCMS {
 
         if (start > end)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        Map<String,Object> res = new HashMap<>();
+        Map<String, Object> res = new HashMap<>();
         List<Long> fixed = new ArrayList<>();
         List<Long> monthly = new ArrayList<>();
         for (; start <= end; start++) {
@@ -122,10 +130,10 @@ public class ServiceCMSImpl implements ServiceCMS {
 
     @Override
     public Map<String, Object> monthlySumRevenue(int year) {
-        Map<String,Object> res = new HashMap<>();
+        Map<String, Object> res = new HashMap<>();
         List<Long> fixed = new ArrayList<>();
         List<Long> monthly = new ArrayList<>();
-        for(int i=1;i<13;i++){
+        for (int i = 1; i < 13; i++) {
             fixed.add(revenueRecordRepo.getMonthRevenue(year, i, "p-fixed"));
             monthly.add(revenueRecordRepo.getMonthRevenue(year, i, "p-monthly"));
         }
@@ -142,6 +150,26 @@ public class ServiceCMSImpl implements ServiceCMS {
         record.setPreminumType(masterDataRepo.findByIdAndType(type, "plan").get());
         record.setRecordedMonth(month);
         revenueRecordRepo.save(record);
+    }
+
+    @Override
+    public DTOGenre getGenre(String id) {
+        return masterDataService.getGenre(id);
+    }
+
+    @Override
+    public EntityMasterData addGenre(DTOGenreCreate data) {
+        return masterDataService.addGenre(data);
+    }
+
+    @Override
+    public void deleteGenre(String id) {
+        masterDataService.deleteGenre(id);
+    }
+
+    @Override
+    public void updateGenre(String id, DTOGenreUpdate data) {
+        masterDataService.updateGenre(id, data);
     }
 
     
