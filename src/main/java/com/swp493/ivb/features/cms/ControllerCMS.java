@@ -108,8 +108,8 @@ public class ControllerCMS {
         return Payload.successResponse(cmsService.getGenre(id));
     }
 
-    @PostMapping(value="/cms/genres/{id}")
-    public ResponseEntity<?> addGenre(@PathVariable String id, @Valid DTOGenreCreate data) {
+    @PostMapping(value="/cms/genres")
+    public ResponseEntity<?> addGenre(@Valid DTOGenreCreate data) {
         EntityMasterData genre = cmsService.addGenre(data);
         return Payload.successResponse(genre.getId());
     }
