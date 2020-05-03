@@ -6,7 +6,7 @@ spring:
         password: ${RDS_PASSWORD:1234}
         driverClassName: com.mysql.cj.jdbc.Driver
     jpa:
-        open-in-view: false
+        open-in-view: true
     thymeleaf:
         enabled: false 
     servlet:
