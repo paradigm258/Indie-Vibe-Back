@@ -6,6 +6,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,8 +16,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AWSConfig {
 
-    public static final String BUCKET_NAME = "indievibe-storage";
-    public static final String BUCKET_URL = "https://"+BUCKET_NAME+".s3.amazonaws.com/";
+    @Value(value = "${BUCKET_NAME:indievibe-storage}")
+    public static String BUCKET_NAME;
+    public static String BUCKET_URL;
+    
+    public AWSConfig(@Value(value = "${BUCKET_NAME:indievibe-storage}") String bucketName){
+        BUCKET_NAME = bucketName;
+        BUCKET_URL = "https://"+BUCKET_NAME+".s3.amazonaws.com/";
+    }
     public static Date presignExpiration(){
         Date expiration = new Date();
         long expTimeMillis = expiration.getTime();

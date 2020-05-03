@@ -112,10 +112,9 @@ public class ServiceMasterDataImpl implements ServiceMasterData {
 
     @Override
     public void deleteGenre(String id) {
-        EntityMasterData genre = new EntityMasterData();
-        genre.setId(id);
-        genre.setType("genre");
+        EntityMasterData genre = masterDataRepo.findByIdAndType(id, "genre").get();
         masterDataRepo.delete(genre);
+        s3.deleteObject(AWSConfig.BUCKET_NAME, "genres/"+genre.getId());
     }
 
     @Override
