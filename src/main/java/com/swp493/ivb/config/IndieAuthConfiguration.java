@@ -3,6 +3,7 @@ package com.swp493.ivb.config;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,6 +21,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @Configuration
 public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
+
+    @Value(value = "${CORS_ENABLE:false}") boolean corsEnable;
 
     @Autowired
     private JwtAuthenticationEntryPoint unauthorizedHandler;
@@ -39,7 +42,6 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
         http
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            // .and().cors().configurationSource(corsConfigurationSource())
             .and().csrf().disable()
             .exceptionHandling()
             .authenticationEntryPoint(unauthorizedHandler)
@@ -50,17 +52,22 @@ public class IndieAuthConfiguration extends WebSecurityConfigurerAdapter {
             .antMatchers("/workspace/**").hasAuthority("r-artist")
             .antMatchers("/api/**").fullyAuthenticated()
             .and().logout().disable();
+        if(corsEnable){
+            http.cors();
+        }
     }
 
-    // @Bean
-    // public CorsConfigurationSource corsConfigurationSource() {
-    //     CorsConfiguration configuration = new CorsConfiguration();
-    //     configuration.setAllowedOrigins(Arrays.asList("*"));
-    //     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    //     configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "Upgrade-Insecure-Requests", "range"));
-    //     configuration.setExposedHeaders(Arrays.asList("x-auth-token"));
-    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    //     source.registerCorsConfiguration("/**", configuration);
-    //     return source;
-    // }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+    
+        configuration.setAllowedOrigins(Arrays.asList("*"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token", "Upgrade-Insecure-Requests", "range"));
+        configuration.setExposedHeaders(Arrays.asList("x-auth-token"));
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 }
