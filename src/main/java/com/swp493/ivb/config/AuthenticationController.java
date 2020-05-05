@@ -205,9 +205,6 @@ public class AuthenticationController {
         if (userService.existsByFbId(fbForm.getFbId())) {
             return Payload.failureResponse("FbId already registered");
         }
-        if (userService.existsByEmail(fbForm.getEmail())) {
-            return Payload.failureResponse("The email associated with this Facebook account is already registered");
-        }
         if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
             userService.register(fbForm);
             return Payload.successResponse("Your accout has been created");
