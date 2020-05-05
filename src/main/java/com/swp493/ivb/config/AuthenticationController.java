@@ -112,7 +112,7 @@ public class AuthenticationController {
             Authentication authentication = manager.authenticate(principal);
             return TokenResponse(authentication);
         } catch (BadCredentialsException e) {
-            return Payload.failedAuthorization("Bad credential");
+            return Payload.failedAuthorization("Incorrect email or password");
         } catch (DisabledException e){
             return Payload.failedAuthorization("inactive");
         }
