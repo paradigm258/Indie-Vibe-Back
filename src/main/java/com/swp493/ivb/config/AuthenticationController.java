@@ -203,11 +203,11 @@ public class AuthenticationController {
             return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
         }
         if (userService.existsByFbId(fbForm.getFbId())) {
-            return Payload.failureResponse("FbId already registered");
+            return Payload.failureResponse("Facebook account's already used");
         }
         if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
             userService.register(fbForm);
-            return Payload.successResponse("Your accout has been created");
+            return Payload.successResponse("Your account has been created");
         } else {
             return Payload.failureResponse("Token invalid");
         }
