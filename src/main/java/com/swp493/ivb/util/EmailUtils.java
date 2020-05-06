@@ -145,7 +145,7 @@ public class EmailUtils {
     }
 
     public void sendArtistRequestResponseEmail(EntityUser user) throws MessagingException {
-        if(user.getEmail()!=null) return;
+        if(user.getEmail()==null) return;
         final Context ctx = new Context();
         final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
         final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
