@@ -15,10 +15,6 @@ import lombok.Setter;
 @Setter
 public class DTORegisterFormFb {
 
-    @NotBlank
-    @Email(message = "Email")
-    private String email;
-
     @NotBlank(message = "Display name")
     private String displayName;
 

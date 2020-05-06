@@ -112,7 +112,7 @@ public class AuthenticationController {
             Authentication authentication = manager.authenticate(principal);
             return TokenResponse(authentication);
         } catch (BadCredentialsException e) {
-            return Payload.failedAuthorization("Bad credential");
+            return Payload.failedAuthorization("Incorrect email or password");
         } catch (DisabledException e){
             return Payload.failedAuthorization("inactive");
         }
@@ -203,14 +203,11 @@ public class AuthenticationController {
             return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
         }
         if (userService.existsByFbId(fbForm.getFbId())) {
-            return Payload.failureResponse("FbId already registered");
-        }
-        if (userService.existsByEmail(fbForm.getEmail())) {
-            return Payload.failureResponse("The email associated with this Facebook account is already registered");
+            return Payload.failureResponse("Facebook account's already used");
         }
         if (checkFbToken(fbForm.getFbId(), fbForm.getFbToken())) {
             userService.register(fbForm);
-            return Payload.successResponse("Your accout has been created");
+            return Payload.successResponse("Your account has been created");
         } else {
             return Payload.failureResponse("Token invalid");
         }

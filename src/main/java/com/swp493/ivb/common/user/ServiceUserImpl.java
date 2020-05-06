@@ -143,7 +143,6 @@ public class ServiceUserImpl implements ServiceUser {
     public void register(DTORegisterFormFb fbForm) {
         EntityUser user = new EntityUser();
         user.setDisplayName(fbForm.getDisplayName());
-        user.setEmail(fbForm.getEmail());
         user.setFbId(fbForm.getFbId());
         user.setThumbnail(fbForm.getThumbnail());
         user.setDob(fbForm.getDob());

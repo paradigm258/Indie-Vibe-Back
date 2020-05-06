@@ -54,7 +54,6 @@ public class EntityUser {
     
     private String id;
 
-    @NotBlank
     @Email
     private String email;
 
