@@ -70,6 +70,7 @@ public class EmailUtils {
     }
 
     public void sendExpireWarning(EntityUser user) throws MessagingException {
+        if(user.getEmail() == null) return;
         final Context ctx = new Context();
         final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
         final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -105,6 +106,7 @@ public class EmailUtils {
     }
 
     public void sendProcessedReportEmail(EntityReport report) throws MessagingException {
+        if(report.getReporter().getEmail() == null) return;
         final Context ctx = new Context();
         final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
         final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -123,6 +125,7 @@ public class EmailUtils {
     }
 
     public void sendPurchaseSuccessEmail(EntityUser user) throws MessagingException {
+        if(user.getEmail()==null) return;
         final Context ctx = new Context();
         final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
         final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -142,6 +145,7 @@ public class EmailUtils {
     }
 
     public void sendArtistRequestResponseEmail(EntityUser user) throws MessagingException {
+        if(user.getEmail()!=null) return;
         final Context ctx = new Context();
         final MimeMessage mimeMessage = this.emailSender.createMimeMessage();
         final MimeMessageHelper message = new MimeMessageHelper(mimeMessage, true, "UTF-8");
