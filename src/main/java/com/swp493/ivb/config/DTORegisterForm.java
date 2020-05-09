@@ -19,11 +19,11 @@ import lombok.Setter;
 public class DTORegisterForm {
 
     @NotBlank
-    @Email(message = "Email")
+    @Email(message = "Incorrect email format")
     private String email;
 
     @NotBlank
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$",message = "Password")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password word must be at least 8 characters with a number")
     private String password;
 
     @NotBlank
