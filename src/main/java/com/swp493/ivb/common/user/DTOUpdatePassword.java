@@ -13,13 +13,13 @@ import lombok.Setter;
 @Setter
 public class DTOUpdatePassword {
 
-    @NotBlank(message = "Password")
+    @NotBlank(message = "Missing old password")
     String pwd;
 
     @NotBlank
-    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$",message = "New password")
+    @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$", message = "Password word must be at least 8 characters with a number")
     String newPwd;
 
-    @NotBlank(message = "Confirm password")
+    @NotBlank(message = "Missing confirm password")
     String cfNewPwd;
 }
