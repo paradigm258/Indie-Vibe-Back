@@ -157,10 +157,10 @@ public class AuthenticationController {
     public ResponseEntity<?> register(@Valid DTORegisterForm registerForm, BindingResult result) {
         if (result.hasErrors()) {
             FieldError error = result.getFieldError();
-            return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
+            return Payload.failureResponse(error.getDefaultMessage());
         }
         if (!registerForm.getPassword().equals(registerForm.getCfPassword())) {
-            return Payload.failureResponse("Password not match");
+            return Payload.failureResponse("Confirm password does not match");
         }
         if (userService.existsByEmail(registerForm.getEmail())) {
             return Payload.failureResponse("Email already exists");

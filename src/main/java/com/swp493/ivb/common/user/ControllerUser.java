@@ -48,7 +48,7 @@ public class ControllerUser {
     public ResponseEntity<?> updateAccount(@RequestAttribute EntityUser user, @Valid DTOUserUpdate update, BindingResult result) {
         if(result.hasErrors()){
             FieldError error = result.getFieldError();
-            return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
+            return Payload.failureResponse(error.getDefaultMessage());
         }
         if(userService.userUpdate(update, user.getId())){
             return Payload.successResponse("Update successfully");
@@ -67,15 +67,15 @@ public class ControllerUser {
         @Valid DTOUpdatePassword updatePassword, BindingResult result) {
         if (result.hasErrors()) {
             FieldError error = result.getFieldError();
-            return Payload.failureResponse(error.getDefaultMessage() + " is invalid");
+            return Payload.failureResponse(error.getDefaultMessage());
         }
         
-        if(!updatePassword.getNewPwd().equals(updatePassword.getCfNewPwd())) return Payload.failureResponse("Password not match");
+        if(!updatePassword.getNewPwd().equals(updatePassword.getCfNewPwd())) return Payload.failureResponse("Confirm password not match");
         
         if(userService.passwordUpdate(updatePassword.getPwd(), updatePassword.getNewPwd(), user.getId()))
             return Payload.successResponse("Password changed");
 
-        return Payload.failureResponse("Wrong password");
+        return Payload.failureResponse("Wrong old password");
     }
     
     @PostMapping(value="/purchase/monthly")

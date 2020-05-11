@@ -1,5 +1,6 @@
 package com.swp493.ivb.common.user;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 
@@ -17,10 +18,11 @@ public class DTOUserUpdate {
 
     private String displayName;
 
+    @Email(message = "Incorrect email format")
     private String email;
 
-    @Min(value = 0, message = "Gender")
-    @Max(value = 2, message = "Gender")
+    @Min(value = 0, message = "Incorrect gender format")
+    @Max(value = 2, message = "Incorrect gender format")
     private int gender;
 
     private String dob;
