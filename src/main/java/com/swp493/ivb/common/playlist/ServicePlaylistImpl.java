@@ -25,6 +25,8 @@ import com.swp493.ivb.common.user.RepositoryUser;
 import com.swp493.ivb.common.user.ServiceUser;
 import com.swp493.ivb.common.view.Paging;
 import com.swp493.ivb.config.AWSConfig;
+import com.swp493.ivb.features.workspace.RepositoryArtistStats;
+import com.swp493.ivb.features.workspace.RepositoryPlayRecord;
 
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -62,6 +64,12 @@ public class ServicePlaylistImpl implements ServicePlaylist {
 
     @Autowired
     private RepositoryPlaylistTrack playlistTrackRepo;
+
+    @Autowired
+    private RepositoryPlayRecord playRecordRepo;
+
+    @Autowired
+    private RepositoryArtistStats artistStatsRepo;
 
     @Autowired
     private AmazonS3 s3;
@@ -116,6 +124,8 @@ public class ServicePlaylistImpl implements ServicePlaylist {
             if (playlistRepo.existsByIdAndUserPlaylistsUserIdAndUserPlaylistsAction(playlistId, userId, "own")) {
                 EntityPlaylist playlist = playlistRepo.findById(playlistId).get();
                 playlistRepo.deleteById(playlistId);
+                playRecordRepo.findByObjectId(playlistId).forEach(pr -> playRecordRepo.delete(pr));
+                artistStatsRepo.findByObjectId(playlistId).forEach(as -> artistStatsRepo.delete(as));
                 if(playlist.getThumbnail() != null && !playlist.getThumbnail().isEmpty())
                 s3.deleteObject(AWSConfig.BUCKET_NAME, playlist.getThumbnail());
                 return true;
